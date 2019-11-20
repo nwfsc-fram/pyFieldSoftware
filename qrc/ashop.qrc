@@ -1,0 +1,41 @@
+<RCC>
+    <qresource prefix="/">
+
+
+        <file>../qml/ashop/main_ashop.qml</file>
+        <file>../qml/ashop/BackdeckStateMachine.qml</file>
+
+        <!-- Screens -->
+        <file>../qml/ashop/HomeScreen.qml</file>
+        <file>../qml/ashop/OperationSelectionScreen.qml</file>
+        <file>../qml/ashop/SpeciesSelectionScreen.qml</file>
+        <file>../qml/ashop/FishSamplingScreen.qml</file>
+        <file>../qml/ashop/WeighBasketsScreen.qml</file>
+        <file>../qml/ashop/SerialPortManagerScreen.qml</file>
+        <file>../qml/ashop/SettingsScreen.qml</file>
+
+        <!-- Widgets -->
+        <file>../qml/ashop/BackdeckMenuButton.qml</file>
+        <file>../qml/ashop/BackdeckButton.qml</file>
+        <file>../qml/ashop/BackdeckTextFieldDisabled.qml</file>
+        <file>../qml/ashop/BackdeckTableView.qml</file>
+        <file>../qml/ashop/FramNumPad.qml</file>
+        <file>../qml/ashop/FramNumPadButton.qml</file>
+        <file>../qml/ashop/FramComboBox.qml</file>
+
+        <!-- Dialogs -->
+        <file>../qml/ashop/ValidateDialog.qml</file>
+        <file>../qml/ashop/NoteDialog.qml</file>
+        <file>../qml/ashop/OkayDialog.qml</file>
+        <file>../qml/ashop/FishSamplingEntryDialog.qml</file>
+
+
+        <!-- LEGACY -->
+        <file>../qml/common/TrawlBackdeckTextFieldDisabled.qml</file>
+        <file>../qml/common/TrawlBackdeckTableView.qml</file>
+        <file>../qml/common/TrawlBackdeckButton.qml</file>
+        <file>../qml/common/TrawlNoteDialog.qml</file>
+
+
+    </qresource>
+</RCC>

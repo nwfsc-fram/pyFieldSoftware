@@ -1,0 +1,108 @@
+<RCC>
+    <qresource prefix="/">
+
+        // Main Application
+        <file>../qml/trawl_analyzer/main_trawl_analyzer.qml</file>
+
+        // Screens
+        <file>../qml/trawl_analyzer/FileManagementScreen.qml</file>
+        <file>../qml/trawl_analyzer/DataCompletenessScreen.qml</file>
+        <file>../qml/trawl_analyzer/TimeSeriesScreen.qml</file>
+        <file>../qml/trawl_analyzer/CatchScreen.qml</file>
+        <file>../qml/trawl_analyzer/ReportsScreen.qml</file>
+
+        // Widgets
+        <file>../qml/trawl_analyzer/TimeSeriesChart.qml</file>
+        <file>../qml/trawl_analyzer/TimeSeriesDateTimeAxis.qml</file>
+        <file>../qml/trawl_analyzer/TimeSeriesValueAxis.qml</file>
+        <file>../qml/trawl_analyzer/Waypoint.qml</file>
+        <!--<file>../qml/trawl_analyzer/TSChart.qml</file>-->
+
+        // Dialogs
+        <file>../qml/common/FramDesktopOkayDialog.qml</file>
+        <file>../qml/common/FramDesktopLoginDialog.qml</file>
+        <file>../qml/common/FramDesktopOkayCancelDialog.qml</file>
+        <file>../qml/trawl_analyzer/AddCommentDialog.qml</file>
+        <file>../qml/trawl_analyzer/AdjustPerformanceDialog.qml</file>
+        <file>../qml/trawl_analyzer/InvalidDataDialog.qml</file>
+        <file>../qml/trawl_analyzer/ChangeTimeSeriesDialog.qml</file>
+
+        // Images
+        <file>../resources/images/timeseries.png</file>
+        <file>../resources/images/filemanagement.png</file>
+        <file>../resources/images/reports.png</file>
+        <file>../resources/images/datacompleteness.png</file>
+        <file>../resources/images/fish.png</file>
+        <file>../resources/images/lock.png</file>
+        <file>../resources/images/unlock.png</file>
+        <file>../resources/images/pan.png</file>
+        <file>../resources/images/clock.png</file>
+        <file>../resources/images/shift.png</file>
+        <file>../resources/images/waypoint.png</file>
+        <file>../resources/images/splitter.png</file>
+        <file>../resources/images/invalid_data.png</file>
+        <file>../resources/images/eye.png</file>
+        <file>../resources/images/pan_vertical.png</file>
+        <file>../resources/images/calculator.png</file>
+        <file>../resources/images/map.png</file>
+        <file>../resources/images/legend.png</file>
+        <file>../resources/images/distance.png</file>
+        <file>../resources/images/mean.png</file>
+        <!--<file>../resources/images/latlon.png</file>-->
+
+        // Legacy, can probably delete
+        <file>../qml/common/TrawlBackdeckButton.qml</file>
+        <file>../qml/common/TrawlBackdeckMenuButton.qml</file>
+        <file>../qml/common/TrawlBackdeckGroupBox.qml</file>
+        <file>../qml/common/TrawlBackdeckTableView.qml</file>
+        <file>../qml/common/TrawlBackdeckTreeView.qml</file>
+        <file>../qml/common/TrawlBackdeckComboBox.qml</file>
+        <file>../qml/common/TrawlBackdeckTextFieldDisabled.qml</file>
+        <file>../qml/common/FramNumPad.qml</file>
+        <file>../qml/common/FramNumPadButton.qml</file>
+        <file>../qml/common/FramKeyboard.qml</file>
+        <file>../qml/common/FramKeyboardButton.qml</file>
+        <file>../qml/common/FramComboBox.qml</file>
+        <file>../qml/common/FramSlidingKeyboard.qml</file>
+        <file>../qml/common/FramConfirmDialog.qml</file>
+        <file>../qml/common/FramTableViewDialog.qml</file>
+        <file>../qml/common/ScreenUnits.qml</file>
+        <file>../qml/common/CommonUtil.qml</file>
+        <file>../qml/common/qmldir</file>
+        <file>../qml/common/TrawlDataEntryCheckDialog.qml</file>
+        <file>../qml/common/TrawlConfirmDialog.qml</file>
+        <file>../qml/common/TrawlValidateDialog.qml</file>
+        <file>../qml/common/TrawlNoteDialog.qml</file>
+        <file>../qml/common/TrawlOkayDialog.qml</file>
+        <file>../resources/images/start.png</file>
+        <file>../resources/images/stop.png</file>
+        <file>../resources/images/delete.png</file>
+        <file>../resources/images/info.png</file>
+        <file>../resources/images/new.png</file>
+        <file>../resources/images/open.png</file>
+        <file>../resources/images/save.png</file>
+        <file>../resources/images/datafeeds.png</file>
+        <file>../resources/images/map2.png</file>
+        <file>../resources/images/settings.png</file>
+        <file>../resources/images/lightning-bolt.png</file>
+        <file>../resources/images/button_default.png</file>
+        <file>../resources/images/button_pressed.png</file>
+        <file>../resources/images/icon-calendar.png</file>
+        <file>../resources/images/navigation_next_item - Copy.png</file>
+        <file>../resources/images/navigation_next_item.png</file>
+        <file>../resources/images/navigation_next_item_dark.png</file>
+        <file>../resources/images/navigation_page_down_dark.png</file>
+        <file>../resources/images/navigation_page_up_dark.png</file>
+        <file>../resources/images/navigation_previous_item_dark.png</file>
+        <file>../resources/images/navigation_previous_item - Copy.png</file>
+        <file>../resources/images/navigation_previous_item.png</file>
+        <file>../resources/images/NOTICE.txt</file>
+        <file>../resources/images/scrollbar.png</file>
+        <file>../resources/images/tab_selected.png</file>
+        <file>../resources/images/tabs_standard.png</file>
+        <file>../resources/images/textinput.png</file>
+        <file>../resources/images/toolbar.png</file>
+        <file>../resources/sounds/weighbaskets_buzzer.wav</file>
+        <file>../resources/images/wave.png</file>
+    </qresource>
+</RCC>

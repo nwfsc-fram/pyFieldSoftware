@@ -1,0 +1,103 @@
+<RCC>
+    <qresource prefix="/">
+
+        <file>../qml/survey_backdeck/main_backdeck.qml</file>
+        <file>../qml/survey_backdeck/BackdeckStateMachine.qml</file>
+
+        <!-- Screens -->
+        <file>../qml/survey_backdeck/OperationSelectionScreen.qml</file>
+        <file>../qml/survey_backdeck/FishSamplingScreen.qml</file>
+        <file>../qml/survey_backdeck/SitesScreen.qml</file>
+
+        <!-- Widgets -->
+        <file>../qml/survey_backdeck/BackdeckMenuButton.qml</file>
+        <file>../qml/survey_backdeck/BackdeckButton.qml</file>
+        <file>../qml/survey_backdeck/BackdeckButton2.qml</file>
+        <file>../qml/survey_backdeck/BackdeckTextFieldDisabled.qml</file>
+        <file>../qml/survey_backdeck/BackdeckTableView.qml</file>
+        <file>../qml/survey_backdeck/FramNumPad.qml</file>
+        <file>../qml/survey_backdeck/FramNumPadButton.qml</file>
+        <file>../qml/survey_backdeck/SpeciesFullList.qml</file>
+        <file>../qml/survey_backdeck/FramScalingKeyboard.qml</file>
+        <file>../qml/survey_backdeck/FramScalingKeyboardButton.qml</file>
+
+        <!-- Items -->
+        <file>../qml/survey_backdeck/fishSamplingTabs/AnglerDropHookItem.qml</file>
+        <file>../qml/survey_backdeck/fishSamplingTabs/SpeciesItem.qml</file>
+        <file>../qml/survey_backdeck/fishSamplingTabs/WeightItem.qml</file>
+        <file>../qml/survey_backdeck/fishSamplingTabs/LengthItem.qml</file>
+        <file>../qml/survey_backdeck/fishSamplingTabs/SexItem.qml</file>
+        <file>../qml/survey_backdeck/fishSamplingTabs/AgeItem.qml</file>
+        <file>../qml/survey_backdeck/fishSamplingTabs/FinclipItem.qml</file>
+        <file>../qml/survey_backdeck/fishSamplingTabs/DispositionItem.qml</file>
+        <file>../qml/survey_backdeck/fishSamplingTabs/SpecialItem.qml</file>
+
+        <!-- Dialogs -->
+        <file>../qml/survey_backdeck/ValidateDialog.qml</file>
+        <file>../qml/survey_backdeck/OkayDialog.qml</file>
+        <file>../qml/survey_backdeck/OkayCancelDialog.qml</file>
+        <file>../qml/survey_backdeck/FishSamplingEntryDialog.qml</file>
+        <file>../qml/survey_backdeck/SerialPortManagerDialog.qml</file>
+        <file>../qml/survey_backdeck/NotesDialog.qml</file>
+        <file>../qml/survey_backdeck/DrawingNotesDialog.qml</file>
+        <file>../qml/survey_backdeck/SpeciesConflictDialog.qml</file>
+        <file>../qml/survey_backdeck/RecordedByDialog.qml</file>
+
+        <!-- Images -->
+        <file>../resources/images/navigation_previous_item_dark.png</file>
+        <file>../resources/images/navigation_next_item_dark.png</file>
+
+        <!-- Sounds -->
+        <file>../resources/sounds/cutterstation_nextfish.wav</file>
+
+
+        <!-- LEGACY -->
+        <file>../qml/common/TrawlBackdeckTextFieldDisabled.qml</file>
+        <file>../qml/common/TrawlBackdeckTableView.qml</file>
+        <file>../qml/common/TrawlBackdeckButton.qml</file>
+        <file>../qml/common/TrawlNoteDialog.qml</file>
+
+
+
+        <!--
+        <file>../qml/common/TrawlConfirmDialog.qml</file>
+        <file>../qml/common/TrawlValidateDialog.qml</file>
+        <file>../qml/common/TrawlOkayDialog.qml</file>
+
+        <file>../qml/common/qmldir</file>
+        <file>../qml/trawl/HaulSelectionScreen.qml</file>
+        <file>../qml/trawl/ProcessCatchScreen.qml</file>
+        <file>../qml/trawl/WeighBasketsScreen.qml</file>
+        <file>../qml/trawl/FishSamplingScreen.qml</file>
+        <file>../qml/trawl/SalmonSamplingScreen.qml</file>
+        <file>../qml/trawl/CoralSamplingScreen.qml</file>
+        <file>../qml/trawl/SpecialActionsScreen.qml</file>
+        <file>../qml/trawl/QAQCScreen.qml</file>
+        <file>../qml/trawl/ReportScreen.qml</file>
+        <file>../qml/trawl/SerialPortManagerScreen.qml</file>
+        <file>../qml/trawl/NetworkTestingScreen.qml</file>
+        <file>../qml/trawl/SettingsScreen.qml</file>
+        <file>../qml/trawl/SpecimenTagsDialog.qml</file>
+
+        <file>../qml/trawl/SpeciesModel.qml</file>
+        <file>../qml/trawl/BasketsModel.qml</file>
+        <file>../qml/trawl/LengthsModel.qml</file>
+        <file>../qml/trawl/SampleTypesModel.qml</file>
+        <file>../qml/trawl/SalmonModel.qml</file>
+        <file>../qml/trawl/SalmonCountModel.qml</file>
+        <file>../qml/trawl/CoralsModel.qml</file>
+        <file>../qml/trawl/ValidationsModel.qml</file>
+        <file>../qml/trawl/StandardActionsModel.qml</file>
+        <file>../qml/trawl/SpecialActionsModel.qml</file>
+        <file>../qml/trawl/SpecimensModel.qml</file>
+        <file>../qml/trawl/ProtocolManagerScreen.qml</file>
+        <file>../qml/trawl/MapView.qml</file>
+        <file>../qml/trawl/SensorDataFeedsScreen.qml</file>
+        <file>../qml/trawl/StandardProtocolScreen.qml</file>
+        <file>../qml/trawl/FishSamplingScreenOld.qml</file>
+        <file>../qml/common/CommonUtil.qml</file>
+
+        <file>../resources/sounds/weighbaskets_buzzer.wav</file>
+        -->
+    </qresource>
+</RCC>

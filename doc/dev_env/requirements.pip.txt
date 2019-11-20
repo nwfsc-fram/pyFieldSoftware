@@ -1,0 +1,7 @@
+# Python packages to be pip'ed in development environment based on Anaconda python distribution.
+# The following packages are either not in Anaconda, or Anaconda has an older version.
+future==0.15.2
+peewee==2.8.5
+pefile==2016.3.28
+PyInstaller==3.2
+pypiwin32==219

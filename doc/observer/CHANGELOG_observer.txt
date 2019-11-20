@@ -1,0 +1,1766 @@
+Change Log - OPTECS Observer Electronic Back Deck
+
+-- 8/9/2019 2.0.0+1
+* Update to PyQt 5.13
+* More UI, state machine, QML screens for Sets
+
+-- 8/5/2019 2.0.0+1
+* Initial build of FG functionality
+
+-- 2/6/2019 +71
+FIELD-1835: Add migrations for ROLES and PROGRAM_ROLES
+
+-- 2/6/2019 +70
+FIELD-1834: No CATCHES.CATCH_COUNT for WM 20, 21
+
+
+-- 12/17/2018 +69 and previous
+# git log --oneline --author="Will Smith" OPTECS_v1.6.0+64..OPTECS_v1.6.0+69
+458fd17b FIELD-1759: Add Avg Weight field for WM 8 WM 15 (off-screen unless debriefer)
+574f0093 OPTECS: Improve display performance of biospecimen protocols
+760a52df OPTECS FIELD-1828: Fix issue with catch weights not being written to DB
+9d569f1c OPTECS: remove some warnings
+d5e46769 OPTECS FIELD-1830: Add icons for training / prod observer.exe
+a018171f OPTECS Configuration v1.6.0+67
+9a908d7d OPTECS FIELD-1827: Fix matching retained + WM check for catch categories
+b2e07ef9 OPTECS FIELD-1825: Prevent 0 catch_counts (triggers DB constraint)
+ff36670f OPTECS FIELD-1808: Fix race condition that sometimes hid Biospecimen records
+125f7718 OPTECS Configuration for v1.6.0+66
+da69bb96 OPTECS FIELD-1819: Always show Submit and Edit Trip buttons on TER page
+ec6bbf9f FIELD-1805: Change how GPS Dialog and Vessel Retained Logbook mode is handled to boost performance
+3508064d OPTECS FIELD-1820:  Reload Biospecimens model on changed DR for NSC from CC Details
+1b6d64c6 OPTECS FIELD-1805: Speed up GPS EntryDialog
+050498fc OPTECS Configuration v0.6.0+65
+31c56bb5 FIELD-1817 FIELD-1818: Fix comments crash after haul deletion and crash-on-load from bad DB
+545ed6ef OPTECS FIELD-1815: Fix DR displayed in breadcrumbs on Bio tab, if changed from C/W screen
+c2d7ffe5 OPTECS FIELD-1814: Clear "no captains" warning when clicking Departure Port
+
+-- 12/07/2018 +62 and v1.6.0+64
+# git log --oneline --author="Will Smith" OPTECS_v1.6.0+61..OPTECS_v1.6.0+64
+0fed0e5c OPTECS v1.6.0+64 Configuration
+69a7b802 OPTECS FIELD-1771: Enable resizeable window if Debriefer mode checked
+22b825f3 OPTECS FIELD-1811: Move Bio Save Entry button to as right as possible
+6f0f2912 OPTECS FIELD-1223: Show biospecimen counts on Species tab
+349de7f4 OPTECS: fix value error when trying to display basket weights to 2 decimals and item is a tally
+55339e5d OPTECS FIELD-1759: Fix model update for new avg weight calculation
+e4605570 OPTECS FIELD-1812: Store WM 20, 21 count for Catch
+229579b5 OPTECS FIELD-1759: Add avg weight to species screen
+f3b2d003 OPTECS FIELD-1811: Make Save Entry bio button green when enabled
+35459cbc OPTECS FIELD-1763: Increase WM and DR button sizes on CC Details page
+cfaa6eb6 OPTECS FIELD-1810: Always show 2 decimal places for counts/weights baskets
+c0ed070a OPTECS FIELD-1789: C/W screen: do not allow zero weight baskets to be manually entered
+3aa5a06c OPTECS FIELD-1806: Fix issue with Species Comp being auto-selected and blocking navigation
+8cb710fa OPTECS v1.6.0+63: quick build to switch Seahag version to 2017
+e671cbcc Configuration for OPTECS v1.6.0+62
+b81bba53 OPTECS FIELD-1755: Update Biospecimen Protocols (include CA Halibut Fishery)
+33692276 OPTECS FIELD-788: prevent edit basket from double click
+9cf0be96 OPTECS FIELD-1773: Fix case where user changes from Discard->Retained and WM exists.
+43fcb249 OPTECS FIELD-1559: Show better messages for TER compilation for screen freezing.
+8ed6aef7 CHANGELOG for OPTECS v1.6.0+61
+
+-- 12/04/2018 v1.6.0+61
+# git log --oneline --author="Will Smith" OPTECS_v1.5.3+60..OPTECS_v1.6.0+61
+FIELD-1779: Catch + Counts/weights: Require Discard reason to be selected before advancing to Bios and allow change with update and confirm
+
+
+-- 12/03/2018 v1.5.3+60
+# git log --oneline --author="Will Smith" OPTECS_v1.5.3+58..OPTECS_v1.5.3+60
+
+86f2f09a OPTECS FIELD-1559 End Trip functionality (Change button label/ take user to TER screen prior to submit)
+8cf4f76c OPTECS FIELD-1776: Fix underlying data check for WM 15
+88192646 OPTECS FIELD-979: Add OK button to Numpad on Catch Category Details, auto-advance for multi-textbox WM's
+7307cbe4 OPTECS FIELD-1557: Deselect Enable All Protocols button when navigating away from Biospecimens tab
+3faf0596 OPTECS FIELD-1765: Increase height of vessel logbook list (End Trip page)
+d84b520a OPTECS FIELD-1761: Use highlighted buttons for Weight Calibration on Haul Details and new Catch Category buttons
+95c2d56e OPTECS FIELD-1755: Update 2019 bio protocols, sync DB to revision 20181130
+0c65b85d OPTECS FIELD-1776: Allow user to change Ratio for WM 15 (with warning if underlying data.)
+d41b9c54 OPTECS FIELD-1793: Fix Ratio loading from Notes
+1431a7b6 OPTECS FIELD-1793: Store Ratio in NOTES instead of DENSITY
+840cefb9 OPTECS FIELD-1444: Add Fit # and CalWeight to Catch Category tab, and prevent adding baskets without CW
+a8cd8dc8 OPTECS FIELD-1789: Fix numpad backspace to show 0 if values are cleared (instead of blank/ null)
+db69be2d OPTECS FIELD-1757: Save Biolist # to Hauls Notes
+
+-- 11/28/2018 v1.5.3+58
+# git log --oneline --author="Will Smith" OPTECS_v1.5.3+56..OPTECS_v1.5.3+58
+f8235b1b OPTECS FIELD-1803: Persist Current Haul/ Trip Hauls selection for Logbook Mode
+89af9651 FIELD-1421: Save fish_processed flag for Trip
+dabea6d8 OPTECS: seahag_version 2019
+afea9a01 FIELD-1785: Add Halibut tallies in consistent order
+adf51b07 OPTECS FIELD-1773: Prevent same Species + Retained + WM catch category entry
+b1445d24 OPTECS FIELD-1768 Allow back navigation with WM14 and no matching species. Disable Biospecimens for NSC and no matching species except for PHLB
+4f780aa2 OPTECS FIELD-1787: Add weight methods 20, 21, remove WM 1
+94ab9dae FIELD-1772: Fix nav for species Pacific Halibut for CC such as ZMIS.
+366fe4c1 FIELD-1788: Disable auto-engaging Edit button on counts/weights
+272fe2ea OPTECS FIELD-1779: Require Discard Reason before advancing to Bios
+d717f093 OPTECS: Disable broken perf optimization
+2a92b55a FIELD-1609: Check for matching Latitude OR Longitude for warning dialog
+b0f135d2 FIELD-1786: Fix Species Comp Yes/No Persistence + increase font size of footer
+
+-- 11/20/2018 v1.5.3+56
+# git log --oneline --author="Will Smith" OPTECS_v1.5.3+54..OPTECS_v1.5.3+56
+729cc9cf OPTECS FIELD-1801: Performance improvements for CC/Species selection
+c6c9975c FIELD-1786: Allow syncing of YES/NSC for Sample Method to imply Yes/No Species Comp
+758a210e OPTECS FIELD-1786: Remove Sample Method (Replace with Yes/No for Species Comp)
+7988f1a0 OPTECS FIELD-1786: Remove Purity
+d58be8ac OPTECS FIELD-1609, FIELD-1592: Check for duplicate lat/long entries
+5c64224b OPTECS: Default audio enabled
+80176818 OPTECS FIELD-1791: When haul is deleted, decrement haul #'s newer than it, to maintain correct ordering
+df0d8748 FIELD-1777: Change how fish count is extrapolated
+26a38ec9 FIELD-1796: OPTECS Zip log files
+457ffb25 FIELD-1780: Show DB Version on home screen
+decb4813 OPTECS: Bumped build # for test build, update DB notes
+608d2715 OPTECS: Add sound binaries
+7abf4cf8 CHANGELOG for OPTECS v1.5.3+54
+
+-- 11/15/2018 v1.5.3+54
+# git log --oneline --author="Will Smith" OPTECS_v1.5.2+52..OPTECS_v1.5.3+54
+6f3f8982 OPTECS: improve DB encryption error handling
+2bbd059f OPTECS FIELD-1755: improve logging, import 2019 protocols as-is
+ceb54477 FIELD-1795: Improve/reduce logging, add DB log level setting
+12ee70bb FIELD-1758: Use -1 for no scale CALWeight
+0cdf55f7 FIELD-1751: Prevent fishery from being changed if there is haul data
+708b199a OPTECS FIELD-1795: Reduce debug-level logging
+3b430917 FIELD-1794: Deactivate WAL if needed
+fc35d825 FIELD-1796: Backup logs to USB
+de1eaafc FIELD-1794: Add timestamp to console and file logs
+e6891de8 FIELD-1794: Remove WAL and logging to DB
+0352625f OPTECS: SOAP debug code, useful for debugging sync upload service
+2e3c468f Observer DB utility final updates
+cd7acf96 OPTECS: Update Zeep and handle empty sync_upload update list better
+
+-- 8/2/2018 v1.5.2+52
+Modify code for default TER's, Ignore TER's 3821, 3781
+
+-- 8/1/2018 v1.5.2+51
+FIELD-1725: Fix DISSECTIONS error
+
+------ Various + 3/20/2018 v1.5.2+46 to v1.5.2+48 Releases --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v1.5.2+45..OPTECS_v1.5.2+48
+62a382f OPTECS Config v1.5.2+48
+8b4d870 OPTECS FIELD-1576: Enforce complete entry of Catch Category Details
+1ba4deb FIELD-1577: Remove Scrollbars
+2d5bbb8 OPTECS FIELD-1575: Update protocols (CA Halibut)
+58b1718 OPTECS Config for 1.5.2+47
+cacb567 OPTECS FIELD-1556: Fix loading of protocols when Discard/Retained changes
+fafae85 OPTECS Config for v1.5.2+46
+8e3ba4a OPTECS FIELD-1541: Upload empty BIO_SPECIMEN_ITEMS parent records for DISSECTIONS
+4186d78 OPTECS FIELD-1554: Prevent premature tab switching for Biospecimens entry
+fde0b47 OPTECS: Remove SKAT from CC frequent list
+9c9aef5 OPTECS FIELD-1548: For WT-only (not length) protocols, show decimal numpad
+84f7962 OPTECS FIELD-1555: Prevent crash on missing Freq list items, hide inactive CC's and species.
+acbf000 OPTECS CHANGELOG for v1.5.2+45
+
+
+------ 1/30/2018 v1.5.2+45 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v1.5.2+44..OPTECS_v1.5.2+45
+260d1f3 OPTECS FIELD-1550: Dissection types 8,9 exempt from 9-digit barcode
+13e8a55 OPTECS FIELD-1449: Prevent user from selecting Eggs Yes for male crabs
+3c89fc8 OPTECS FIELD-1553: Disable trip checks 1917, 1918
+33b0a67 OPTECS FIELD-1541: Update database protocols for coral, remove BIO_SPECIMEN_ITEMS constraints
+
+------ 1/23/2018 v1.5.2+44 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v1.5.2+43..OPTECS_v1.5.2+44
+f7a1a49 OPTECS FIELD-1543: Enforce 15-char limit on ET and OT
+70484c1 OPTECS FIELD-1543: Limit BAND_ID to 15 characters
+0ffef03 OPTECS: Set WAL checkpoint after importing biosampling protocols.
+559a755 OPTECS FIELD-1541: Update protocols
+
+
+------ 12/11/2017 v1.5.2+40 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v1.5.2+38..OPTECS_v1.5.2+40
+b85f57b OPTECS FIELD-1500: Add Fin Clip = 10, Tissue = 11 lookup values for Biospecimen Barcode types
+abcd1af OPTECS: Update biospecimen protocols
+d8abb71 OPTECS FIELD-1504: Allow creation of barcode-only biospecimens
+835272a FIELD-1485 (done as part of this, but TER related, not debriefer mode related): On Cancel TER, wait a fraction of second before wrapping up TER in order to allow WAL checkpoint to complete.
+85aa171 FIELD-1485: Move check for completed trip to location where list of completed trips can be re-used for all trips.
+f3365be FIELD-1485: Error Report Trips Table: display '*' after trip ID that's been completed (uploaded).
+3e6b8d8 FIELD-1485: Error Reports: show all program trips, even completed, for all users. Moved Observer column from Issues table to Trips table.
+79effe9 OPTECS FIELD-1497: Show message if no skippers associated with vessel.
+c39f159 OPTECS FIELD-1481: Save N/A Sex as null record instead of "NA"
+bcffaa5 OPTECS FIELD-1479: Fix showing tally entries, if first entry in Biospecimens
+0273c75 OPTECS FIELD-1498: Fix issue with > 2 name Contact rows (skippers)
+e34ed4d OPTECS FIELD-1495: Handle crash on bad alpha input (if using external keyboard for input)
+b56c3fa OPTECS FIELD-1494: Hide inactive species/ catch categories
+1b7e6e6 FIELD-1487: (WIP) ErrorReports: Allow debriefer to run TER on all unsync'ed trips.
+77a7681 OPTECS FIELD-1482: Sort Fisheries in list
+5ebaece OPTECS FIELD-1480: Add 'optecs ' prefix to DATA_SOURCE field.
+7dd2db7 OPTECS FIELD-1482: Hide inactive fisheries (need to re-sync LOOKUPS from prod.)
+2076b82 FIELD-1484: Enable Error Reports's Run TER button when re-synced trip is selected.
+0812444 OPTECS FIELD-1478: Add ACTIVE to CATCH_CATEGORIES and only display active records
+
+------ 11/15/2017 v1.5.2+38 Release --
+* Added fields to PORTS, FIRST_RECEIVER, ROLES to fix syncing
+
+------ 11/15/2017 v1.5.2+37 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v1.5.2+36..OPTECS_v1.5.2+37
+ba07f77 OPTECS FIELD-1473: Dynamic UI update for Discard Reasons in database
+af20dc5 OPTECS FIELD-1474: Dynamic UI update for Biosample Methods in database
+fe673cc OPTECS FIELD-1476: Update Pacific Lamprey protocol to TL
+d936b91 OPTECS: Remove End Date from Hauls Selection screen
+
+------ 11/09/2017 v1.5.2+36 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v1.5.2+35..OPTECS_v1.5.2+36
+2e36289 OPTECS: Fix first-run issue not finding protocols
+1f7b276 OPTECS: Update DB revision to 20171107 (new biospecimen protocols)
+05b037d OPTECS FIELD-1470: Fix issues with missing comments, store in TRIPS when appropriate
+712ede9 OPTECS FIELD-1441: Use Gear Type stratum in protocol lookups
+f963ef6 OPTECS FIELD-1468: Remove WM 2
+e249e8a OPTECS FIELD-1467: Remove Fixed Gear option from login
+0304bfe OPTECS FIELD-1466: Import new protocols
+0bc0b4b OPTECS FIELD-1448: Fix crash on modifying barcodes.
+
+------ 11/02/2017 v1.5.2+35 Release --
+* fixed Last Synced DB time
+
+------ 11/02/2017 v1.5.2+34 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v1.5.2+33..OPTECS_v1.5.2+34
+0359dd0 FIELD-1446: Show username and fisheries in DB sync dialog
+992e00a FIELD-1445: Fix DCRB eggs + multiple issues in Biospecimens tab
+3698366 OPTECS FIELD-1431: Clear CC search dialog on Logbook mode for new hauls
+2a7c4a6 OPTECS FIELD-1436: Add migrations to CATCH_CATEGORIES to fix future syncing
+
+------ 10/17/2017 v1.5.2+33 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v1.5.2+32..OPTECS_v1.5.2+33
+ccc10bf FIELD-1435: Don't crash OPTECS if writing a no-error db entry at end of TER fails due to DB busy error.
+f915269 FIELD-1432: Do not allow navigation from Counts/Weights to Biospecimens while basket entry in progress.
+47e1d76 OPTECS: Update build script to pygame instead of winsound
+2371692 OPTECS FIELD-1429: Add pygame to requirements, minor updates to DevEnv setup doc.
+5018dff OPTECS CHANGELOG for v1.5.2+32
+63c9567 OPTECS FIELD-1429: Add sound to Mac. Remove unused reference to winsound package on Windows.
+db179c3 OPTECS FIELD-1428: Trip Details: require Fishery to be specified before allowing navigation forward.
+
+------ 10/17/2017 v1.5.2+32 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v1.5.1+30..OPTECS_v1.5.2+32
+b8eeff5 OPTECS: Enable encryption on Sync DB thread
+6031741 OPTECS FIELD-1423: Do not pop up near-zero average fish weight at entry to Counts/Weights.
+c7162d7 OPTECS: Swap backspace and numpad entry sounds
+ba2a0b1 OPTECS: Fix crash on empty OTC weight entry dialog
+e4df3ca OPTECS FIELD-1427: Avoid runtime error on Macs by only importing winsound library if running on Windows platform.
+9e6a174 OPTECS FIELD-1423: Counts/Weights: pop up warning if average fish weight is less than 0.005 lbs.
+c6b316d OPTECS FIELD-1427: Add audio
+5303dc6 OPTECS FIELD-1423: Constrain decimal place values of weights entered on Counts/Weights screen to .x0 or .x5.
+dbfb20e OPTECS FIELD-1425: Always make SRMP CC Pure when adding Vessel Retained
+103c489 OPTECS FIELD-939: Show warning on incomplete protocol when switching tabs
+d00f233 OPTECS FIELD-939: Add new record on sex selection
+27da7e6 OPTECS FIELD-939: Add acknowlege/ warning dialog for missed protocols
+38ee4b5 FIELD-939: Basic "no add button" entry with Save button
+d8db2eb OPTECS FIELD-1419: Fix Logbook Catch Cat. Search Dialog for Vessel Ret.
+2cab5de OPTECS FIELD-939: Add helper functions for remaining protocols
+ab98613 OPTECS FIELD-1411: Thread DB Sync (major refactor)
+d75da4d OPTECS: Select protocol by fishery ID strata
+226a433 FIELD-1418: In Counts/Weights, when adding a tally count, update the tally_count field in the species composition items record.
+584ae89 FIELD-1418: CC Details: when entering new WM8 CC, ensure "Total # of Fish" field is cleared of value from prior CC.
+
+------ 9/29/2017 v1.5.1+30 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v1.5.0+29..OPTECS_v1.5.1+30
+3a250c9 FIELD-1411: Refactor DB Sync calls, threading is still work in progress
+a82d4bf FIELD-1404: Reduce volume of INFO-level log messages during TER run.
+f8c8219 FIELD-1403: Add weighed_and_tallied_count column to ObserverSpeciesCompModel and use for count displayed in SpeciesScreen.
+3c457e2 FIELD-1403: For WM8 species composition items, exclude tally count from the species_number DB field ...
+540ad74 FIELD-1416: If unable to write log message to database, just return. Don't raise exception.
+3dd26d5 OPTECS: Disable simulated Sync Upload flag
+8c5d283 FIELD-1415: Fix CSV generation for BIO_SPECIMENS, BIO_SPECIMEN_ITEMS, and DISSECTIONS
+483382b FIELD-1416: Let write of log message wait up to 11 seconds for WAL checkpoint to complete.
+07a7b0d FIELD-1397: When a trip check generates multiple trip issues, show all issues, not just the last.
+3957375 Merge branch 'FIELD-1409_TER_Report_SortByHaul'. GitLab required manual.
+1264dd5 Merge commit 'e6e02ea45d65ff4356f4017546bee4b33dd22053' into FIELD-1409_TER_Report_SortByHaul
+f43ec85 FIELD-1409: Sort trip issues in TER report by haul, catch, and trip check.
+dc73b60 FIELD-1414: Make error message red upon sync upload failure.
+e6e02ea FIELD-1410: Fix invalid row index for Frequent List
+6828bf8 Merge branch 'master' into FIELD-1410_CC_RowIndex
+199bbcf FIELD-1410: Clear previous autocomplete, upon Tabs screen entry
+a36bbda Update bash script that installs clean observer.db to handle possible .db-shm and .db-wal files.
+
+------ 9/29/2017 v1.5.0+29 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v1.1.0+28..OPTECS_v1.5.0+29
+dd99686 FIELD-1369: Thread the External Backup procedure (no UI freeze.)
+a57ae87 FIELD-964: When a biosample is deleted, don't select a remaining row - let user click. Update biosample method/desc when row deleted and multiple remain.
+353c473 FIELD-1404: Raise level of messages logged to database from DEBUG to INFO.
+7ce26d8 FIELD-1401: In GPSEntryDialog restrict latitude to range (31, 49). Applies to usage both from Haul Details and Logbook Mode.
+e48cf52 FIELD-1405: Fix column display bug in Logbook Mode
+e806545 FIELD-1408: Remove references to non-existent Settings Screen
+404f9cf Log SQLite version information.
+89012e8 FIELD-1404: When DB is in WAL (Write-Ahead-Log) mode, do a checkpoint before backup, after TER, on end trip, and user logout.
+f14e89c FIELD-1404: Add SQLite Write-Ahead-Log files (*.db-shm, *db-wal) to .gitignore.
+
+------ 9/26/2017 v1.1.0+28 Release --
+* Enabled Write Ahead Logging
+
+
+------ 9/25/2017 v1.1.0+27 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v1.1.0+26..OPTECS_v1.1.0+27
+94f6fec OPTECS FIELD-1360: Biospecimen prompt for Supplemental biolists
+d059aa5 OPTECS FIELD-1400: Update Hauls screen on exiting Logbook Mode
+b0118f5 FIELD-1404: Restore for performance characterization log-to-DB DEBUG level. At least until Friday.
+e8a2727 FIELD-1404: Raise level of message logged to database from DEBUG to INFO.
+efc4790 FIELD-1395: On entry to TER, highlight row of OPTECS's current trip.
+d4ee44a FIELD-1379: On OPTECS startup, delete entries in OPTECS_LOG_MESSAGES for all but the two most recent uploaded trips.
+f9f93ab FIELD-1397: Write datetime field in human-readable format, even though a bit longer than float unix time.
+b01b5f7 OPTECS FIELD-1370: Fix Gear Type default from Haul #1
+0d7fe2c OPTECS FIELD-1370, FIELD-1391: Fix BRD and EFP default behaviors
+3513678 Update dev env documentation, add two screenshots.
+3b61a80 FIELD-1379: If running TER, queue log messages destined for data table OPTECS_LOG_MESSAGES until TER completes.
+6d57a31 OPTECS: Add MODIFIED_BY and MODIFIED_DATE fields to LOOKUPS (fix sync)
+8dcee7c OPTECS: Add custom build suffix to build script (convenience)
+0421fae OPTECS FIELD-1364: Fix zero-padded entry for time, fix CLR button
+d53fa57 FIELD-1379: Write OPTECS log messages to new OPTECS_LOG_MESSAGES table in observer.db.
+
+------ 9/19/2017 v1.1.0+26 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v1.1.0+25..OPTECS_v1.1.0+26
+OPTECS FIELD-1390: Fix TER threaded database call for encrypted database
+
+------ 9/19/2017 v1.1.0+25 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v1.0.2+24..OPTECS_v1.1.0+25
+33b9ba0 OPTECS: v1.1.0+25
+586f24e OPTECS: Add missing build dependencies (asyncio, filecmp)
+0ba6fbd OPTECS: refactor database filename code for encryption, fix crash on close
+1cc4a67 OPTECS: Add Encryption to build process
+db28d0f FIELD-1324: On TER run without errors, save run date and report "No errors" for that trip's TER entry.
+587e92a OPTECS FIELD-1370: For hauls, persist the first haul target strat, efp, brd, and gear type
+7e50bba FIELD-1300/1329: Disable Trip Checks 1848 and 1922 due to false positive with MIX species composition records.
+b0e9458 FIELD-1332: Disabled Trip Check 1482 (Biospecimen length empty) to avoid false positive due to PHLB WM19 tally records.
+2f77350 FIELD-1330: Update TRIP_CHECKS table of all three versions of clean_observer_{8}.db. Updated database version number in SETTINGS. Update DB revision DB.
+851033d OPTECS FIELD-902: Change calibration weight field to 3 buttons
+3010603 OPTECS: Remove unused QML file
+79bb891 (No Jira Ticket): update dev env setup instructions. Early FG data analysis (Jupyter notebook).
+b202257 DevEnv (no Jira ticket): Place VisualStudio 2015 Community installer in bin directory.
+42c4d64 OPTECS FIELD-1364: zero-pad hours & mins for numpad time selection
+d640ee9 OPTECS FIELD-1364: Make time selection numpad-based
+f9e8fa1 OPTECS FIELD-1364: Add numpad-based time entry
+c585425 FIELD-1332: Disable PHLB-specific Trip Checks 1496 and 2347 to suppress false positive errors for PHLB tally records.
+8d2d370 OPTECS FIELD-1131, FIELD-1360: Biolist dependent warnings
+41dfd85 OPTECS: Re-sync databases IFQ, IFQADMIN
+845f749 OPTECS FIELD-1131: Implement display of biolists
+7f17c7c OPTECS: Update Protocols Import script, fix foreign keys for SpeciesSamplingPlanLu
+a101000 OPTECS: New database revision to add Biolists
+48f4799 OPTECS: Fix protocols lookup, use Trawl fishery group
+62172f0 OPTECS: Import Protocols script: Fix missing foreign keys for STRATUM_LU
+3f5c110 FIELD-1829: Error Reports: Don't run TRIP_CHECK 1829 on OPTECS because of date compare problem in Sqlite.
+3796010 OPTECS FIELD-952: Display Calculated placeholderText for WM8
+b970fa0 OPTECS FIELD-1382: Save Biospecimen values immediately on entry (No OK required)
+ed6d1ac OPTECS FIELD-1131: Display Current Biolist on all tabs
+29c34f9 OPTECS: FIELD-1131: Display Biolist # on Haul Details and C/W screen
+ff8cacf OPTECS FIELD-1136: Disable 10-click exception test for Prod
+13689f3 OPTECS FIELD-952: Use extrapolated weight for WM8 CATCH_WEIGHT
+e904d44 OPTECS FIELD-952: Make ObserverTextField gray when readOnly
+64ae64d OPTECS FIELD-1327, FIELD-1363: Disallow changing disposition for CC if there is data
+d622294 OPTECS FIELD-1343: Move Discard Reason buttons to top left for C/W screen
+3a2e7b6 OPTECS FIELD-1383: Handle trip NoneType in DBSync
+981f2c7 OPTECS: Refactor ObserverGroupBox, fixes text color background
+f6a8b7b OPTECS FIELD-1378: Reload SPECIES after sync
+585566d OPTECS: Fix Error Reports static method issue
+e82e59d FIELD-1374: Save Haul Details Fit field as 0 when backspace on numpad used.
+441f361 FIELD-1130: Update DB revision to 20170911, both in README and in SETTINGS.database_revision.
+080d5f7 OPTECS FIELD-1377: Fixed species tab autocomplete search
+596ab9f OPTECS FIELD-1131: Fix Add Button behavior for deleted BioSpecimens
+12cb469 OPTECS FIELD-1130: Update protocols and import script, remove hacks.
+89d52aa OPTECS: Update OPTECS_protocols.csv export
+4f71382 OPTECS: Remove click from build script (ctypes error)
+413e7ad OPTECS FIELD-1371: Prevent crash on bad property indices
+dd1e390 OPTECS FIELD-659: Clear username and password after login for Production mode
+b5ccb5d OPTECS FIELD-1376: Add SPECIES.ACTIVE
+3388bca OPTECS FIELD-1369: Show note when no external drives are found
+4fe08df OPTECS FIELD-1369: Rename "Backups" -> "External Backups", remove "Done" button
+f9c6505 OPTECS FIELD-1369: Implement Encrypted Database Backup + checksum verification
+1f55dce OPTECS FIELD-1369: Add Backup to state machine, initial Backup Screen UI
+fc5b5e2 OPTECS FIELD-1369: Add External Backup screen
+c9744a3 OPTECS FIELD-1369: Add Win32 non-C drive letter util function
+eb41efb OPTECS FIELD-1294: Add Sync Status cycling for Debriefer Mode
+4900759 OPTECS FIELD-1248: Shorten sync successful notification for better fit
+49bb7ba OPTECS FIELD-1248: Make sync successful more obvious
+bc413b4 Merge branch 'FIELD-1361'
+5ef9f7c Merge branch 'FIELD-1368'
+48145b0 FIELD-1368: When OPTECS exception(s), ensure only one per OPTECS execution is written to comments.
+bc6a4fa FIELD-1361: Catch exception on setProperty with index out of range, with log message.
+2b5306d OPTECS FIELD-1265: Pull-only UI for Retrieve Updates on login screen
+44dcf5c Add MacOS support to setting up dev env doc.
+2eb848f OPTECS FIELD-1294: Show user names on trip select screen (in debriefer mode)
+8f7a2d9 OPTECS: Remove ObserverDB.py
+824f604 OPTECS FIELD-1294: Add Debriefer Mode checkbox to login screen, depending on Role
+efd5138 OPTECS: Update zeep patch note
+d7d3615 OPTECS FIELD-1359: Store comments in FISHING_ACTIVITIES when possible to allow longer comments.
+94778a5 OPTECS FIELD-1339: Add encrypted database support, flag in ObserverConfig.py
+cfcebe5 OPTECS FIELD-1339: Add apsw + SEE wheel binary, update doc and test
+db230b9 OPTECS: update test script for apsw + SEE support
+ce7c735 FIELD-1358: Display lat/long minutes as decimal, with leading zero and two decimal places.
+6334e34 OPTECS: Add notes for SQLite Encryption Extension (SEE) install and test
+bb5a360 OPTECS FIELD-1339: Add SQLite Encryption Extension + docs + test app
+539987b OPTECS FIELD-1357: Fix boat selection for boats with same name (e.g. Coho)
+892c231 OPTECS: Fixed or marked to-skip failing unit tests. No changes to product code.
+07992b6 FIELD-1348: Flake8 configuration file for project/repo pyqt5-framdata
+69d0e00 OPTECS: FIELD-1345: Minor edits to documentation.
+2bf8e92 OPTECS: FIELD-1347: Update devenv how-to with Linux-specific actions.
+d971336 OPTECS: Back out Linux-specific changes of prior revision.
+cdf9e58 OPTECS: On Linux, don't import or use keyring module.
+d8b84ff OPTECS: Upper-cased 'B' in 'ScrollBar.qml'. pyrcc5 is case-sensitive on linux.
+
+
+------ 7/24/2017 v1.0.2+24 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v1.0.2+23..OPTECS_v1.0.2+24
+e5e8872 OPTECS FIELD-1340: Make test mode more obvious (pink BG, no logo)
+90fc8b8 OPTECS: Prevent changing Biosample Method without Modify button selected
+43d544b OPTECS FIELD-1328: Fix childless BioSpecimens not getting deleted
+1df1b87 OPTECS: log Qt version number
+6d03a3c OPTECS: Change comment text to distinguish adding species basket vs catch-level basket. Other than message, no change in functionality.
+
+------ 6/30/2017 v1.0.2+23 Release --
+OPTECS: Fix WM19 PHLB Tally control appearing
+Changed DEPTH_UM "ftm" to "FM" internally
+
+------ 6/30/2017 v1.0.2+22 Initial Version One Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v1.0.1+21..OPTECS_v1.0.2+22
+cadc1a8 OPTECS: FIELD-1323: Error Reports's Error Message column: display up to a 270 character message.
+e18f888 OPTECS FIELD-1280: Delete child records for Trips, Hauls, Catch Categories, Species Comp
+f5d11ba OPTECS: FIELD-1316: Assign catch number for vessel-retained catches entered in Logbook Mode. Start catch sequence at 1 (rather than 0).
+0d42932 OPTECS FIELD-1319: Only show tally controls for PHLB WM19
+cfba8a5 OPTECS FIELD-1317: Fix tally button for PHLB, other issues
+9c52df8 OPTECS FIELD-1317: Fix NSC default for PHLB at model creation
+aa40fa8 OPTECS: FIELD-1118: Trip Details: Allow license/permit in the format L00000 (5 digits) or BT0000 (4 digits).
+ffc835b OPTECS: FIELD-1318: Remove leading dash delimiter from comments in TRIP.NOTES.
+e1efc2e OPTECS: FIELD-1315: Allow denominator for WM15 ratio to be entered.
+1419c77 OPTECS FIELD-1314: Fix missing MODIFIED_BY in USER_PROGRAM_ROLES.
+180d0a5 OPTECS: FIELD-1135: Allow fractional length to be entered for Dungeness Crab biospecimens.
+d318ecf OPTECS: FIELD-1311: Restrict show of OK button upon manual weight key to case where coming from entering count of new basket.
+b9b14b5 OPTECS: FIELD-1311: Fix transition from editing existing basket's weight so it stays on track as existing basket, not new basket.
+
+
+------ 6/21/2017 v1.0.1+21 Release RC4 --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v1.0.1+20..OPTECS_v1.0.1+21
+4001935 OPTECS FIELD-1281: Do not sync Biospecimen Tallies (e.g. BIO_SPECIMEN_ITEMS with no data)
+fe64fc5 OPTECS FIELD-1281: PHLB Tally can be determined from CATCHES.CATCH_COUNT, but also saved in BIOSPECIMENS.NOTES
+9272762 OPTECS FIELD-1295: Fix leading zeroes input for fractional GPS minute entry
+285159d OPTECS: FIELD-1307: Restore message box size by moving Protocol in line with Disposition, Discard Description with Discard Reason.
+0f92d8b OPTECS: FIELD-1281: Don't sync tally entries, populate species comp TOTAL_TALLY
+416903f OPTECS: FIELD-1307: Patch: Restore basketEntryStatusMessage box in small space to right of Protocol. WM8 Tally column shows up.
+ff3fc02 OPTECS FIELD-1284: Always show WM7 as vessel retained in Logbook mode
+f3db337 OPTECS FIELD-1290: store extrapolated value in database before calculating total catch weight
+2d47675 OPTECS: FIELD-1291: If entering new basket weight, numpad CLR removes empty current basket.
+be6ef95 OPTECS FIELD-1290, FIELD-1277: Store catch-level extrapolated weights, but actual weights for species comp
+b315c8b OPTECS FIELD-1307: set basketEntryStatusMessage visible to false, prior to fixing
+309605d OPTECS: FIELD-1291: Disallow navigation away from CountsWeightsScreen while entry of a new basket is in process.
+4d790f4 OPTECS FIELD-1286: Fix retained CC's in Logbook Mode getting synced to DB.
+0d7623d OPTECS FIELD-1277: Show Extrapolated Weight on Species tab for WM8
+699a750 OPTECS minor build script logging
+
+------ 6/16/2017 v1.0.0+20 Release RC3 --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v1.0.0+18..OPTECS_v1.0.1+20
+5d16c8c OPTECS FIELD-1293: No CATCH count For WM 1, 3, 6, 7, 15
+a1b14f7 OPTECS: FIELD-1287: Store biospecimen item value for maturity field using values in LOOKUPS table that match the values using in IFQ at Center.
+c6f6121 OPTECS: FIELD-1292: Use None instead of empty string to indicate absence of a haul's EFP flag, matching convention in IFQ.
+4328389 OPTECS: FIELD-1299: Removed unnecessary call to console.trace().
+01cae5a OPTECS: FIELD-1299: Rather than declaring an ObserverUnusualConditionDialog at every usage, call a helper function that instantiates and shows the dialog.
+1354387 OPTECS: FIELD-1299: Display unusual condition dialog if/when this issue reoccurs.
+580aa7b OPTECS: FIELD-1299: When attempting to create catch category, first make sure catch category is defined.
+36529d3 OPTECS: FIELD-1289: Exclude MIX species comp items in DB Sync upload. CountsWeightsScreen: if MIX species, hide count-related button, columns, and fields.
+a74d7c8 OPTECS: FIELD-1289: Add MIX Species whose baskets go to CATCH_ADDITIONAL_BASKETS.
+fc4a499 OPTECS FIELD-1283: Handle error updating DB Sync table gracefully
+97e0c79 OPTECS FIELD-1279: Only show captains associated with selected vessel
+267c8a4 OPTECS: minor formatting for version display
+87b668f OPTECS: Prompt/Automatically set fullscreen mode via build script
+8839db1 OPTECS: Fix extrapolated_number warning for baskets model
+e640070 OPTECS: Fix WM8 Add Tally Basket button
+e159fc4 OPTECS FIELD-1108: Extrapolate fish count for baskets without counts
+7211be9 OPTECS Navicat model: remove SPECIES_COMPOSITION_BASKETS.IS_PARTIAL
+ff1f19b OPTECS FIELD-1274: Create IFQDEV build
+ee14452 OPTECS: FIELD-1272: Update clean_observer_IFQADMIN.db's TRIP_CHECKS table with entries from IFQ.TRIP_CHECKS.
+
+------ 6/2/2017 v1.0.0+18 Release RC1 --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v0.2.1+16..OPTECS_v1.0.0+18
+ebd2eb4 OPTECS: Version 1.0.0+18
+7e1db9b OPTECS: Update DB Revision
+4afd971 OPTECS FIELD-1266: Display TEST or PRODUCTION mode on Login
+0cd558b OPTECS FIELD-1266: Update build script to build test and prod versions
+951df8c OPTECS FIELD-1266: Store WSDL urls and OPTECS mode (ifqadmin/ifqdev/ifq) in DB
+1d21d6c OPTECS: Fix species ID for ImportBiospeciesProtocols SPECIES_SAMPLING_PLAN_LU
+4c7d7b0 OPTECS: fix refactoring error
+7f5b0d5 OPTECS: PEP-8, cleanup ImportBiospeciesProtocols
+b38473e OPTECS FIELD-1233: Update ImportBiospeciesProtocols from CSV code
+cbdfbc0 OPTECS: FIELD-1271: DB Sync Dnld: perform TO_DATE transform on all occurrences of TO_DATE in SQL statement.
+7fab549 FIELD-1251: Upload CATCH_ADDITIONAL_BASKETS to DB
+3d4abeb FIELD-1251: Generate catch additional baskets CSV for DB Sync, upload
+7a63444 OPTECS: FIELD-1269: Defer evaluation of trip checks (for use w/OPTECS) until first TER requested.
+3cc53d3 OPTECS: Refactor date for CountsWeights.py
+de429e8 OPTECS: FIELD-1267: Move peewee definition of DB table CatchAdditionalBaskets into ObserverDBModels.py.
+826c382 OPTECS: update requirements.txt (new sip patch)
+c1e12ed OPTECS: Special (old?) date format for SPECIES_COMPOSITION_BASKETS so DB sync is happy
+3915f42 Revert "OPTECS: For CREATED_DATE, use DD-MMM-YYYY format (no time) or DB sync fails"
+80b01de OPTECS FIELD-1126: Populate created_by and created_date for baskets, enable syncing
+d7ab777 OPTECS: For CREATED_DATE, use DD-MMM-YYYY format (no time) or DB sync fails
+224916d FIELD-1126: DB Sync SPECIES_COMPOSITION_BASKETS
+0f8dfbf OPTECS: Update unit tests for SOAP
+68d65ff OPTECS: FIELD-1264: ObserverDBUtil.db_coerce_empty_strings_in_number_fields() coerces all non-key numeric fields in the given table. Used with TRIP_CHECKS, but could be used more generally.
+f5f6766 OPTECS: FIELD-1256: Don't show SM=NSC if WM3. Don't allow transition to WM3 if SM=1 or SM=NSC.
+a2eb596 OPTECS: Fix empty string integers for TRIP_CHECKS
+c229357 OPTECS: Unit test for species comp baskets upload
+
+------ 5/12/2017 v0.2.1+17 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v0.1.4+13..OPTECS_v0.2.1+16
+a2eb596 OPTECS: Fix empty string integers for TRIP_CHECKS
+c731305 OPTECS FIELD-1188: Fix TRIP_CHECKS sync by stripping TO_DATE() function
+49d94f7 OPTECS: FIELD-1241: CC Details: hide Weight Methods 9 and 19 unless Catch Category is PHLB.
+d094d50 OPTECS: FIELD-1237: Populate Target Strategy when clicked with Gear Type showing.  Other changes:
+f2f72db OPTECS: FIELD-1126: SPECIES_COMPOSITION_BASKETS CSV generation + tests
+d2eed44 OPTECS: Capitalize vessel names, instead of Title Case, which looked odd in some cases
+8ca4ae0 OPTECS FIELD-1261: handle bad VESSELS rows immediately after sync
+f17542d OPTECS FIELD-1261: Handle invalid VESSELS REGISTERED_LENGTH via raw query
+d0ed9da OPTECS: Remove "Mix" species
+a3b8132 OPTECS: Fix SPECIES sync with migration
+1e81dc7 OPTECS: FIELD-1244: Re-order and re-label expanded weight and total basket weights labels and text weights. Put WM15 multiplier label first.
+f74beab Migrate VESSELS and VESSEL_CONTACTS to allow sync from APPLIED_TRANSACTIONS
+83d6318 OPTECS: FIELD-1245: On Species screen, Sample Wt column should show actual weight, not extrapolated weight (if WM15).
+25e0ccb OPTECS: FIELD-1240: Simplify and constrain WM15 catch weighed ratio entry on CC Details Screen:
+dd7723d OPTECS: FIELD-1243: Counts/Weights: Exclude skip/no-count baskets from average fish weight. Include partial weighed and counted baskets.
+756ef40 OPTECS: FIELD-1258: CC Screen: re-evaluate visibility of WM3 Basket button on every change of catch category.
+92921fe OPTECS: FIELD-1257: On entry to WM3 Baskets, always rebuild the weighed baskets model.
+1ddf8c0 OPTECS: FIELD-800/FIELD-1252: Read in CATCH_ADDITIONAL_BASKETS.BASKET_TYPE values from LOOKUPS.
+14e94ea OPTECS: FIELD-800 (WIP): Transition from CC Details to CC WM3 Baskets if WM3.
+f39f252 OPTECS: FIELD-800 (WIP): Move WM3 Basket Weight screen out of CountsWeightsScreen into its own QML file. Treat as a peer to CC Details.
+1b58089 OPTECS: FIELD-800: Rename confusing signal: enableCatchWeightTab to enableCountWeightTab.
+460a181 OPTECS: FIELD-800: Fix catch basket references that moved from ObserverCatches to ObserverCatchBaskets.py. Fix typo in basket type description.
+
+
+------ 5/8/2017 v0.1.4+13 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v0.1.4+12..OPTECS_v0.1.4+13
+bf88781 OPTECS: FIELD-800 (WIP): Extract WM3 catch additional basket logic from ObserverCatches into its own class ObserverCatchBaskets.
+4899e3e OPTECS: FIELD-800: For Weight Method 3 catches, update CCScreen catch_weight from WM3 catch additional basket data, not species comp item data.
+b2b33ee OPTECS: FIELD-800 (WIP): Don't allow CC to be deleted, or CC's WM to be changed from WM3, if WM3 catch data.
+1f45b51 OPTECS: FIELD-800 (WIP): Hooked up UI controls to WM3 calculation values.
+c68aeb0 OPTECS: Coding convention: 120 character lines (in line with OPTECS usage).
+20f9119 OPTECS: FIELD-800 (WIP): Persist tally count of WM3 unweighed baskets.
+90927f9 OPTECS: FIELD-800 (WIP): Add unweighed basket tally group, group weighed basket table/controls, block out area for WM3 catch wt calc.
+b5719e2 OPTECS: FIELD-800 (WIP): Implement WM3 weighed full and partial baskets. Convert catch add'l baskets is_partial to basket_type.
+
+------ 5/1/2017 v0.1.4+12 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v0.1.4+11..OPTECS_v0.1.4+12
+a370456 OPTECS: FIELD-800 (WIP): Move WM3 Button to Catch Categories from Species. Add 2nd mode for C/W for WM3. Add view model:
+ac8d35b OPTECS: FIELD-800 WIP: Add WM3 Weights button to Species screen. Add signals so Counts/Weights can determine mode (normal, WM3).
+87a58ab OPTECS: FIELD-800: Add signal allowing button to trigger transition from Species tab to Counts/Weights tab.
+9c81faa OPTECS: FIELD-800: Add Peewee DB model for CATCH_ADDITIONAL_BASKETS.
+1a4c607 OPTECS: FIELD-800: CC Details: don't disallow Weight Method 3.
+8ef793f OPTECS: FIELD-1239: Remove double-click actions in all known uses in OPTECS: Haul Details, Catch Categories, and Species screens (unreliable operation on tablet).
+c615b0f OPTECS: FIELD-1246: When a catch category is selected, update the keyboard's text box with the CC code.
+fad47eb OPTECS: FIELD-1235: Reduced height of CatchCatalog+Weight popup window by 100 pixels. One less catch category row (was 6, now 5) and tightened vertical spacing.
+9f4e4d7 OPTECS: FIELD-1242: Don't allow empty string to be OK'd for required field (vessel name).
+58235e0 OPTECS: FIELD-1242: When entering in edit mode, if required field unspecified, highlight label and disable forward navigation.
+ea308d9 OPTECS: FIELD-1242: Handle with app unhandled exception the possibility that trip's vessel has not yet been specified.
+800096f OPTECS: FIELD-1234: ObserverReports: exclude from the list of trips those trips whose vessel has not yet been specified.
+
+
+------ 4/17/2017 v0.1.4+11 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v0.1.4+10..OPTECS_v0.1.4+11
+847d571 OPTECS: FIELD-1129: Provide viability choice for CHLB. Use highlightable labels for viability, adipose, and egg protocols.
+6b44cb3 OPTECS: FIELD-1129: In clean_observer_IFQADMIN.db, change protocol group for CHLB in SPECIES_SAMPLING_PLAN_LU to include viability. Add README for db revision history.
+96ed3c5 OPTECS: FIELD-1228: Display up to four tags in Tags column of Biospecimens list by reducing font size.
+8dfda4c OPTECS: FIELD-1222: When last biospecimen deleted, reset biosample method description to default.
+fafb372 FIELD-1230: Clean up Biospecimens, rename BioPhotosScreen to BioTagsScreen.
+f3652df OPTECS: FIELD-1228: Highlight labels for existing and observer tags if required protocols. Limit to at most 3 existing tags. Update Tags column if observer tag deleted.
+
+------ 4/17/2017 v0.1.4+10 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v0.1.4+8..OPTECS_v0.1.4+10
+bd131ee OPTECS: FIELD-1228 (WIP): Allow alphanumeric values for Observer Tag:
+8682bba OPTECS: FIELD-1181: Tie visibility of lblSex to rptSex by setting lblSex visibility within rptSex.
+16d2e3f OPTECS: FIELD-1181: Tie visibility of lblSex to rptSex by moving Connections to their RowLayout.
+04fbddc OPTECS: FIELD-1226: Biospecimens/Barcodes&Tags: Require 9 digits for barcode types 1 thru 7 that use WCGOP 9-digit barcode.
+3399d5f OPTECS: FIELD-1216: Biospecimens/Barcodes&Tags: allow ObserverTag to be deleted without crashing.
+bd4deb6 OPTECS: Build: Updated revision levels for apsw, click, cx-Freeze, keyring,lxml,python-dateutil,sip,typing,and zeep.
+adb4e15 OPTECS: FIELD-1203: Allow sample method of no species comp even for catch categories w/o matching species, but only for weight methods 7 and 14:
+8452d67 OPTECS requirements.txt PyQt 5.8.2
+329620e OPTECS: disable QML disk caching, required for Qt 5.8 to work
+345b50e OPTECS v0.1.4+9 config file update
+22bc720 OPTECS: FIELD-1221: On add of new Biospecimen, require re-entry of choice for sex.
+ca40fb1 OPTECS: FIELD-1220: Remove unused parameter from get_free_observer_comment_space_after_proposed_add() - caused crash on add of comment.
+
+
+------ 4/9/2017 v0.1.4+8 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v0.1.3+7..OPTECS_v0.1.4+8
+
+8927203 OPTECS: FIELD-1181: Navigate to next tab (Viability/Presence) no matter which of three fields (sex, length, weight) is last to be entered.
+aedb370 OPTECS: FIELD-1203: Add table SPECIES_CATCH_CATEGORIES to sources referenced to find a catch category's associated species.
+aedf994 OPTECS: FIELD-1181: Biospecimens Sex/Length/Weight: OK in Length field moves focus to Weight field, doesn't add NaN weight value. Other changes:
+684add4 OPTECS: FIELD-831: Hauls screen: report count of haul-level check issues - if TER has been run.
+a762611 OPTECS: FIELD-831: Add progress bar.
+a54e703 OPTECS: FIELD-831: On successful TER, delete earlier TERs for that trip. On canceled TER, delete any partial set of issues. Send UI a signal every 25 checks (for progress bar).
+10a9fa6 OPTECS: FIELD-831: During TER run, disable all UI widgets (esp. Home navigation and Comments button) except Cancel.
+6b1c9e2 OPTECS: FIELD-831: Error Reports screen: Run TER on cancelable background thread.
+
+------ 4/3/2017 v0.1.3+7 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v0.1.3+5..OPTECS_v0.1.3+7
+2424e95 OPTECS: FIELD-1178: Hauls: Run TER on background thread - work in progress.
+ed34395 OPTECS FIELD-1096: Add Associated Species button to Species tab
+22c64de OPTECS: Fix empty trip check
+03a2747 OPTECS FIELD-1096: Add SpeciesCatchCategories to peewee model
+436e476 OPTECS: FIELD-1178: (WIP) Refactor ObserverErrorReports to allow TER runs from Hauls screen as well as Error Reports screen.
+e270b66 OPTECS: FIELD-831: Disable RUN TER button if no trip.
+56975f8 OPTECS: FIELD-1198: Fix two more places where "FALSE" was being used for PARTIAL_TRIP rather than "F".
+7a36ad5 OPTECS: FIELD-831: Fix two corner cases.
+4da7ce0 OPTECS: Improve trip sync complete message (only show errors if they occur)
+33ae9a7 OPTECS: Add TRIP_CHECK_GROUPS to Model (need new Sqlite DB)
+6762630 OPTECS: FIELD-831: Clean code, reduce PyCharm warnings.
+d806d82 OPTECS: FIELD-1198: Change values saved to TRIPS for PARTIAL_TRIP: T/F, not True/False. Matches OBSPROD expectations.
+4588849 OPTECS: FIELD-1189: Detect change in TRIP_CHECKS table and force re-evaluation of trip checks for ability to run in OPTECS.
+489ff4b OPTECS: FIELD-1189: Add DB utility to SHA1 checksum a SQLite table.
+7d89ace OPTECS version 0.1.3+6 config file (hotfix for protocols in database)
+
+------ 3/24/2017 v0.1.3+5 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v0.1.2+4..OPTECS_v0.1.3+5
+43a077f OPTECS FIELD-1134: Add Gear Type 01
+2bdd8de OPTECS FIELD-1123: Validate passwords the same way as online + store PW history
+4c5bf0d OPTECS FIELD-1123: Update DB Model for pw history (need new .db file)
+fa1d177 OPTECS: FIELD-831: Generalize name of file holding TER DB models (multiple models).
+bd712ab OPTECS: FIELD-1173: Restrict size of unhandled exception handler comment in Trips.notes to 400 characters.
+a28f581 OPTECS: FIELD-1171: Trip Notes (Comment): Restrict to Oracle 4000 character limit (3200, reserving 800 characters for possible unhandled exception handler comment).
+a7314ca OPTECS: FIELD-1180: Restrict all manual entry of weights to 2 decimal places.
+9e51cd1 OPTECS FIELD-1163: Include tally in WM8 fish count total
+d0b96e7 OPTECS FIELD-1179: Use admin user for DB Sync Pull
+58a66c8 OPTECS: FIELD-1119: Catch Categories table: display weight column to 2 decimal places (don't round to whole pounds).
+71497ab OPTECS FIELD-1172: Attempt to upload all trips, continue on failures
+16644d9 OPTECS FIELD-1164: Show Counts & Weights for WM8 on CC Details
+33a82dc OPTECS FIELD-1163: Set WM8 fields readonly on CC Details
+4bbf4ec OPTECS: FIELD-831: ErrorReports screen: update trip list and trip issues tables on change in user, program, or trips.
+644d4ca OPTECS: FIELD-831: Handle case of no trips available for error reporting.
+2c2d16f OPTECS: FIELD-831: Add TableView for list of TERs, along with underlying view model. Hook up RUN TER button.
+6023cdf OPTECS: FIELD-831: Rename ObserverTipIssuesModel to ObserverErrorReportsModels so all view models for Error Reports screen can be put in one file.
+b3024ea OPTECS: FIELD-831: TER WIP: Start error reports screen, add trip issues view model.
+1d6c605 OPTECS: FIELD-831: Apply style Text.ElideRight to rows of ObserverTableView. Fix found by WillS.
+b522401 OPTECS: FIELD-831: Error Reports (while testing): find a trip for current user upon which to run TER, dialog box if no trip available.
+18a8dc2 OPTECS: FIELD-831: Refactor method to load Peewee table from Navicat JSON export file to general utility in ObserverDBUtil.
+8d78ad4 OPTECS: FIELD-831: After clean install of OPTECS, when TRIP_CHECKS table is empty, load the trip checks from a JSON file.
+380b94e OPTECS: FIELD-831: WIP: 252 of 355 CHECK_SQLs running w/o exception. 103 failures characterized (Oracle syntax, unrecognized macros, missing table or column).
+8656133 OPTECS: FIELD-831: Work in progress: ObserverErrorReports context; define TripIssues table, create if not present.
+
+------ 3/15/2017 v0.1.2+4 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v0.1.1+1..OPTECS_v0.1.2+4
+c90362d OPTECS FIELD-1127: Closer to ideal Win10 tablet mode startup behavior
+093a977 OPTECS build: comment out json file until merge
+86eac1e OPTECS: FIELD-1119: Species: display species weight column to 2 decimal places.
+738a2fd OPTECS: Add version info to build filename
+b1e9382 OPTECS: Fix path for trip checks JSON, add sqlparse, fix missing comma
+4845e04 OPTECS: Auto-increment build # (manually update version/patch # for now)
+00f70e2 OPTECS FIELD-1122: Persist last selected Program + handle username changes
+694e5cf OPTECS: Fix DB sync of program ID
+f9ffcd0 OPTECS FIELD-1122: Limit trip selection to username + program
+fba3895 OPTECS: Add utility functions for current program ID and name
+10092fc OPTECS FIELD-1122: Set Program ID correctly for new Trips
+1e84a51 OPTECS FIELD-1122: Add utility for program id retrieval + test
+
+
+------ 3/15/2017 v0.1.1+1 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" OPTECS_v0.1.0+1..OPTECS_v0.1.1+1
+0bec74b OPTECS FIELD-1127: Change fullscreen behavior again
+8f114b7 OPTECS: FIELD-1142: Write unhandled exception information as a Trip Comment (that's db sync'ed to OBSPROD).
+c0539c7 OPTECS: Strip commas etc before setting comments in Trips.Notes
+aa236d6 OPTECS FIELD-1164: Get TRAWL_WEIGHT_METHOD descriptions (fixes WM 15 desc.)
+2b3172f OPTECS: FIELD-1119: Display weight values up to 2 significant decimal places.
+2e8299b OPTECS: FIELD-1097: ObserverSpecies: Don't calculate total catch weight or count if current species comp ID is None.
+
+------ 3/9/2017 v0.1.0+1 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" Observer_20170303_build..OPTECS_v0.1.0+1
+76d2849 OPTECS FIELD-1127: Try fullscreen but not always on top mode
+833938b OPTECS FIELD-1124: Replace ComboBox for Programs with popup
+ee997d8 OPTECS FIELD-1032: Show PHLB total weight on Catch Categories screen
+a2eb225 OPTECS FIELD-1138: Fix Tally functionality
+7b0824a OPTECS FIELD-1138: Fix crash related to bad PHLB lengths
+ab2770d OPTECS FIELD-1032: Fix total PHLB weight calculation on new BS entry
+96e0e7b OPTECS: FIELD-1132: Preserve log information.
+35b9f62 OPTECS: FIELD-1111: Some refactoring of basket's is_partial.
+afa1752 OPTECS: FIELD-1111: Get correct basket id when No Count button pressed.
+8d6c0ef OPTECS: FIELD-1111: Counts/Weights edit basket: Handle weight or count being cleared in numpad (empty string).
+8b096d4 OPTECS: FIELD-1112: Provide a test entry point for the unhandled exception handler.
+a42383a OPTECS: FIELD-1097: Don't add weight or count data to catch category until its sample method is specified.
+bc4e44e OPTECS: Fix comment re: transaction ID debug code
+437fd05 FIELD-1121: Add OPTECS version string to login screen.
+30f614b OPTECS FIELD-1101: Fix backspace on FramScalingKeyboard for cursor in middle of text
+c42f7b5 OPTECS CHANGELOG for 3/3/2017 build
+5af8b99 OPTECS: FIELD-1113: Updated version string to 1.0.0+0 to adhere to semver.org standard that Todd proposed we follow.
+
+------ 3/3/2017 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" Observer_20170224_build..Observer_20170303_build
+6be8960 OPTECS FIELD-1094: Enable Password Changing while out at sea
+6494ee5 OPTECS FIELD-1094: Created Change Password dialog
+ef05933 OPTECS: FIELD-1112: Reduce a little log file noise.
+f23a01b OPTECS: FIELD-1113: Added a strawman observer_version, initially 1.0.0.0.
+b9fbd84 OPTECS: FIELD-1112: Upon an unhandled exception, include log filepath in message box to the observer.
+3141d2c OPTECS: FIELD-1112: On an unhandled exception, log the exception (including stack trace), display message box, and exit OPTECS.
+c5b6abc OPTECS: FIELD-1106: Catch Category Details: Don't allow forward navigation after toggling NSC sample method, with no discard reason specified.
+e827bea OPTECS: FIELD-1087: Trip Details Screen: highlight Vessel label if required field Vessel is empty.
+65236de OPTECS: FIELD-1087: Trip Details, Haul Details, Catch Cat Details: Gray-out rather than hide disabled forward navigation.
+6e3d3ab OPTECS: FIELD-1105: Catch Categories Screen: for catches with Weight Method = 14, show the Visual Experience wt/cnt from CC Details, even if basket wt/cnt data entered.
+acfddc4 OPTECS: FIELD-1100: HaulScreen: even with multiple hauls, show updated haul details for newly added hauls.
+b679214 OPTECS FIELD-1099: Fix crash on Logbook Mode entering Vessel Retained values.
+1e86d3d OPTECS FIELD-1103: Prevent multiple instances of OPTECS launching
+4f53a26 OPTECS: FIELD-831: Created NotImplemented Screen and referenced that for unimplemented ListElements in ObserverHome (e.g. Species Interaction, Trip Discards).
+2a7f451 OPTECS FIELD-1061: Remove storage of weights for PHLB biospecimens, display only (recalc on load)
+89d5aa3 OPTECS FIELD-1061: Store BS Viability to match DB expected values
+066eada OPTECS: FIELD-1097: Catch Categories: if the current catch is NSC, ignore weight/count updates from the Species tab (NSC catches don't use the Species tab).
+ff7f45f OPTECS: FIELD-927: When changing sample method in CatchCategoriesDetails from NSC to digit, don't enable Biospecimens tab unless species discard reason is non-null.
+db60dac OPTECS: FIELD-926: BiospecimensScreen: add discard reason to screen's title.
+f450a3b OPTECS: FIELD-927: BiospecimensScreen: only show biospecimen rows for given species - and discard reason.
+8feb842 OPTECS: FIELD-1086: Haul Details: Don't require Weight Calibration field (EricB feedback).
+430d7c7 OPTECS: FIELD-1086: Haul Details Screen: Require most all fields to be filled in. Highlight empty required fields.
+
+
+------ 2/24/2017 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" Observer_20170217_build..Observer_20170224_build
+
+8f4e70e OPTECS: FIELD-1066: Set Biospecimen discard reason from that in species comp item or catch (if No Species Comp catch).
+f05e7d1 FIELD-1075: Add LAUNCH_OPTECS convenience script
+991543b OPTECS: FIELD-1072: Ensure that backward navigating from Haul Details with Forward nav disabled clears that disable for the predecessor Hauls screen.
+6ac834b OPTECS FIELD-1017: Delete ..\observer_keyinstaller*.zip after keys installed
+beb6677 OPTECS: FIELD-1072: Oops, include the changed files as well as the new file.
+d2de248 OPTECS: FIELD-1072: Haul Details Screen: Disallow navigation to Catch Screen unless Gear Type is specified.
+3487f74 OPTECS: Fix bug in FramScalingKeyboard setkeyboardcaps
+0a20104 OPTECS: FIELD-1060: Set a catch's catch_num by order of creation rather than its index in the list of available catch categories.
+6cb7dcc OPTECS FIELD-1071: Set default keyboard for passwords to be lowercase
+0621fb4 FIELD-1070: Fix comments backspace issue, hide Login Comments button
+77c7b76 OPTECS: Handle another weird case if vessel ID is not set.
+e815596 OPTECS: Handle API errors gracefully
+
+------ 2/17/2017 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" Observer_20170213_build..Observer_20170217_build
+
+4183441 OPTECS: Fix remaining issues with saving comments to Trip.NOTES
+3d06e7c OPTECS: FIELD-1057: Don't update Catch Categories's Wt/Cnts until given non-null values.
+e678c2d OPTECS FIELD-1063: Allow counts/weights for Retained catch category (no DR)
+5f49f37 OPTECS: FIELD-1065 persist username and ID to DB at login
+b1ea8ce OPTECS: FIELD-1064: Catch TypeError as well as ValueError in get_current_user_id(), to handle None.
+4f2f513 OPTECS: handle obscure crash bug (only happens with physical keyboard input on vessel name)
+8b8bc8d OPTECS FIELD-984: Limit trip selection to trips created by logged in user
+9ab90ec OPTECS: FIELD-1057: Update catch's total fish weight and count fields with basket changes made in CountsWeightsScreen.
+3b4a3f3 OPTECS: Allow offline password check (change routines to static)
+ace5148 OPTECS: Add logic to check username/password at login screen + debug flag
+d328487 OPTECS: FIELD-1062: Modified convention for persisting Haul's EFP flag to match that expected by Center IFQ database.
+670406d OPTECS: DevEnv: Documented steps for establishing DB Sync access to IFQTST.
+45542cd OPTECS: FIELD-1053: Catch Categories: don't enable Counts/Weights or Species tabs if catch category's purity (and other details) haven't been specified.
+86a2349 OPTECS FIELD-1054: Don't upload Catches with unspecified Catch Purity
+9fd6a2c OPTECS: add 'socket' to build dependencies
+9e7c17a OPTECS: FIELD-1050: Store trip's fish_processed flag as '0' or '1', the format expected by Center's OBSPROD DB.
+af57a41 OPTECS: FIELD-1044: Allow change in weight method to new catch category even if prior catch category had basket.
+f392808 OPTECS: DB Sync (no ticket): return None rather than throwing exception if current_user_id not found.
+9122fea OPTECS: Update ObserverSOAP.py for zeep 0.27.0 + patch note
+47c7282 Merge branch 'OPTECS_DB_Sync'
+7ba33ab OPTECS: Try alternate fullscreen mode
+9631871 OPTECS: General: dev env for Python 3.6. Add apsw wheel, screenshot for how-doc markdown.
+b3a767d OPTECS: General: how-to updates.
+4d9c4a3 OPTECS: General: how to setup OPTECS development environment using Python virtual environment rather than Anaconda conda environment.
+20578e7 OPTECS: General: Update script to emphasize use of Anaconda distribution package.
+
+
+------ 2/13/2017 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" Observer_20170126_build..Observer_20170213_build
+
+ab80861 OPTECS FIELD-1040: Fix DB sync edge case
+31ce73d OPTECS FIELD-1040: Fix startup and DB Sync behavior when PC is offline
+68106bf OPTECS: FIELD-987: Biospecimens/SLW: Display tally count and buttons for Pacific Halbut.
+026030e OPTECS: Strip quotes from comments for CSV purposes
+5bd839a OPTECS FIELD-983: Save Comments to TRIPS.NOTES field
+37d48b0 OPTECS: Add TRIP_ID to COMMENTS local-only table
+4c067b4 OPTECS FIELD-1025: Display newly assigned Database Trip ID in DB sync dialog
+026e273 OPTECS: Add more required packages to build script
+ee88b84 OPTECS: Key installer wrapper batch file, intended for deployment
+2cdae01 OPTECS FIELD-548: Fix issue adding new trips to DB_SYNC table
+ce1ee5e OPTECS FIELD-548: Update tests/ SOAP for TST
+837edcb OPTECS: update build script for Python 3.6/ PyQt 5.7.1
+edfcd69 OPTECS: FIELD-989: Enable actual fullscreen mode
+beeb7d1 OPTECS FIELD-548: Parse external TRIP_ID upon DB sync success
+
+------ 1/26/2017 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" Observer_20170120_build..Observer_20170126_build
+
+a4fafba OPTECS: FIELD-893: CC Details: Show not-implemented dialog box on click of WMs 2 or 3. Counts/WeightsScreen: hide Scale Weight button.
+196d488 OPTECS: FIELD-950: For weight methods 2, 6, 7, and 14, allow modification and persistence of catch weight, and for WM14, catch count as well.
+18d9d38 OPTECS: FIELD-986: Remove exception assuming change in sample method, not change in catch category.
+6915192 OPTECS: FIELD-981: If Catch Category is PHLB, or any category with No Species Composition, update species name in BioViabilityScreen.
+
+------ 1/20/2017 Release --
+# git log --oneline --author="Will Smith" --author="Jim Stearns" Observer_20170106_build..Observer_20170120_build
+
+110e115 OPTECS: FIELD-769: CatchCatsDetails: allow switch from sample method NSC without checking basket data.
+0f796cb OPTECS: FIELD-769: When returning to Catch Categories from Catch Category Details, enable remove and edit buttons for selected catch.
+ef57235 OPTECS: FIELD-769: When transitioning from Catch Categories Details to Biospecimens, enable actions on Biopecimens controls.
+aaefd0a OPTECS: FIELD-958: Backed out hard-coding Disposition==Discarded for PHLB, in response to Ryan Shama update.
+5cc0806 OPTECS: FIELD-958: Catch Category Details: if category is PHLB, hide the Retained button. Disposition for PHLB is always Discarded.
+c1893a6 OPTECS: FIELD-769: For catch categories with sample method = No Species Composition, display matching species in banner.
+b0a5c74 OPTECS: FIELD-956: When deleting a catch, also delete any SpeciesCompositions records associated with the catch.
+97b461b OPTECS: FIELD-956: On deleting biospecimen item, delete the parent biospecimen if it has no other children.
+189b09f OPTECS: FIELD-769: Don't allow CatchCategory to transition sampling method NoSpecComp to SpecComp (1,2,3) if biospecimen data exists.
+33819dd OPTECS: FIELD-769: CatchCategoriesScreen shows "NSC" in SplMeth column; double-click CC_NSC goes to Biospecimens, not Species.
+ad1163b OPTECS: FIELD-769: Progress on Sampling Method == No Species Composition.
+4891132 OPTECS: FIELD-769: CC Details: when attempt to select sample method NSC fails, restore checked state of correct numeric sample method.
+6a1b9fd OPTECS: FIELD-769: Implement (partial) Catch Category with Sample Method = No Species Composition.
+
+------ 1/6/2017 Release --
+
+# git log --oneline --author="Will Smith" --author="Jim Stearns" Observer_20161229_build..Observer_20170106_build
+
+4a51323 OPTECS: FIELD-941: Don't enable a discarded catch entry to Biospecimens until discard reason is specified.
+db3765e OPTECS: FIELD-938: Add CatchCategory to screen title when catch category selected.
+
+------ 12/29/2016 Release --
+
+# git log --oneline --author="Will Smith" --author="Jim Stearns" Observer_20161223_build..Observer_20161229_build
+
+a1898b8 OPTECS FIELD-934: Disallow deleting catch category with attached species comp.
+35cef8e OPTECS FIELD-933: Prevent removal of species with basket/ biospec. data
+4ce4e1f OPTECS: FIELD-767: Upon entry to CatchCategories, don't highlight any selected CC entry.
+35ef316 OPTECS: FIELD-922: On switch of Species, re-entry to Biospecimens screen is cleared of previous entry.
+3187b5a OPTECS: FIELD-935: Unobscure Protocol label and text field (was hidden by basket list).
+0f0d137 OPTECS: Fix an omission in how-to build instructions.
+9225659 OPTECS: FIELD-767: Constrain emitting catchIdChanged signal to those cases where it actually changes.
+1fba6be OPTECS: FIELD-767: CatchCategory screen: onCompleted, and on adding a Catch Category, select the first row of selected. (Not a complete fix).
+
+------ 12/23/2016 Release --
+
+# git log --oneline --author="Will Smith" --author="Jim Stearns" Observer_20161215_build..Observer_20161223_build
+
+01d279f OPTECS: FIELD-925: If there's any entry in the Selected list of Species screen, highlight (select) the first.
+97943a0 OPTECS: FIELD-923: (Minor) Change variable name. No change in functionality.
+4ffee39 OPTECS: FIELD-923: When deleting BIO_SPECIMEN_ITEMS entry, delete related data in DISSECTIONS as well.
+48df661 OPTECS: Use wsse UsernameToken for SOAP
+1cbe7bc OPTECS FIELD-846: Use Set for Haul finishing time until entered
+7949c16 OPTECS: FIELD-918: Fix test for dissection row being selected.
+94194c9 OPTECS: FIELD-924: Species and Counts/Weights: enforce unique combination of species and discard reason.
+d2bb5f4 OPTECS: Framework for SOAP interaction
+4b865c4 OPTECS: FIELD-919: Disallow modification of barcode values if not ModifyEntry.
+44d1c4f OPTECS: FIELD-xxx (Jira down): Biospecimens/Barcodes: if CLR/OK entered, delete active barcode type/value entry.
+566b157 OPTECS: handle edge case exception in Counts/ Weights
+25b5ca7 OPTECS: Adjust text format for sample requested dialog
+fc56f81 FIELD-918: Final tweaks:
+3bc56e5 OPTECS: FIELD-918:  Raise error dialog if new barcode matches an existing entry.  Accept barcode only on OK (not on every keystroke).
+104c492 OPTECS: FIELD-869: Click on FinClip et al doesn't cause a None tag to be added.
+6c1634e OPTECS: fix crash on deleting BS entry with empty barcodes
+
+------ 12/15/2016 Release --
+
+# git log --oneline --author="Will Smith" --author="Jim Stearns" Observer_20161207_build..Observer_20161215_build
+
+a345969 OPTECS: Show abbreviated Viability on Biospecimens table
+5627799 OPTECS FIELD-904: Fix PHLB biosampling method stickiness
+192101c OPTECS: Fix Species vs. Biospecimens in CC Details forward button
+df6e267 OPTECS FIELD-904: Fix PHLB (WM 9/ 19) UI display for Biospecimens
+a121d39 OPTECS: set color for control.pressed for ObserverSunlightButton
+2a0d5f8 OPTECS: Simplified ObserverSunlightButton to remove states
+53fba83 OPTECS FIELD-906: Lock WM on CC Details if data entered
+477b561 OPTECS: CatchCategories: Don't attempt to highlight only row of selected catch categories.
+df00409 OPTECS: Fix auto-selection of species, when auto-added for a new Catch Category
+9b225f4 OPTECS: (minor) Add two debug statements.
+ead2400 OPTECS: Reduced cases where highlight in Selected Species is cleared. But not enough.
+c93059e OPTECS FIELD-911: Don't allow basket entry until DR is selected
+8beb781 OPTECS: FIELD-854: Restore Modify Entry button as ObserverGroupButton, to allow checked property and visual cue.
+1f8d334 OPTECS: FIELD-888: Restore auto-select of first row of Selected species when a new Catch Category is selected.
+5672325 OPTECS FIELD-905: Don't allow forward navigation without CC details entered
+1bea9d4 FIELD-854: Add confirmation before removing a biospecimens entry. Change Add/Modify/Delete buttons to ObserverSunlightButtons. Enable Add only if biosample method chosen. Enable Modify/Delete only if biospecimen row selected.
+5a5ae0a OPTECS: FIELD-888: Minor filter performance enhancement, comment cleanup.
+aad277e OPTECS: FIELD-888: Implement Frequent and Trip Lists for Species. Details below.
+72d2d84 OPTECS FIELD-813: Fix Wt column showing calculated weight for PHLB
+246df42 OPTECS FIELD-813: Drive Fisheries by user selected Program (role)
+18c5f19 OPTECS: FIELD-888: Add Frequent List and Trip List buttons to SpeciesScreen.
+82c32b7 OPTECS FIELD-518: Set current program ID via property
+16453f2 FIELD-888: ObserverSpecies defines Frequent and Trip species lists. Variable/Method renaming.
+ac02725 OPTECS: Move Settings table utilities for handling JSON strings to common/ObserverDBUtil.
+8168f80 OPTECS FIELD-810: show program listings based on username
+5572c40 OPTECS FIELD-810: Refactor, log in-out user (pw ignored)
+079fc7c OPTECS FIELD-810: create ObserverUsers class for program listings
+05c24ef OPTECS: FIELD-768: Read frequent list from observer.db first. Move determining frequent list entirely to CatchCategory.py, removing from ObserverState.
+562c072 OPTECS: FIELD-888: Add TrawlFrequentSpecies class with unit test. Start updating ObserverSpecies.
+54e9814 OPTECS FIELD-827: Delete Haul function (if no Catch data)
+35e41dd OPTECS: FIELD-811: TripDetailsScreen: only one popup at a time.
+33adfc8 OPTECS: FIELD-819: Tidy up Fish Ticket functionality.
+1e29b55 OPTECS: FIELD-768: Use ORM model for iterating thru a haul's catches. Clean up names of pyqtSlots and pyqtProperties, updating coding conventions to match.
+7714599 OPTECS FIELD-817: Delete Trip functionality (Select Trip screen)
+0ffd184 FIELD-768: Enable keyboard autocomplete on Frequent List and Trip List (as well as Full List).
+52d798b OPTECS FIELD-798: Bring up protocol prompt if user leaves C/W for tab other than Biospecimens
+8a76db8 FIELD-768: Catch Categories: when displaying Trip List as available categories, initialize with catch categories used in any of the current trip's hauls.
+
+
+------ 12/07/2016 Early Release --
+
+# git log --oneline --author="Will Smith" --author="Jim Stearns" Observer_20161201_build..Observer_20161207_build
+
+78b2224 OPTECS: FIELD-764: On a catch category code match via keyboard, add on a single click.
+77b5af4 OPTECS: Handle exception on Counts/Weights screen
+f17ed3b OPTECS FIELD-899: Don't average fish weight for partial baskets
+98b3e6d OPTECS: FIELD-765: Clear out catch category textfield once added. FIELD-770: Move ZMIS to top of catch category list.
+188402f OPTECS: FIELD-768: Partial implementation of Frequent and Trip catch categories.
+85e38a3 OPTECS FIELD-900: Remove auto-add prompt of Mix species
+120dbe9 OPTECS FIELD-548: Experimental code to convert peewee -> PonyORM source code
+
+------ 12/01/2016 Release --
+
+# git log --oneline --author="Will Smith" --author="Jim Stearns" Observer_20161128_build..Observer_20161201_build
+
+5263ca3 OPTECS: FIELD_837: Update with workaround for the last gotcha Darla encountered.
+73c9606 OPTECS FIELD-781: Counts/Weights screen: add Partial Basket flag
+6207225 OPTECS: Prevent aggregated values overwriting certain weight methods
+ae87eec OPTECS: Fix catch-level aggregation of total counts and weights
+23139d2 OPTECS: FIELD-889: Catch Category Details: re-enable manual weight entry for Weight Method 6.
+b762e32 OPTECS FIELD-781: Database change: Add IS_PARTIAL column to SPECIES_COMPOSITION_BASKETS
+4631d2f OPTECS: Aggregate total catch weights and counts
+1347a43 OPTECS FIELD-864: Species screen: populate Discard Reason, Weight, Count
+737f192 OPTECS FIELD-865: Handle Counts and Weights at species level
+4c560f3 OPTECS: FIELD-837: Updates to how-to reflecting two gotchas Darla ran into.
+7a17325 OPTECS: Change Counts/Weights to use SPECIES_COMPOSITION_BASKETS
+60b89a1 OPTECS: FIELD-889: Renable manual weight to be entered and saved in Catch Category Details.
+215b4eb OPTECS: FIELD-880: Show popup on exit from ratio's numerator or denominator fields if ratio 1:1 or numerator > denominator.
+2e47b13 OPTECS: Create ObserverBasketsModel
+8d0acdf OPTECS: Counts/Weights ensure correct Discard Reason selected
+1947052 OPTECS: Sort Discard Reasons incrementally (button order makes sense)
+c580df0 OPTECS: Fix Counts/ Weights discard reason selection on load
+5259cae OPTECS: fix SQL warning and PEP-8 for Biospecimens.py
+cb67518 OPTECS: fix warning on Species screen
+ba9ce81 OPTECS: FIELD-849: Don't allow in logbook mode a catch category to be added that's already been added as observer-retained.
+89fb255 OPTECS: Counts/Weights: clear Discard Reason description if not set
+3e66371 OPTECS FIELD-784: Add Discard Reason Buttons and DB behavior
+da38de2 OPTECS FIELD-865: Add required fields to model
+cc758b3 OPTECS FIELD-801: Automatically set Purity to Mixed if Mix added to Species
+98a8fc7 OPTECS FIELD-801: Add "Mix" species for WM 1, 15 (prompt on CC details)
+972b0d0 OPTECS FIELD-801: Create 'MIX' row in SPECIES
+2c4b91b OPTECS FIELD-797: Add Edit button to Counts/Weights
+c6eb287 FIELD-873: Upon a keyboard text change, don't perform a new autocomplete search if the change is due to selecting from search list.
+92527d6 FIELD-837: Minor edits for benefit of GitLab's markdown parser.
+f34a04d BUILD-837: Rough draft of a document describing how to build a zip install OPTECS package.
+5b6d0f4 OPTECS: Catch peewee.IntegrityError instead of ConstraintError
+2638361 FIELD-885: Restore previous behavior on row selection of two lists. Enable/disable Add/Remove buttons to match.
+712e794 OPTECS: Fix auto-select Species on catch category change
+a6f8bfd OPTECS: Handle constraint error in Catches gracefully.
+0069837 FIELD-837: Fixed link reference to screenshot.
+3c672de OPTECS: Fix build script for non-Anaconda environment
+705fcde FIELD-837: GitLab's MarkDown interpreter may be case-sensitive when looking for PNG files.
+b947893 FIELD-885: Convert full/recent list group buttons to ObserverGroupButtons. Enable/disable Add/Remove buttons if list item selected.
+
+------ 11/28/2016 Release --
+
+# git log --oneline --author="Will Smith" --author="Jim Stearns" Observer_20161118_build..Observer_20161128_build
+fd8ca89 OPTECS FIELD-855, FIELD-856: Show warning if no BM selected when adding BS
+33a3c0f OPTECS: FIELD-762: Reposition keyboard, keeping on screen (not popup):
+8d6c402 OPTECS FIELD-872: Add WM8 tally functionality
+8d890f9 OPTECS: FIELD-766: Insure that upon return to Catch Categories screen the keyboard is hidden and the category filter is cleared.
+4b28cea OPTECS FIELD-872: Add Tally UI Components to C/W Screen
+ede13a8 OPTECS: FIELD-760: Uncomment existing code to enter Species tab on double-click in Catch Categories list.
+71e4d64 OPTECS FIELD-788: more edge case handling for WM 15
+554338d OPTECS FIELD-788: Handle zero entry for WM 15 Ratio gracefully
+fbb2b45 OPTECS: FIELD-834: Weights/Counts Screen: Add confirmation dialog if basket weight exceeds 100 lbs. Increase max basket weight from 100 to 150 lbs.
+2900224 OPTECS FIELD-788: Update Weighted Portion on C/W edits for WM15
+fadc8e6 OPTECS FIELD-788: Implement WM 15 (Visual Spatial)
+7393e7e OPTECS FIELD-788: Persist ratio to db for WM 15
+c8bb518 OPTECS: FIELD-859: When new location added, highlight its row as selected, even if that row# has changed because of datetime change.
+025d978 OPTECS FIELD-788: Allow WM 15 numerator value input
+6fac353 OPTECS FIELD-788: connect keypad to WM 15 Ratio denominator input
+c628c19 OPTECS: FIELD-859: Add unit test. First try at selecting row after location edit.
+0b087f4 OPTECS: FIELD-859: Re-sequence haul locations by datetime after add, edit, or delete of a location. Mostly working.
+c6b2699 OPTECS FIELD-875: CC Details: hide Sample Method 1 for WM 8
+f5a9e23 OPTECS: Added test for SPECIES_CORRELATION table existence + population
+903e382 OPTECS: Changelog 11/10/2016
+ef475b0 FIELD-834: Cleaner fix of string:string comparison: type the max basket weight property as integer.
+2cfe5e8 FIELD-834: Fix max basket weight comparison.
+
+------ 11/18/2016 Release --
+Specific changes:
+
+# git log --oneline --author="Will Smith" --author="Jim Stearns" Observer_20161110_build..Observer_20161118_build
+fd8ca89 OPTECS FIELD-855, FIELD-856: Show warning if no BM selected when adding BS
+33a3c0f OPTECS: FIELD-762: Reposition keyboard, keeping on screen (not popup):
+8d6c402 OPTECS FIELD-872: Add WM8 tally functionality
+8d890f9 OPTECS: FIELD-766: Insure that upon return to Catch Categories screen the keyboard is hidden and the category filter is cleared.
+4b28cea OPTECS FIELD-872: Add Tally UI Components to C/W Screen
+f6e133c Merge branch 'master' of nwcgit.nwfsc.noaa.gov:fram-data/pyqt5-framdata
+ede13a8 OPTECS: FIELD-760: Uncomment existing code to enter Species tab on double-click in Catch Categories list.
+71e4d64 OPTECS FIELD-788: more edge case handling for WM 15
+554338d OPTECS FIELD-788: Handle zero entry for WM 15 Ratio gracefully
+fbb2b45 OPTECS: FIELD-834: Weights/Counts Screen: Add confirmation dialog if basket weight exceeds 100 lbs. Increase max basket weight from 100 to 150 lbs.
+2900224 OPTECS FIELD-788: Update Weighted Portion on C/W edits for WM15
+fadc8e6 OPTECS FIELD-788: Implement WM 15 (Visual Spatial)
+7393e7e OPTECS FIELD-788: Persist ratio to db for WM 15
+c8bb518 OPTECS: FIELD-859: When new location added, highlight its row as selected, even if that row# has changed because of datetime change.
+025d978 OPTECS FIELD-788: Allow WM 15 numerator value input
+6fac353 OPTECS FIELD-788: connect keypad to WM 15 Ratio denominator input
+c628c19 OPTECS: FIELD-859: Add unit test. First try at selecting row after location edit.
+0b087f4 OPTECS: FIELD-859: Re-sequence haul locations by datetime after add, edit, or delete of a location. Mostly working.
+c6b2699 OPTECS FIELD-875: CC Details: hide Sample Method 1 for WM 8
+f5a9e23 OPTECS: Added test for SPECIES_CORRELATION table existence + population
+903e382 OPTECS: Changelog 11/10/2016
+ef475b0 FIELD-834: Cleaner fix of string:string comparison: type the max basket weight property as integer.
+2cfe5e8 FIELD-834: Fix max basket weight comparison.
+
+
+------ 11/10/2016 Release --
+Specific changes:
+
+# git log --oneline --author="Will Smith" --author="Jim Stearns" Observer_20161104_build..Observer_20161110_build
+
+0d3a2f6 OPTECS FIELD-788: Add CC Details visual spatial (ratio) calculation
+0d1117d OPTECS FIELD-786: Remove (LL) from Extrapolation for Trawl
+b37534d OPTECS FIELD-789: Trip type determines CC Details catch/sample field name
+ea4cb36 OPTECS: Refactor and hook up appstate.isGearTypeTrawl property
+7714a93 OPTECS: General: first pass at a TOC for the doc subdirectory.
+6d2fc1a FIELD-834: Use appstate in all contexts to read max weight, rather than a set-once local property.
+4d5551f FIELD-834: CountsWeightsScreen: raise error dialog box if entered a basket weight > 100 lbs is entered.
+8366ce4 OPTECS FIELD-793: Add screen note for WM 3 on CC Details
+9f7ce38 FIELD-845: Increase size of time tumbler without sacrificing size of calendar buttons.
+381db0c OPTECS FIELD-863: Counts/Weights insert new baskets at top of list
+9bab646 FIELD-870: In GearType autocomplete, abbreviate "small" and "large".
+67fb9f1 FIELD-847: Implement Delete location. Not yet implemented: location list re-order by date-time (FIELD-859).
+7d73e61 OPTECS: FIELD-847: Checkpoint of work. Button active, entry deleted in DB. Not yet: Locations view updated.
+11deeaa FIELD-852: On Haul Details screen, remove "GPS" label, GPS textbox, and "Get GPS" button. Add state to Edit Location button.
+0639ad1 OPTECS: FIELD-822: Updated unit test of full-search to match new behavior.
+867032e OPTECS: FIELD-822: Cleaned up full-search list comprehension.
+45f7371 Merge branch 'master' of nwcgit.nwfsc.noaa.gov:fram-data/pyqt5-framdata
+c2968c1 Revert "OPTECS: FIELD-822: Cleared up some git merge statements."
+3f8bf7f OPTECS: FIELD-822: Cleared up some git merge statements.
+0a44c30 OPTECS: FIELD-822: Simplified list comprehension by using startswith instead of find() == 0.
+e6619be OPTECS: fix unit test for ImportBiospeciesProtocols
+1d89706 OPTECS: FIELD-822: Removed confusing comment line.
+ed21cb4 OPTECS: FIELD-822: Implement auto-completion suggestion list as a list comprehension.
+647868a OPTECS: Fix display of Long Deg in logbook mode
+77cf9d3 OPTECS Changelog for 11/04/2016
+
+------ 11/04/2016 Release --
+Specific changes:
+
+# git log --oneline --author="Will Smith" --author="Jim Stearns" Observer_20161028_build..Observer_20161104_build
+acbdc35 OPTECS: FIELD-822:  EndTrip/FirstReceiver: a search string of "crescent city" will be given a suggestion "Albers Seafoods CRESCENT CITY".
+b4c91e6 OPTECS: Common: added description of using underscore class methods and properties.
+21fc6fc OPTECS: FIELD-822: Allow description field words in autocomplete lists to be abbreviated.
+3d78571 OPTECS FIELD-653: Add keyboard to Comments dialog
+978eebe OPTECS Common: Allow FramScalingKeyboard to insert text at cursor position
+a726cce FIELD-822: Hold off applying full-search matches until user partial string is at least two characters long.
+02fd6bf OPTECS FIELD-792: Clear Catch Weight when switching WM
+826afde OPTECS: FIELD-822: Autosuggestion full_search: allow match of substring anywhere in suggestion.
+1067ff1 OPTECS FIELD-782: Remove number of baskets from Counts/Weights tab
+d69908d OPTECS FIELD-842: Move OK to right side for Logbook Mode dialogs
+b515787 OPTECS: FIELD-851: Fix numpad CLR button introducing a zero.
+f344272 OPTECS FIELD_858: Counts/weights screen: show correct read-only disposition
+abebfb1 OPTECS: FIELD-851: Disable the "OK" button until minimum set of data (time/lat degrees/long degrees/depth) entered.
+e87a4d1 OPTECS FIELD-841: Show Set/ Up placeholders
+ac40640 OPTECS FIELD-841: Don't display zeroes for placeholder GPS entries
+f73d67b OPTECS: FIELD-851: Orient GPS Entry Dialog to landscape mode. Implement "auto-retreat" on backspacing.
+8881626 OPTECS FIELD-853: Move Biospecimens tabs to bottom of screen
+4cd5ed3 OPTECS: Common, but provoked by FIELD-851: Move date utility get_date_str from observer/ObserverSettings to common/CommonUtil and fix up references to same.
+db08e7e FIELD-851: Modify date/time utility returning format MM/dd/yyyy hh:mm to zero-pad months, days, hours, and minutes if necessary.
+2ecb3e1 OPTECS FIELD-843: Update total catch weights (catches screen) on C/W changes
+e630141 OPTECS: small re-org of dev environment documentation.
+5f96bf1 FIELD-851: Implement auto-retreat (backspace hit on empty field retreats to previous text field).
+4ffdd0e OPTECS: FIELD-839: Fix decimal point key shown (and use allowed) for text field longitudinal whole minutes.
+b5b2b1e FIELD-839: Remove use of long_degs_abs from interface variables; more intuitive to use long_degs in tandem with lat_degs.
+c887b3d OPTECS: FIELD-839: Spacing tweaks.
+0cb90a9 OPTECS: FIELD-839: Fix error message when longitude degrees out of range and minutes empty. Move degree and minute symbols tight to their associated text fields.
+2d20571 OPTECS: FIELD-839: Clean up GPS Entry Dialog.
+222fbda OPTECS: Oops, corrected a code example that violated the coding convention.
+6c9b090 OPTECS: Quick fix to a formatting problem with one code example.
+df7ff39 OPTECS: A rough unauthoritative starting draft of our project coding conventions.
+
+------ 10/28/2016 Release --
+* More UI Changes, GPS Location Entry and Logbook Mode
+Specific changes:
+
+# git log --oneline --author="Will Smith" --author="Jim Stearns" Observer_20161021_build..Observer_20161028_build
+a223cbb OPTECS: FIELD-839: Split minutes into whole and fractional fields, with advancing on completion of expected digits. Not complete: corner case failures remain to be fixed.
+cf46e42 OPTECS FIELD-840: Show Y/N for EFP/ BRD in Logbook Mode
+c5bdd92 OPTECS: FIELD-859: Checkpoint before splitting minutes field into two.
+807e1d4 Merge branches 'master' and 'master' of nwcgit.nwfsc.noaa.gov:fram-data/pyqt5-framdata
+18c489a OPTECS: FIELD-839: GPSEntry: Increase height of textfields and size of font.
+a457dfe OPTECS: Fix logbook mode loading trip-specific Obs Ret. and Vessel Ret.
+d1485d8 OPTECS FIELD-805: Retain visibility of column headers
+28292b9 OPTECS: FIELD-815: Cleanup: Fix bad reference in action for "+" to add new permit or license.
+e974adb OPTECS: FIELD-824: Add visual component for wide keyboard - without an autocomplete list.
+0b4bcd9 OPTECS: FIELD-824: Oops, add back a closing bracket.
+c5d4a6b OPTECS: FIELD-824: Add scrollbar to gear list.
+b91633b OPTECS: FIELD-806: Show Current/ Trip Hauls in Logbook Mode
+a5c240a OPTECS FIELD-806: Highlight current logbook hauls filter selection
+39ec2f3 OPTECS: FIELD-824 Add scroll bar to Logbook mode
+e30f0c0 Common: Update FramBigScrollView to include horizontal scrollbar + cleanup
+85db2a7 OPTECS: requirements.txt update peewee version to 2.8.5
+9d4c20c FIELD-837: Requirements files - one for conda (Anaconda 3) and one for pip.
+251976a OPTECS: FIELD-829: Fix hanging End Trip Screen by removing reference in tfReceiver to an apparently undefined textRetDate.height.
+258dae7 OPTECS FIELD-802: Calculate average fish weight using baskets with counts
+59f62a3 OPTECS FIELD-791, FIELD-809: Calculate Observer total weights (logbook)
+c4b1eb6 FIELD-802: Calculate average fish weight for baskets
+1731947 OPTECS: FIELD-823: Add catch categories to auto-complete's full-search list so that a substring is found in the descriptions of codes as well as in the codes themselves.
+a536edc OPTECS: FIELD-829: Fix access of undefined object property.
+a874de3 OPTECS: CHANGELOG for 10/21/2016
+
+
+------ 10/21/2016 Release --
+* Primary UI changes/ additions are Logbook Mode and validations
+Specific changes:
+
+# git log --oneline --author="Will Smith" --author="Jim Stearns" Observer_20160926_build..Observer_20161021_build
+4134410 OPTECS FIELD-809: Auto-suggest keyboard filtering for Catch Category
+34dd30b OPTECS: FIELD-815: Don't allow more than 7 certifications (licenses/permits) to be entered (messes up layout).
+05c26fa OPTECS FIELD-809: Populate Observer Ret. logbook fields (pending weight calc.)
+31d2152 OPTECS: Remove keyboard Enter/Return behavior from GPSEntryDialog
+6c14179 OPTECS: FIELD-815: Validate ground fish permit to be in format of "GF" followed by 4 digits or a license to consist of 5 digits. Allow a given permit/license to be entered just once for a given trip.
+1991511 OPTECS FIELD-807: Scale Vessel Ret. label count when adding new ones
+2965520 OPTECS FIELD-807: Add Vessel Retained model
+ef04240 OPTECS FIELD-807: Add Catch Category/ Weight picker for Vessel Retained
+f31cf84 OPTECS: Fix longitude GPS Dialog population in Logbook mode
+766bc89 OPTECS FIELD-807: Add Obs Ret/ Vessel Ret entry to Logbook Mode
+23f25aa OPTECS FIELD-804: Fix/ change display of EFP/ BRD in Logbook Mode
+62138a0 OPTECS: FIELD-815: Validate that trip certificate (license or permit) matches GF0000 or 00000 format.
+819631b OPTECS: FIELD-759: Fix warning over property trawlMaxDepthFathomsChanged not having a signal.
+895a865 OPTECS FIELD-804: Add shortcut to add initial location by clicking on row
+139413c OPTECS FIELD-804: Add GPS Locations functionality
+7ae0b63 OPTECS FIELD-804: Fix getLocationData for haul ID, use DB ID for fishing_activity
+7536317 OPTECS: Revert modification of internal haul idx, fix load_fishing_locations
+ce4bc01 OPTECS: Fix loading of GPS locations, use correct fishing_activity_id from DB.
+8abe821 OPTECS: Fix "non-notifiable" property warnings for EFP/ BRD
+575d9d7 OPTECS: Clear hauls on new trip, once a non-null vessel is selected
+d470064 OPTECS FIELD-804: Add "+ Loc" buttons to Logbook mode
+75a76d2 OPTECS: Edit locations in Logbook mode, persist to DB
+9e3c2a4 OPTECS: Fix FishingLocations add_location Haul ID label
+c6c90d2 OPTECS FIELD-579: Refactor calc dec. degs, fix visibility check
+ebc14a1 OPTECS: Fix depth displaying ftm in depth textfield for Logbook Mode
+cc69b9a OPTECS: Allow state transition from Haul Details to Logbook Mode
+c211380 OPTECS: More additions related to logbook mode
+09b362a OPTECS FIELD-528: Minor formatting changes
+b8bc414 OPTECS FIELD_528: Show EFP, BRD, Gear Type, default to "ftm" measurement
+3e9d641 OPTECS FIELD-528: Display GPS data in Logbook
+f6162de OPTECS: Fix GPS decimal degrees conversion bug (found by unit test)
+a7429df OPTECS FIELD-528: Logbook Mode row layout
+3f4556d OPTECS: Various cleanup related to Logbook mode
+c79ecbf OPTECS FIELD-528: Change Title from Logbook to Logbook Mode
+96ccd92 OPTECS: Exported ObserverModel.sql for current .ndm to ease future diffs
+8b60324 FIELD-528: Logbook Mode initial functionality
+8931d20 OPTECS: Added Viability column to biospecimens table view
+582930a OPTECS: Changed Add Entry behavior for biospecs
+3090754 OPTECS: Fixed viability UI for crab, salmon
+648c3e5 OPTECS: Changed CC Details forward arrow to Biospecimens for PHLB
+428a863 OPTECS: Added right button to move from CC Details to Species tab
+f00ee13 OPTECS: Added match on PACFIN code for Catch Category -> Species
+1da0e9a OPTECS: Added CHANGELOG for 9/26
+
+
+------ 9/26/2016 Release --
+* Added catch category matching for auto-species-add when creating new catch category
+* Added right button to jump from CC details to Species tab
+
+------ 9/26/2016 Release --
+* Full trawl should now be possible
+
+Specific changes:
+
+# git log --oneline --author="Will Smith" Observer_20160907_build..Observer_20160926_build
+630cccb OPTECS: Enable all tabs shows SLW items, doesn't show viability options
+24744c0 OPTECS: Added PHLB tally button
+e169fce OPTECS: removed show viability options on Show All Tabs
+a9e01c5 OPTECS: Fixed PHLB input tab visiblity
+eb15624 OPTECS: Fixed issues with auto-selection of Species
+2beaa55 OPTECS: cleared species in for no sample method CC's
+649e7e8 OPTECS: Changed ComboBox to buttons + description for CC Details
+35de8b1 OPTECS: used pop-up keyboard for login screen username/ pw
+3774957 OPTECS: tweaked checked button visibility
+296d469 FramScalingKeyboard: Fixed SHIFT functionality (default uppercase)
+f0b0005 OPTECS: Fixed multi-line formatting for barcodes
+ee1ac6e OPTECS: added more logic for barcode auto-selection
+547693b FramScalingNumPad: suppressed warning
+d6833eb OPTECS: added more automation for Biospecimens
+863bd0a Observer build: added note about virtualenv and sqlite3
+df5393f OPTECS: automatically advance SLW fields
+da93310 OPTECS: check SLW protocols and fixed signals
+b3ebb48 OPTECS: denormalized disposition to species_sampling_plan
+5affe03 OPTECS: Added Disposition to PROTOCOL_GROUPS, updated model
+bb13f9c OPTECS: Updated biospecimen protocol CSV
+6a28d57 OPTECS: added more handlers for visibility of items based on protocol + handle 'T'
+bab181e OPTECS: improved handling of item deletion, defined protocols for tab enabling
+58b686d FIELD-508: Display appropriate tabs depending on protocols
+8b02870 OPTECS: changed default alphanumeric keyboard to all caps
+734b935 OPTECS: Added pop-up dialog based keyboard entry for barcodes
+852a831 OPTECS: Added protocol to Counts/ Weights screen
+360ef07 OPTECS: hide Species and Counts/Weights tabs for PHLB
+3907b5f FIELD-508: Displayed abbreviations for loaded/saved barcodes
+861a277 OPTECS: Changelog for 9/7/2016
+
+------ 9/8/2016 Release --
+* Saving/ Loading of Biospecimens barcodes (need to fix UI display)
+
+------ 9/7/2016 Release --
+* Basic protocols and biospecimen entry allowed
+* UI is not yet driven by protocol
+* Special cases for protocols still need tweaking (e.g. Pinnipeds- other)
+
+Specific changes:
+# git log --oneline --author="Will Smith" Observer_20160808_build..Observer_20160907_build
+9ec3f07 OPTECS: improved handling of protocols
+eb1596e FIELD-508: added special display cases (coral, all other rockfish)
+0d16a28 OPTECS: Added unit tests for protocol lookup by species name
+609fb04 FIELD-508: Fixed automatic selection of species when changing catch category
+272f964 FIELD-508: more work on barcodes <-> DB
+5559792 FIELD_508: Changed numpad entry for existing tags
+99ba7d5 FIELD-508: Added more changes to Barcodes/ Tags tab
+7fa92d7 FIELD-508: Added dissections, barcodes, existing tags, tally
+c4b1512 FIELD-508: Displayed appropriate fields on Viability tab
+54f122d FIELD-508: fixed behaviors on adding specimens
+696ee7d OPTECS: cleaned up numpad entry on catch category details
+8762855 FIELD-508: More updates to Biospecimens
+d278f64 FIELD-508: modified logic for sex buttons
+5186642 FIELD-508: propagated more data fields from S/L/W tab
+9ba997f FIELD-508: Delete biospecimen items
+da54cb3 FIELD-508: entry modifications
+0210143 FIELD-508: Biospecimens page
+3690ec9 OPTECS: Added species sampling plan data
+d356b58 OPTECS: Populated ProgramStratumGroupMtx
+a6828ab OPTECS: changed CC Details to show Discard Reason only for No Species Comp
+5df756b OPTECS: tweaked longitude display
+571fba7 OPTECS: fixed negative longitude values on Haul Details
+32e9be5 FIELD-698: Added script to populate protocol tables in DB from CSV
+988257e FIELD-698: import biospecies protocols script
+2d91ad0 OPTECS: Updated ObserverModel.ndm and peewee model to match
+6758378 OPTECS: Updated peewee models for new DB
+1280d77 OPTECS: Fixed ObserverModel.ndm
+cfc0cf0 FIELD-698: Added biospec protocols CSV file (direct export from excel)
+d884d28 FIELD-696: Added high-vis Biosample Method button style
+64116f8 FIELD-696: Added high visibility buttons to Haul Details, Catch Category Details, Counts & Weights
+fe07518 FIELD-696: Added high-visibility pressed button
+3390c4a FIELD-696: Increased text field height for Counts/Weights tab
+9106364 FIELD-696: Increased text field size for CC Details
+cee4d42 FIELD-696: Increased height of text fields for Haul Details
+accf92b FIELD-696: Added default textfield height, set on Login and Trip Details
+ee9afcb FIELD-696: Added always-on-top fullscreen mode on startup
+d2d5b7a OPTECS: Fixed parenthesis on keyboard
+730d81e Observer: Added SPECIES_COMPOSITIONS_BASKETS to DB model
+a2e3279 FIELD-660: Added symbols to login keyboard for passwords
+864442a FIELD-508: display Biosample Method in tableview
+
+------ 8/8/2016 Release --
+
+b226052 FIELD-570: Cleared discard reason when set to Retained
+b2598e6 FIELD-570: Added direct DB entry of catch weight + count for WM 8 & 14
+e982a87 FIELD-570: Added direct DB entry of catch weight for WM 6 & 7
+8699e2e FIELD-570: Fixed bug in auto-select new catch category
+c9e2aae FIELD-569: automatically jump to catch category details on add
+362e6d2 FIELD-655: Displayed GPS in Deg + Dec. Mins, but keep as FLOAT in database
+f82d070 Merge branch 'master' of nwcgit.nwfsc.noaa.gov:fram-data/pyqt5-framdata
+faba290 FIELD-512: Adjusted spacing on Trip Details
+
+------ 7/28/2016 Release --
+* GPS location now set to degrees + decimal minutes
+* Auto-add specimen on common name match (NOTE- sample method must be 1-3 for Species + Counts Weights tabs to appear)
+* Protocol DB stuff not reflected in UI yet, can basically just add biospecimens once Biosample Method is selected
+
+Specific changes:
+# git log --oneline --author="Will Smith" Observer_20160722_build..Observer_20160728_build
+77c5a98 FIELD-569: Enabled/ disabled Counts/Weights tab depending on sample method
+47ef7d5 FIELD-569: Auto-added Species upon addition of Catch Category if common names match
+bfe3f1a FIELD-655: automated negative (western hemisphere) latitude values
+9da469c Observer: Removed special All Trawl case from gear type selection
+f482a7b FIELD-655: tweak input mask for decimal points
+e619fc9 FIELD-655: Added input masks for GPS entry
+52d1515 FIELD-655: Added conversions between decimal degrees <-> degrees + decimal minutes
+87f5ebd FIELD-512: Added display and search by vessel reg. # in autocomplete
+301bf98 Haul Details: Added handler for bad GPS location input
+2553360 Fixed sticky BRD and EFP setting
+d17b14c FIELD-508: Added biosample method database persistence
+
+------ 7/22/2016 Release --
+* GPS location entry
+* More Biospecimens work (pending protocols)
+Specific changes:
+# git log --oneline --author="Will Smith" Observer_20160715_build..Observer_20160722_build
+cf4e21d9 FIELD-508: Required Modify Entry button to be depressed for editing
+45fd723 FIELD-508: added logic for current species ID tied to Biospecimens
+aa2c6af FIELD-506: don't allow deletion of single basket (via DB constraint)
+7b21043 FIELD-506: Make OK button always in same place
+80e3709 FIELD-508: changed ID fields to simple table row count #
+e136a87 FIELD-655: Added Edit Location to GPS locations, added date
+aeda2fa FIELD-511: added columns to Species (to be populated)
+ddec8da FIELD-511: Enabled searching by species code + common names
+914a63e FIELD-508: Changed Biosample Method to buttons instead of keyboard
+9b11124 FIELD-508: Used species name from species tab for biospecimen
+e5448c4 FIELD-655: persist GPS set/ up/ additional to DB
+0d12c49 FramScalingNumPad: updated direct_connect mode
+a50b6c9 FIELD-655: Added GPS entry dialog
+1f77b16 Observer CHANGELOG for 7/15/2016
+
+------ 7/15/2016 Release --
+Specific changes:
+# git log --oneline --author="Will Smith" Observer_20160712_build..Observer_20160715_build
+be1eca4 Observer: added FishingLocations class
+2823171 Observer: Added FishingLocationsModel, Changed POSITION to INTEGER
+340eea9 FIELD-655 added EFP to haul details (sticky)
+ecf249f FIELD-655: Added UI elements for GPS locations to Haul Details screen
+2ba691a Observer DB: removed system constraint for catch_purity
+abf9395 Observer DB: Removed not null constraint for catch purity (no default)
+f8311c1 FIELD-570: Added sample method selection for discards
+9d53c4a Observer: CHANGELOG for 7/12
+356496e Observer DB: Added fields to FISHING_ACTIVITIES and CATCHES per 7/12 meeting
+
+------ 7/12/2016 Release --
+Specific changes:
+# git log --oneline --author="Will Smith" Observer_20160707_build..Observer_20160712_build
+577d0be FIELD-508: Added functionality for Delete Entry (BiospecimensItem) button
+cb7e4d9 FIELD-570: Added CW and Total # of Fish text fields
+4a7a32a FIELD-570: Added dynamic-visibility numpad
+0fd221f Observer: set title on Counts/ Weights to current species
+017febc FIELD-508: Added Biospecimens model and basic DB functionality
+3e3d0c4 FIELD-511: Logic for new row selection
+910617a FIELD-511: fixed autoselection of new SpeciesCompositionItem
+5975763 FIELD-511: fixed issue with sample method changing on current CC
+fdd14b5 FIELD-511: Added more default behaviors to Counts/Weights
+45fbe4e FIELD-511: Reimplemented Basket Add/ Edit/ Delete
+7cefd50 FIELD-511: Show only unique SpeciesCompositionItems in selected list
+21a33f6 FIELD-511: Added logic for adding baskets
+5fc2387 Observer Model: Added default_sample_method to allow bucket creations
+2c52a13 FIELD-511: tweaked title logic
+1c670ed FIELD-511: Added more UI logic
+870bc97 FIELD-511: Added species composition item removal
+4699942 Observer: Updated models to fix more REAL to INTEGER fields
+092d57b FIELD-511: Added species selection model
+fd063f2 FIELD-511: Populated species selection table
+92ddda9 FIELD-570: made Sample Method drive species tab availability
+c065a3a FIELD-508: added Photo / Barcode list view
+8b393bc FIELD-508: Added Barcodes and Photos + Existing Tags tabbed UI elements
+2990a84 FIELD-508: Added Viability/Presence UI elements
+5115fb1 FIELD-508: Added interface for Sex/ Length/ Weights tab
+bf5e639 FIELD-508: New Biospecimens screen UI root elements
+887c1d0 FIELD-570: Show sample reason description, show sample reason in tableview
+da90c07 FIELD-570: Added UI + DB logic for SPECIES_COMPOSITIONS.SAMPLE_METHOD
+57d5cc8 ObserverModel.ndm: changed more REAL to INTEGER fields
+1c3d071 Observer: CHANGELOG for 7/7/2016
+
+------ 7/7/2016 Release --
+* See specific changes below
+* CC Sample Method database logic currently in progress
+
+Specific changes:
+# git log --oneline --author="Will Smith" Observer_20160706_build..Observer_20160707_build
+93088d8 Observer: fixed autoselection of new haul added (delay increased)
+2ca6591 FIELD-570: Added Persist/ load Discard Reason from DB
+1dc380f FIELD-570: Fixed search catch categories
+788115d FIELD-570: Added weight method descriptions + DB persistence
+6803426 FIELD-570: persisted disposition to DB, set up DB persistence code
+4b97d2e Observer: CHANGELOG for 7/6/2016 EOD build
+
+------ 7/6/2016 Release --
+* Further integration of UI and DB - see tickets/changelog below for specifics
+
+Specific changes:
+# git log --oneline --author="Will Smith" Observer_20160701_build..Observer_20160706_build
+c5ee30a FIELD-570: Removed Done, disabled double-click
+80b2753 FIELD-570: added left side of Catch Category UI to match mockup
+b186aa9 FIELD-570: Fixed title, added temp CC code and name roles to Catches
+e038fee Observer: temporarily disable CC remove button
+ce7de8c FIELD-569: Added correct display of available catch categories
+3aab595 FIELD-569: Populated catch categories from DB
+20169d5 FIELD-569: Added Catch categories to new DB per haul
+5c7f009 FIELD-569: Added new code for Catches (migrating to new DB)
+d2bc2e7 FIELD-569: Show Haul ID in title
+ad5eb15 FIELD-569: Moved tabs to right side of screen
+5a70f9d FIELD-569: Remove Haul ID from Catch Screen
+a90e394 FIELD-654: Show confirm dialog when starting new trip from Select screen
+9cc21a0 FIELD-528: Added 3 Haul selection buttons to footer bar
+dbef46a FIELD-528: Created Logbook Mode screen + UI connections
+92b6712 Trip Details: Prevent user entry fields until Vessel Name selected
+b371d28 FIELD-652: Added First Receiver Name or Port Search Functionality
+e3c006c ObserverModel.ndm: fixed PORT_CODE to be INTEGER instead of INTEGER(12,0)
+3ba63c9 FIELD-655: Made BRD presence sticky between hauls
+c5eceb2 FIELD-655: Added DB + UI Logic for Gear Type (Trawl)
+96b6be4 FIELD-655: Implemented DB + UI routines for Target Strategy
+abb1aa0 FIELD-655: populated gear performance from DB
+2b043be Observer: Don't clear fish ticket values unless added successfully
+f181b88 FIELD-659: Removed user name format hint
+b0560f2 FIELD-655: Added Beaufort Scale descriptions
+6b07da1 Observer: UI + DB logic: after End Trip, don't resume trip on app start
+3f239da FIELD-512: Prevented user from going to Hauls without specifying vessel name
+892cf64 Observer: CHANGELOG for 7/1/2016 early build
+
+------ 7/1/2016 Release --
+* Further integration of UI and DB - see tickets/changelog below for specifics
+
+Specific changes:
+# git log --oneline --author="Will Smith" Observer_Old_DB..Observer_20160701_build
+d2ec5ef Observer: fixed BRD to have no default
+292170d FIELD-512: Added DB + UI Logic for Permits and License #'s
+b3c5ec7 FIELD-512: fixed full name search (space in search)
+3bffbd4 Observer: added placeholder for TRIP_CERTIFICATES on Trip Details screen
+0bbb580 FIELD-655: Added DB + UI Logic for Weight Calibration and BRD Present
+5ac100e FIELD-655: Hooked up Fit# to DB (0-99)
+1638ab9 FIELD-655: Added Default OTC WM, hooked up more fields to DB
+a1b524f FIELD-658: Changed check for username format "firstlast" (no space)
+a1a8a19 Observer: Hid Hauls button on End Trip screen
+fa22ed9 Observer: added Fish Ticket functionality + DB to End Trip (minus Edit)
+0f0ec87 FIELD-652: Hid # Fishing Days if not partial trip, fixed weight cal. popup
+4666c01 Observer: persisted OTC for Hauls to DB
+ba1aaf9 Observer: added new mechanism to ensure state machine and page sync
+fc421fd Observer: hooked up Hauls FramListModel to DB
+a160c6a Observer: wired Trips model to FramListModel for Trip Selection screen
+f400458 FIELD-654: updated Select Trip screen using table view instead of list
+fa93005 Observer: updated peewee ORM for DB changes
+d25195b ObserverModel.ndm: changed FISHING_ACTIVITY_NUM to INTEGER
+130d533 ObserverModel.ndm: Removed foreign key in FISHING_ACTIVITIES, added to SPECIES_INTERACTION_HAULS_XREF
+ff4edf0 Observer: updated build script with workarounds for cx_freeze 5.0
+ad970c4 Observer: updated pyqt5.6/ python 3.5 installation and configuration notes
+0d173b7 Observer: EndTripScreen: fixed binding loop for table width (PyQt 5.6)
+8d0bab2 Observer: fixed a few more REAL->INTEGER fields in TRIPS - ERD and ORM
+b9c93d5 Observer: updated build scripts for cx_Freeze 5.0
+7967cf6 Observer: PyQt 5.6 virtual environment files + notes
+be714a4 Observer: hooked up total # fishing days (for partial trips)
+6c56452 Observer: fixed erroneous DEFAULT in TRIPS, in ERD file
+0ec7db0 Observer: added fishing_days_count to peewee ORM
+a87bedb Observer: updated ERD, added FISHING_DAYS_COUNT to TRIPS
+252731e Observer: fixed End Trip button, hooked up more trip fields
+68a9a5f Observer: added "vessel_name" FK lookup to TripsModel, updated TripSelectScreen
+fdc1f4c Observer: updated peewee ORM to match latest ERD
+6d05243 Observer: Updated peewee ORM after DB ERD cleanup
+3e56f79 Observer DB Mega-cleanup: fix INTEGER(12,0) ID's to INTEGER (allow autoinc)
+d300ad5 Observer: Finished ERD Mega-Cleanup, now syncs cleanly to DB
+3fd1b6b Merge branch 'master' of nwcgit.nwfsc.noaa.gov:fram-data/pyqt5-framdata
+bbb5e6f Observer: update ObserverTrip to match new DB schema
+55fc6e8 Observer: update ObserverTrip to match new DB schema
+0d291b0 Observer ERD: Added FIRST_RECEIVER primary key
+7185acb Observer: Updated ObserverTripsModel and unit tests (in-memory test DB)
+3900976 FramUtil: added method to get string representation of peewee model fields
+bcb1e24 Observer: CHANGELOG for 6/22/2016
+f158e59 Observer: Login Screen: Added check/ warning for username in database
+fd113dd FIELD-650: Initial hook-up of new database tables, updated ORM
+
+------ 6/22/2016 Release --
+* Build with some UI fixes/ additions prior to start of new database integration
+* New database integration underway
+
+Specific changes:
+# git log --oneline --author="Will Smith" Observer_20160617_build..Observer_Old_DB
+9d7b04f Observer: Added numpad for popup dialog entry
+8b603fc FIELD-646: Warning for weight calibration other than 11.0 and 11.05
+dddec0c Common: Created FramNoteDialog
+a90e47c FIELD-646: Removed Comments field
+fa0ce05 FIELD-646: Made OTC WT method default to 14
+af3f062 FIELD-646: Added Fit # 0-99 range (numpad dialog)
+f0047dd FIELD-646: Added Visual OTC Numpad, max 6 digits (new Dialog-style numpad)
+5e9ffb1 FIELD-646: Added columns to Hauls screen
+b596cd5 FIELD-646: Added Add Haul > to top navigation, removed Add and End Trip
+dd15642 Observer: Set trip details permit/lic # rowspan depend on permit count
+8ac6036 Observer: added grid layout to permit #'s to allow multiple entries to stack with +/- buttons
+0358751 Observer: CHANGELOG for 6/17 release
+
+------ 6/17/2016 Release --
+* Further integration of changes in FIELD-644 and FIELD-646
+
+Specific changes:
+# git log --oneline --author="Will Smith" Observer_20160615_build..Observer_20160617_build
+3356460 Observer: fixed spacing in nav bar forward arrow label
+214a051 FIELD-646: Persist cleared fields to DB
+72e0744 FIELD-646 Allowed empty entries for Skipper and other DB-only selection widgets
+02d6371 FIELD-646: Added Species Identification button (added row to Home button layout)
+ddf1286 FIELD-646: Added Log Out button, moved settings to nav bar, reordered Hauls button
+15ce3a7 FIELD-646: Removed log out button on all pages except Home, changed Scratch Pad to Comments
+b3c1655 FIELD-646: Enabled clicking on the name + arrow to navigate forward or backwards
+2b0e027 Observer: minor changes from 6/16 meeting
+5796135 Observer: changed font.pointSize to font.pixelSize in a few stragglers, change Roles to Program on Login page
+
+------ 6/15/2016 Release --
+* Further integration of changes in FIELD-643 and FIELD-644
+
+Specific changes:
+# git log --oneline --author="Will Smith" Observer_20160610_build..Observer_20160615_build
+9359fda Observer: disabled/ grayed out buttons that aren't available, simplified button appearance for some screens
+cbf9d04 Observer: fixed logic and display of trip start, end, and selection
+c9a2c94 Observer: added initial End Trip functionality
+4fc278d Observer: modified start trip logic + UI behavior
+0e2abc5 Observer: updated "Start Trip" to general-purpose "Trip Details"
+e1767a3 FIELD-644: change button on home screen to "Edit Trip #nnnn" when appropriate
+5091775 FIELD-644: connected end trip datetime to DB
+5da71bc FramTimeTumbler: zero-padded minutes < 10
+f9b596e FIELD-644: connected return port to DB
+5bf9625 FIELD-644: connected vessel page # to DB
+85cdbc8 FIELD-644: connected Partial Trip and # fishing days to DB
+9aeddb4 Observer: created generic ObserverTrip.setData and getData for faster DB integration with QML
+82421d0 FIELD-524, FIELD-562: Added autocomplete and loaded Vessel Logbook Name from DB
+59aa517 Observer: added flat style combo box for Roles (experimental)
+dcec3cf Observer: fixed issue with cancel button on keyboard
+aaa8a18 FIELD-526: Created FramTimeTumbler
+543e8dc Observer: added iso_to_local helper functionality, display user-friendly dates
+724b588 Observer: created scaling numpad
+a3265f4 Observer: fixed date picker, added date-only selection
+f720ba6 FIELD-559: Added Fish Processed During Trip? Yes/No explicit checkboxes
+72ce706 Observer: reorganize End Trip (Finish Trip) screen
+c63dc20 FramButton: fixed to use pixelSize instead of pointSize
+c8e7863 FIELD-644: Set Permit/License # entry to keyboard, to allow alpha chars
+68f6c6f FIELD-644: Added autocomplete suggestion-only input for Start Trip screen
+646fe19 FramWideKeyboard: Added autocomplete-only input mode
+9ac0220 Observer: rearrange Haul Details page order
+1b8ca48 FIELD-644: Removed Change Roles button + state, renamed MMSBT button to Species Interactions
+890c4c5 FIELD-644 - Made Log Out button visible on all pages, added spacer
+ebf1978 FIELD-643: Added table view for fish tickets (temporary data)
+45085d9 Observer: CHANGELOG for 6/10/2016
+
+------ 6/10/2016 Release --
+* Integration of changes in FIELD-643
+
+Specific changes:
+# git log --oneline --author="Will Smith" Observer_20160609_build..Observer_20160610_build
+c87ee83 FIELD-643: Added more base functionality, fixed autosuggestion bug
+98144f7 FIELD-643: Added End Trip screen, does not have Fish Ticket list functionality yet
+2b05d49 FramNumPad: auto-selected text upon show(), and fixed spacing for "basic_popup" state
+ddceab6 FIELD-643: Added on-screen numpad to Start Trip screen (might change to QML Dialog)
+cee81d2 Observer: CHANGELOG for 6/9 release
+
+------ 6/9/2016 Release --
+* Integration of changes in FIELD-641
+
+Specific changes:
+# git log --oneline --author="Will Smith" Observer_20160606_build..Observer_20160609_build
+c715fed Observer: Created Haul Details screen (interface)
+9815d2c Observer: added logbook button to Haul Details page
+3b0d5d5 Observer: Added window controls (min/maximize, close) to main window (for development phase)
+5e47900 Observer: Added new navigation framework for upper right "forward" buttons
+2c73625 FIELD-641: Added Hauls > to top right corner
+5bea045 Observer: Added spacer at top of Home page above buttons
+4fb8c19 FIELD-641: Added Date/ Time Picker
+76c8ef0 Observer: get captains from DB from Contacts joined with VesselContacts
+bf2ea2c Observer: added primary key for VESSEL_CONTACTS to ORM and .ndm
+645e87c Observer: added possible future Contacts.contact_type == 3 to Skipper query (no records with this yet)
+b3abd44 FIELD-641 - add Fisheries, Skippers and Ports (+ Autocomplete) to Start Trip screen
+6d7a7b3 Observer: add PORTS primary key to model and ORM
+0dd550e Observer: add primary key to FISHERIES, update ORM and ndm file
+862a879 Observer: modified TRIP table, added foreign keys, updated peewee ORM
+e5a81af Observer: Update peewee ORM
+c8e8ae6 FIELD-641: Wire in USCG/ State Reg #
+a0ab574 Observer: Added Scratch Pad, writing to DB with observer name, app state, date
+3839ded FIELD-641: Added basic scratch pad functionality
+9b05e81 FIELD-641: Change Popups to QML Dialog,  Add Settings and Scratch Pad toolbar buttons
+4e57cb9 Observer: updated ObserverModel tables
+79c8269 FIELD-641: Added Settings and Scratch Pad buttons to footer
+8b0b79a Observer: fixed alignment for trawl/ fixed gear buttons for fullscreen
+2a7d657 Observer: CHANGELOG for 6/6 build
+
+
+------ 6/6/2016 Release --
+* Began integration of changes listed in FIELD-641 (refer to ticket for specifics)
+* Started new database schema
+
+Specific changes:
+# git log --oneline --author="Will Smith" Observer_20160601_build..Observer_20160606_build
+f707dd6 FIELD-641: Made various changes to Login page
+5ae32e1 FIELD-641: fixed coloration on Start Trip screen
+024dd9a FIELD-641: Added global background gray color, numerous other fixes
+39b53dd Observer: Added centered title in page header, fixed font size for buttons, resized home page buttons
+5d4ce0b Observer: consolidated footer row code, fixed formatting issues
+f213ce6 Observer: Updated build script
+
+------ 6/1/2016 Release --
+* Initial build with new login/ home/ start trip screen interface
+* Functionality across the app is mostly disconnected during rework of user interface
+* Database overhaul underway
+
+Specific changes:
+# git log --oneline --author="Will Smith" Observer_20160510_build..Observer_20160601_build
+7d6b72c Updated build_observer.py script
+fccf248 Observer: Added background to start trip screen keyboard's autocomplete area
+692461b FramWideKeyboard/ FramScalingKeyboard: Fixed keyboard entry for physical keyboard (accepts return and enter keys)
+9629167 Observer: Added keyboard to login page
+ba3e67a Start on autocomplete behavior for Start Trip
+6b46922 Adjusted layout of StartTripScreen
+a8338f7 Started wiring together footer rows (has display issues)
+9e63422 Added Start Trip screen + basic layout
+98edab1 Added state machine with banner text
+bec0f4e Added initial page switching from Home screen
+37dfdcf Added 12-button Home screen
+8e3ee96 Added Trawl/ Fixed Gear radio buttons to Login page
+913dcd2 Added notes on PyQt 5.6 configuration
+0c985c9 Observer: fixed UI issues related to obsolete toolBar
+b59a3e4 Observer: Added ROLES to clean database (copy to observer.db)
+fa70b44 Trawl: Added ping test thread to check various boxes
+e956090 FramUtil: added ping_response + unit test
+b063360 Added another possible Trawl icon
+567c94c Added Trawl icon for trawl_backdeck.exe cx_freeze build
+
+------ 5/10/2016 Release --
+* Added Login screen + necessary changes to framework (still needs login page functionality)
+* New baseline build for schedule and plans outlined in Newport
+
+# git log --oneline --author="Will Smith" Observer_20160317_build..Observer_20160510_build
+1694894 Observer: fixed header display on nested Home page
+43b39b1 Observer: physical keyboard behavior on login screen
+406be20 Observer: added login screen UI
+bd8de5f Observer: initial basic login screen + logo
+7255f77 Observer build: Removed all module excludes (left in from some old sample code?)
+00bd66a FramFooterRow: fixed text for exit confirm dialog box
+0c4f48b Observer: successfully build MSI installer (but will currently fail when trying to write to install directory)
+17ce091 FramConfirmDialog: Added auto_label property (default true, it inserts "Are you sure you want to _____ ?")
+5b7287c FramConfirmDialog: Added auto_hide property, and hide() signal,
+96dfb3c FramConfirmDialog: Autoscale text and fix alignment issues
+9f1197e FIELD-529: Removed Year from Trip Details
+341b6fa Observer: DB storage of Hauls + signals
+0c0b6cb Build script: updated folder debug output
+afc9b44 Build scripts: .gitignored the default build directory
+0cc32f7 Build scripts: refactored to move into build/ directory
+c810055 Build scripts: Added subdirectory in .zip file, put finished .zip into build\dist
+a25b16b Observer: removed Qt.labs.settings dependency
+88dc9a1 Observer build: used empty observer DB for new builds
+0b9075a Changed Zip Compression method from BZIP2 to DEFLATED (Standard,) Windows was choking on the file.
+e71ef58 Build scripts: added deletion of old build (confirm prompted) and creation of zip archive
+9975724 Zip utility: Refactored, added flag to actually compress files (it just ZIP_STOREs by default)
+ef0456a Updated zip_files.py to be more general purpose
+efcffdc Removed old build scripts
+a8c0706 Build scripts: added auto-discovery of PYQT5 path
+b56ea7b Build scripts: added auto-discovery of python path
+814640d Observer: build script using cx_freeze
+767fa53 Observer: updated HAUL table and Navicat ERD for ObserverModel
+4fb3008 Observer: saved Hauls to DB
+2b23ee5 Observer: refactored DB utility class, + unit tests
+107b8f2 Observer: Persisted selected Trip Number to database, load on program start
+f983338 Observer: Created Observer DB utilities class, set/get Settings from DB
+ac5f596 Observer: Always jump to Trip Details when trip is selected
+
+------ 3/17/2016 Release --
+* Full database integration still in progress, Haul Info will not be saved yet
+* Main UI changes for this week are in Trip Select / Trip Details
+  * Observer, Vessel Name, and a few others are populated and saved to DB
+  * No way for user to delete a Trip (desired?)
+    * To clear DB of Trips, just overwrite data/observer.db with version in archive
+  * Need some clarification on remaining Trip Details - FIELD-518 created to track
+
+Source commit log:
+# git log --oneline --author="Will Smith" Observer_20160310_build..Observer_20160317_build
+22b2ad9 FIELD-517: Fixed crash bug: clicking No Count with empty bucket list
+b92c376 FIELD-507: Fixed edge cases for total/avg weights display
+1123d2f FIELD-512: Clear selected text when entering keyboard data
+dcb30c8 Observer: added logic to update Trip Details on the fly when Vessel Name changed
+c4b89c6 Observer: refactored how Vessel is handled internally
+0bc2adf Observer: fixed failing unit tests and  fixed debug output logic error in ObserverAutoComplete
+9d7e854 Observer: clarified some comments, update headers
+10e5a83 Observer: used consistent key for Trip ID for simplification
+470a6cf Observer: Added conversion of Trip model from peewee to FramListModel/ QML friendly dict and back
+c0e2100 FramListModel: added replace( index, item)
+b465d7e Observer: Added logic to use last vessel name for new trip
+6b29e8c Observer: Added big scroll bar, UI changes for Select Trip screen
+eb74695 Observer: fixed Vessel name display in header
+34900f2 Observer: minor refactor, shorthand ORM get(...)
+994ff89 Observer: initial trip details persisting to database
+4fb2995 FramListModel: return new index of appended items
+75779a0 Observer: Added notify for tripsChanged
+a53d74f Observer: jump to Trip Details when new trip selected, removed dup. vessel names
+221fd64 Observer: add New trip button
+8e1ba38 Observer: Added autocomplete  for Fisheries
+247211e Observer: added autocomplete for Vessels
+2e5b7ec Observer: refactored autocomplete
+015c6d9 FIELD-505: Enabled Return and Enter from physical keyboard for data entry
+b3458e8 Observer: Added logic to disable menu items until Trip ID is selected
+27b17f0 Observer: hooked up trip ID/ vessel name to TripDetailsScreen
+61aee85 Observer:  logic for trip ID/ trip Number + unit test
+5114165 Observer: set trip start times to UTC (non-naive)
+70aceea Observer: added initial DB logic for Trip ID with ORM
+0c41350 Observer: refactored ORM unit test
+df5ff8e Observer: CHANGELOG for 3/10/2016 build
+
+------ 3/10/2016 Release --
+* Primary UI change is the first-run jump to Settings if Observer is not set.
+  * Saves Observer name, gear type, catch shares toggle in database
+  * Keyboard logic fix (for manual input)
+* Implemented prototype autocompleting keyboard on Trip Details
+  * NOTE: Only Observer Name is autocompleting at the moment
+* Full database integration in progress
+
+Source commit log:
+# git log --oneline --author="Will Smith" Observer_20160303_build..Observer_20160310_build
+0aedda0 FIELD-504: Set active focus to popup keyboard automatically
+237dc18 Observer: use qrc resources via Qt.resolvedUrl
+4a2bd87 FIELD-494: added DB persistence for default gear type + catch share toggle
+df147e9 Observer: added logic for First Run and observer name DB persistence
+1f780f1 Observer: added user name / id wrappers using ORM + tests
+e5ad803 Observer: fixed Settings unit test
+10cf2e1 Observer: Added USERS via ORM, added unit tests
+a2e9f64 Observer: updated model, used ORM for LOOKUPS
+41b8211 Observer: Added Observer Name to Settings screen + changed appearance
+b4bd32c FramNumPad: fix decimal entry behavior for numbers < 1
+4dd940d Observer: fix Exit button confirm dialog position
+3890152 FramConfirmDialog: declare width and height,  use x and y instead of anc
+hors for default position (can be overridden)
+8f7de94 Observer: Fix divide by zero bug
+4b90278 Updated Observer CHANGELOG for 3/4/2016 build
+37a045e FIELD-496: Added new  autocompletion keyboard on Trip Details
+6179e72 Observer: Added initial FramWideKeyboard autocorrect ListView
+de2f484 Observer: basic ORM unit test
+d51a879 Observer: Added Unit tests using temporary in-memory database
+533caa9 Observer: refactored DB ORM files to peewee convention
+c5efcf8 Updated Observer CHANGELOG for 3/3/2016 build
+
+------ 3/3/2016 Release --
+* Began hooking Object Relational Model (save info to database)
+* FIELD-490: Numpad no longer cut off on tablet resolution
+* FIELD-491: Use screen width + fix cut off buttons on Biospecimens page
+* FIELD-496: On Trip Details, started work on wide keyboard + autocomplete dropdown on right (NOT COMPLETE)
+* See 2/29/2016 Release notes (from friday release)
+
+Source commit log:
+# git log --oneline --author="Will Smith" Observer_20160229_build..Observer_20160303_build
+b9362f5 FIELD-496: Started FramWideKeyboard + Autocomplete
+61dfaeb Observer: fixed all unit tests (mainly Haul)
+bc53cda Observer: swtiched to ORM for Species
+066b75c Observer: added foreign key to model to test ORM
+3bb5651 Observer: rename tables in ORM to peewee convention
+e222199 Observer: started initial ORM
+503ab4e ObserverModel Navicat ERD updates, fix bad keys in schema
+bbf30a3 Observer: ORM generated by pwiz
+b2b43fe Observer: adjusted C/W screen height
+2d18f7a FIELD-498: Adjusted Biospecimens screen to fit tablet resolution
+2e49484 FIELD-495 Adjusted Counts/Weights keypad to fit on screen
+bd0e1a8 FramNumPad: refactoring
+1cd9998 Observer: minor test timer change
+a0340bf Observer: add Navicat ERD file (binary)
+48134f4 Observer: merged observer_data schema into original Observer main
+7641b34 Observer: create observer_data.db for persistence
+9334e91 Observer: shrink main window for emulation of tablet resolution (in test mode)
+cdf276c CHANGELOG for 2/29/2016 build
+
+------ 2/29/2016 Release --
+* Moved "sliding" keyboard up on Trip Details
+  * Need to solidify plan that makes sense for autocomplete dropdown + "second" textfield above keyboard
+* New haul jumps straight to Catch Category screen
+  * There is a big delay (depending on the device) between New Haul and switching to the CC screen, tracked as FIELD-468
+* Total weight and average weight now calculated on Counts/Weights screen
+* Various UI fixes
+
+Source commit log:
+# git log --oneline --author="Will Smith" Observer_20160225_build..Observer_20160229_build
+feeee69 Observer: fix SlidingKeyboard height on Trip Details
+f737e92 Observer: Added autoselection of new haul
+9700a00 FIELD-489 Fixed +/- NumPad function for counts
+0805eca FIELD-484: Added Total Weight/ Avg Weight to Counts/Weights tab
+e79aa2d Observer: Fixed Species Screen to show Recent/ Full buttons + sizing issues
+0aecf53 Observer: CHANGELOG for 2/25 build
+
+------ 2/25/2016 Release --
+Release Notes:
+* FIELD-486 Can now add New hauls and switch between them (unique datasets for each haul.)
+  * Edit haul details not implemented (FIELD-357)
+  * Logic for ending hauls etc. not implemented
+* FIELD-472 Maximize screen for tablet PC (Landscape mode is assumed to be set and locked in Windows.)
+* FIELD-481, 482, 483 Various UI changes
+
+
+Source commit log:
+# git log --oneline --author="Will Smith" Observer_20160218_build..Observer_20160225_build
+223462f Observer: minor refactoring, add back Add Entry button to Bios
+94f1adc FIELD-482, FIELD-481: Added Undet. and N/A button to sex,  made button selection stick
+00eca34 FIELD-483 Remove Add Basket button
+c5a78aa Observer: added haul ID primary key for Biospecimens + unit tests
+d107fb7 FramFooterRow: added New / Edit button state
+7d0e5ee Observer: added haul ID primary key for Counts / Weights
+93c960d Observer: added haul ID primary key for Species
+87516c3 Observer: Added model store for Catch Categories
+f0a2a05 FramListModel: added unit test for appendItem
+fef512c FramListModel: Added unit test for setProperty
+75cb9f6 Observer: added primary key to model store class + unit tests
+103d6ec Observer: connected Add Haul button to create new haul
+cdd37ce Observer: added more Hauls functionality, unit tests
+c2202f8 Observer: added Gear Type functionality to Hauls model
+fe63ad1 Observer: Started refactor/ create HaulModel + unit tests
+ce2022a Moved and renamed Observer Changelog
+94c6cdf Observer: CHANGELOG file for changes in weekly builds
+335d3a4 Observer: added flag for screen maximize (for released builds)
+
+
+------ 2/19/2016 Release --
+* Added input fields for Biospecimens Details (not hooked to data yet)
+
+Source commit log:
+# git log --oneline --author="Will Smith" Observer_20160218_build..Observer_20160219_build
+0414fa8 Observer: added Biospecimens Details
+1239428 Observer: Bios refactored, added controls
+93198d7 Observer: fixed Recent CC list
+38b9b8e Observer: Added Bio details fields
+479c0fe Observer: Added max width logic for details pages
+b650c63 Observer: Added Bio details state, tweaked numpad behavior
+c98950e Observer: attached Bio Details screen
+bf9e6d1 Observer: remove unused file
+3bd6733 Observer: removed redundant ListView from Trip Details screen

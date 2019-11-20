@@ -1,0 +1,360 @@
+Change Log - Trawl Backdeck Software
+
+*****************************************************************************************************************
+TODO
+*****************************************************************************************************************
+- FIELD-670 - FishSamplingScreen - Take barcode from scanner, auto-focus back on Weight TextField
+- FIELD-671- FishSamplingScreen - Small weight is still overriding barcode if typing small manual weight, then barcode comes in, 
+		then hit ok on the manual weight button
+- FIELD-668 - SpecialActionsScreen - Printing would sometimes not work, but need to be initiated from FishSamplingScreen
+- FIELD-669 - FishSamplingScreen - Weight + Barcode sounds can null each other out - default to barcode sound 
+- FIELD-672 - WeighBasketsScreen - Military? / Fishing? - add options
+		
+- QAQC - For a mix, must be at least one subsample and one non-subsample present
+		
+		
+- T2 / Integrator - happens with the first haul or first two morning tows - only see waypoints, no sensor data
+- T2 / TowLogger - Start haul clock at 00:00, not 00:22, i.e. not GPS offset time	
+- T2 / Trawl Performance - Clear out previous tow notes / status / min-time met
+
+
+
+
+
+*****************************************************************************************************************
+TESTING
+*****************************************************************************************************************
+- FishSamplingScreen.qml - highlight specimen, populate appropriate TextFields + TableView values - I think this is already fixed
+- pyCollector - Test Integrator against new daily sensors_YYYYMMDD.db files - 
+- pyCollector - Test Daily Backup - does it properly get C:\PyData2016 + sensors_YYYYMMDD.db + trawl wheelhouse+backdeck databases
+- SpecialActionsScreen.qml - initialize_list - confirm works properly once have Ovaries with Leg + Length (i.e. 2) sub-strata
+- HaulSelection.py - delete_test_haul - Check for CATCH + SPECIMEN associated with Haul and if they exist, show dialog to confirm deletion
+
+- pyCollector - HOBOWARE 1-hour shift - confirm that BCS data is no longer shifted
+
+
+
+- Calibration Testing Software
+
+
+
+
+PETER Notes - 20160606
+
+Wheelhouse
+- T2 / Integrator - happens with the first haul or first two morning tows - only see waypoints, no sensor data
+
+- T2 / Midpoint Prompts - they cover the depth
+
+- Report / spreadsheet of catch data for given tow/haul
+- Report / Spreadsheet of tow information - tow waypoints + details - times / locations / etc.
+
+Backdeck 
+- ValidationDialog - Single Basket Subsample Check - still incorrect
+- FishSampling - OnEntryValidation - Length / Weight mismatch - does not seem to be firing always
+- ProcessCatchScreen - Add To Mix - make it sticky to the last mix to which you added
+- ProcessCatchScreen - Auto-highlight the species added to the mix
+- ProcessCatchScreen - Victor Simon search technique
+- ProcessCatchScreen - searching for anemonae/sponge/jellyfish/squid, 
+		near the top of the list, put the sponge unident. at the top - if starting with a family name or higher order name
+- ProcessCatchScreen - Auto-expand the mixes and submixes
+
+
+- Validation - Mix Non-Subsample Basket Check - check if at least 1 subsample and at least 1 non-subsample exist for a mix/submix
+
+
+- Calculator - Weigh Baskets - numPad - do substraction, get long floating point number
+- WeighBaskets - closing - Red striated anemone
+
+
+- WeighBasket.py WeighBasketsScreen.qml - Dialog warning if over 60kg
+- ProtocolViewer.py - fix get_protocol query, i.e. split into two queries - might get bleeding from other PI's using the protocol
+- QAQC.py - OnEntryValidation - Min Width Validation 0.8cm - caliper units set to inches
+- QAQC.py - OnEntryValidation - Max Weight Validation 60kg - scale maximum
+- QAQC.py - OnEntryValiation - Max Length Validation 100cm - length maximum
+- HomeScreen.qml - Haul-Level Validations - Code Logic
+- QAQC.py - OnEntryValidation - Maximum historical length check
+- QAQC.py - OnEntryValidation - Take 7 lengths, if all the same size, show popup
+- QAQC.py - Backup trawl_backdeck.db to wheelhouse - emit signal when backup is done / don't want them to turn off machine until copy is complete / populate HomeScreen
+- Database - Update Historical Lat Min/Max in TAXONOMY_LU from Peter + Beth
+- FishSamplingScreen.qml - Update self.sexLengthCount + self.ageWeightCount counters + screen
+- WeighBasketsScreen.qml - Set to Scale Weight after entering Nth subsample number
+- PyCollector - TowLogger - Haul ID - change the Project type to be variable - add 10 (Deep Tow) + 99 (Test Tow) - Deep Benthos + Demersal Zone Sampling Project
+
+VALIDATIONS
+- WeighBasketsScreen.qml - ERROR CHECK - Take first weight - check historical lat/depth ranges, if outside, confirm dlg
+- ProcessCatchScreen.qml - ERROR CHECK - Finished + Validate Button - check aggregate summed fish weight (see Beth's PDF on length/weight ratio)
+- ProcessCatchScreen.qml - ERROR CHECK - Finished + Validate Button - Add Lengthed fish, they should add up to the subsample weight for each species
+- ProcessCatchScreen.qml - ERROR CHECK - Finished + Validate Button - All species must have at least one basket weight + list out the culprits
+- FishSamplingScreen.qml - ERROR CHECK - if AgeWeight fish, in Age-Weight Mode, on Age-Weight Tab, try to leave + no weight or age, show confirm dlg
+- HaulSelectionScreen.qml - ERROR CHECK - If not latest haul selected, dlg confirm - are you sure you want to do an older haul?
+- SpecialActions.py - ERROR CHECK - Barcode checks - run same as in FishSampling.py - out of range, dups, already captured
+- WeighBasketsScreen.qml - ERROR CHECK - On << button, if at least 1 basket only weight + at least 1 weight + count +
+						at least 1 weight+count with no subsample, confirm dlg - make all weight+counts subsamples?
+- FishSamplingScreen.qml - ERROR CHECK - In Age-Weight mode with Age-Weight fish, don't take a barcode, click on Sex-Length tab, dlg confirm, no barcode??
+
+WISHLIST
+- FishSamplingScreen.qml - If SL+AW only fish, you got the SLAW values, auto go back to the tabSexLength tab if on tabAgeWeight + make "New Fish" sound
+- FishSamplingScreen.qml - AgeWeight > OvaryStomach Tab Auto Change - only do if protocol has Ov / St / Ti in protocol, but not for Finclip
+- FishSamplingScreen.qml - tabAgeWeight, if protocol age is not otolith, auto-select proper age structure type
+- HomeScreen.qml - How to populate the backup information...
+- pyCollector - add database views for looking at hauls + sensor data0
+- ProcessCatchScreen.qml - Larger Scrollbar
+- FishSamplingScreen.qml - OvSt Tab - Show protocol status - 3 of 5 / Bin 20-29cm / Leg 1
+- SpecialActionsScreen.qml - Select row, show X of 5 collected indicator
+- FishSamplingScreen.qml - If Special Action in protocol, have + in name + enable Special Actions tab
+- FishSamplingScreen.qml - tabAgeWeight - Age type set to Not Available for Age-Weight fish, don't do any barcode checking
+- SerialPortManager.py + PARSING_RULES_LU - change barcode parsing to field deliminted using \r as delimiter / Change code in SerialPortManager on how to handle null value
+- SerialPortManager.py - Turn on a serial port reader, pull USB plug, need to auto-restart a comport
+- FishSamplingScreen.qml - BUG!!! - tagAgeWeight - Weight is a float, does not always round to 3 digits
+- WeighBasketsScreen.qml - Swap Species logic/UI - including checking if subsample/estimate weight - popup list, select, move it
+- SpecialActionsScreen.qml - Implement Add Custom Action
+- SerialPortManagerScreen.qml - BUG Update port, leave screen, reenter gives wrong playControl icon
+- HaulSelection.py - pull down haul performance - satisfactory / unsatisfactory (Tied to WeighBaskets for Protocol Fish and disabled count button)
+- SerialPortManagerScreen.qml - Truncate sentence data to fit column in TableView
+- SerialPortManager.py - check measurement value ranges:  Small Scale max 15kg, Large Scale max 60kg, Board max 199cm
+- ProcessCatchScreen.qml - isLastNHauls Logic - add for populating avRecent model
+- FishSamplingScreen.qml - Catch / Specimen table - add measurement_source, i.e. fishmeter board, manual, scale, etc.
+- SpecialActionsScreen.qml - Consolidate changeSex/... all into changeValue function
+- SerialPortManager.py - Line Endings \r and \r\n are not working, only \r?\n? works
+- HomeScreen.qml - Skin new dlgOkay box / i.e. msg object
+- Database - TAXONOMY_LU > break out STATISTICAL_PARTITION from TAXONOMY_LU + CATCH_CONTENT_LU > size + lifestage
+- FishSamplingScreen.qml - Implement tvSamples Collection Summary button
+- FishSamplingScreen.qml - Auto-forward from Weight to Age in tabWeightAge, can't get it to work for some reason
+- WeightBasketsScreen.qml - Highlight basket row, disable Subsample button when Count is null, enable when a count exists
+- SerialPortManager.py - start_all_threads - add pyqtSignal back from thread starting indicating when done, and only then try to start the next thread
+- PyCollector - FIELD-440 - Search + Station Numbers get out of sync
+- PyCollector - FIELD-391 - SEARCH Deactivtion Date/Times are not gettting populated								
+- ProcessCatchScreen.qml - Debris - add military-related + fishing-related + photo taken single state to WeighBaskets + set statePop in ProcessCatch
+- WeighBasketsScreen.qml - Add Fishing Related + Military Related + Photo Taken Toggle Buttons for Debris state
+- SerialPortManagerScreen.qml - Change Serial Port Change to TrawlNumpadDialog
+- QML - On Touchscreen, buttons don't depress, why?
+
+*****************************************************************************************************************
+ON HOLD
+*****************************************************************************************************************
+- WeightBasketsScreen.qml - Enable Subsample button only when num baskets > 1, otherwise disable it
+- FishSamplingScreen.qml - Barcode age test - check if |a| = 1 difference between current and the last barcode
+- ProtocolViewer.py - Should TAXONOMY_ID to be recursive for get_actions, given a salmon Order taxon_id, apply to all salmon?
+- General - Add - https://docs.google.com/spreadsheets/d/15ddx5a9RB35ElWPfu9NXzFmb6V9qN7ehBQegT1cv9OE/edit#gid=1675194554
+- ProcessCatchScreen.qml - Review if/how one does lifestage + size strata
+
+*****************************************************************************************************************
+RELEASES
+*****************************************************************************************************************
+20160602
+
+- ProcessCatchScreen.qml - ERROR CHECK - Finished + Validate Button - if only 1 basket, remove subsample if it is "Yes"
+
+20160520
+
+- TrawlCommentsDialog.qml - Create + store in NOTES table
+
+20160519
+
+- Database - Yelloweye Rockfish - Special Action - specify if whole ovary or not (for fecundity study) - Use YES/NO State
+- Database - Modify Weitkamp Lamprey Protocol to:  Pacific Lamprey / River Lamprey - Whole Specimen ID
+- Database - SPECIES_SAMPLING_PLAN_LU Table - Run relabeling for special projects
+- Database - Special Action - Harvey - Is Age Weight Sample - YES/NO, Is Sex Length Sample - YES/NO
+- SpecialActionsScreen.qml - Add YES/NO State + Add to protocol_viewer in get_special_actions
+- Database - Park Shark Voucher Project - Photograph - Need Toggle Button - YES/NO
+- SpecialActionsScreen.qml - Read barcode for Coral Specimen ID - play shotgun sound
+- FishSamplingScreen.qml - if Sex-Length-only fish, disable AgeWeight tab + Ovary-Stomach tabs, but enable Special Actions Tab (i.e Harvey)
+
+20160515
+
+- Database - FRAM Whole Specimen does not get a plus in the protocol
+- PyCollector - Load PERSONNEL for SETUP page - from Keith's schedules
+- PyCollector - Load STATIONS from Curt
+- Database - Popoulate TAXONOMY_LU - 5x missing TAXON_ID's from Peter's historical lat/depth values spreadsheet - BETH ????
+- SerialPortManagerScreen.qml - Add 2 printers as writers only
+- Database - Populate TAXONOMY_LU - Load historical lat / depth values - from Peter
+- Database - Populate TAXONOMY_LU with species min/max historical lengths
+- Database - Populate CATCH_CONTENT_LU Marine Debris - update with Marine Debris listing from Melissa
+
+20160513
+
+- FishSamplingScreen.qml - ERROR CHECK - On << button, check if all same sex + specimen count >= 10, confrm dlg, are you sure?
+- FishSamplingScreen.qml - Add new length by keypad, if on tabSexLength, highlight tfLineal + numPadText
+- FishSamplingScreen.qml - Age-Weight Mode button - sometimes gets out of sync - delete all specimens when in AW mode, unchecks, doesn't relabel
+- SpecialActionsScreen.qml - BUG!!! - delete all FishSamplingScreen specimens, but still have a SpecialAction-related sub-specimen
+	ERROR:SpecialActions.py:576:record does not exist: Instance matching query does not exist:
+	  File "C:\Todd.Hay\Code\pyqt5-framdata\py\trawl\FishSampling.py", line 779, in _get_special_actions_indicator
+		parent_specimen_id = self._model.get(index)["parentSpecimenId"]
+	TypeError: 'QVariant' object is not subscriptable
+- FishSamplingScreen.qml - Set tabOvSt items to null, delete the sub-specimen record
+- FishSamplingScreen.qml - Specimens - add SP = Y if you've done any Ovary-Stomach-Tissue-Finclip or Special Actions
+- WeighBasketsScreen.qml - Weigh debris, apsw.ConstraintError: UNIQUE constraint failed: CATCH.PARENT_CATCH_ID, CATCH.RECEPTACLE_SEQ
+- ProcessCatchScreen.qml - Remove species/debris with existing baskets, add it back, basket data still showing in TreeModel, but gone from DB already
+- ProcessCatchScreen.qml - display total weight for haul at top
+- FishSamplingScreen.qml - ERROR CHECK - Weight/Length Ratio Check - Doesn't always work in modify weight mode
+- WeighBasketsScreen.qml - BUG - Num Baskets Count > Add Basket, then delete one, doesn't respond to deletion, why?
+- WeighBasketsScreen.qml - Total Weight - populate
+
+20160512
+
+- ProcessCatchScreen.qml - CRITICAL!!! - DATA LOSS Remove species from Tree - finish Confirm dialog if specimen data exists / recursive delete specimen data
+- FishSamplingScreen.qml - tabOvSt - Assign Tag ID, clear it out, re-assign doesn't add anything - because getting assigned 0 and len(0) is invalid
+- FishSamplingScreen.qml - Non-Species Sampling Plan specimens - sub-specimen data not showing up
+- FishSamplingScreen.qml - ERROR CHECK - Length/Weight Relationship - Change to checking lower/upper error bounds once I get str_error values from Beth
+- FishSamplingScreen.qml - Delete Specimen - play buzzer when you attempt (i.e. click Delete Entry button)
+- HaulSelectionScreen.qml - Toggle for Today's Hauls v. All Hauls
+- FishSamplingScreen.qml - BUG!!! - tabOvSt - Highlight tvAction row that has dashes in it, it still shows in numpad text
+
+20160511
+
+- FishSamplingScreen.qml - BUG!!! - add empty age value - crashes...
+- HaulSelection.py - BUG!!! - Application can freeze when selecting a haul or when clicking Get Daily Hauls - Likely caused by not issuing model.clear()
+- SpecialActionsScreen.py - LabelPrinter - check if thread is running first before trying to print
+- HaulSelection.py - when getting real hauls, if, for a given haul, the end time has been updated, update this in the database
+- SpecialActionsScreen.qml - Implement Add Print Button
+- SpecialActionsScreen.qml - Implement Assign Tag ID Button
+- FishSamplingScreen.qml - Auto-populate numPad.text on selecting length / weight / age for modification
+- FishSamplingScreen.qml - Print Label, populates numPad with year portion of label ID
+- PyCollector - SerialPortManager.py - add buffer read(1) trick to reduce CPU usage
+- FishSamplingScreen.qml - Printer - barcode not able to be scanned from our custom labels
+- SerialPortManager.py - BUG!!! - Launch app, pull USB plug, computer crashes
+- FishSamplingScreen.qml - BUG!!! - Able to add a new specimen using "Add Entry" button when on tabAgeWt + tabOvSt tabs
+- FishSamplingScreen.qml - BUG!!! - initialize_list - missing some specimens - was skipping records when display_name = "Whole Specimen ID"
+- SpecialActionsScreen.qml - onEntered when coming from FishSamplingScreen.qml - all same ID as specimen # in FishSamplingScreen.qml / disable btnAddSpec.
+
+20160509
+
+- SpecialActionsScreen.qml - onEntered screen - show complete template for a given protocol, even if sub-specimens were not entered (e.g. coral photograph)
+- SpecialActionsScreen.qml - Entering screen, only FRAM Whole Specimen ID that is highlighted, add value into numpad text
+- SpecialActionsScreen.qml - onEntered screen - not showing previously captured results
+- FishSamplingScreen.qml - BUG!!! - Took weight, got length/weight tolerance error, then took barcode before clicking yes / no - weight was not captured
+- SpecialActionsScreen.qml - Implement Add Specimen - add count for how many you'd like to add
+- FishSamplingScreen.qml - ERROR CHECK - Take a length, if value = 0, show popup
+- FishSamplingScreen.qml - BUG!!! - Species with no protocol or sampling plan, specimens do not get initialize + shown on screen entry
+- HaulSelection.py - Split getting test hauls from getting real hauls to improve initial performance
+- HaulSelection.qml - delete haul that has species - do the species still occur (think Abyssal Crangon when demo'ing to Aimee and it showing up...)
+
+20160505
+
+- FishSamplingScreen.qml - BUG - Modify Length - play sound - it doesn't play it currently
+- FishSamplingScreen.qml - BUG!!! - don't add entry, go to age-weight mode, click tabOvSt, add ovary, crashes - because no parent specimen
+- PyCollector - Update RpcServer2.py to pull it's IP address from CONFIGURATION_SETTINGS
+- PyCollector - BCS-P/S data is not uploading
+- HaulSelection.py - delete_test_haul - set state_machine.haul to None if the new HaulsModel.count == 0
+- HaulSelectionScreen.qml - Change test haulNumbers to milliseconds since Epoch as fast clicks within 1s were causing unique constraint crash
+- HaulSelectionScreen.qml - Delete Test Haul - added checked to ensure that tvHauls.model.count > 0 first before trying to get the haul
+
+20160503
+
+- HaulSelectionScreen.qml - Only show hauls for the current day
+- PyCollector - RpcServer2.py - create get_hauls method
+- WeighBaskets.py - BUG!!! - Mix weighing fails - due to CATCH_VW issue and not retaining Taxon v. Mix weighing distinction
+- FishSamplingScreen.qml - Click on a tabOvSt tvActions row that has an Assigned Tag ID (i.e. with dashes), put a blank in numpad
+- ProcessCatch.qml - On Species Change, change FishSampling mode to Sex-Length
+- SpecialActionsScreen.qml - Accept Barcode for Corals only
+- SpecialActionsScreen.qml - Accept length / weight / width measurements - only go into a row if the row is measurement type row
+- FishSampling.py - Print Job - truncate weight to one digit past the decimal
+- FishSamplingScreen.qml - Barcode Duplicate check - compare to SPECIMEN table as well as to BARCODES_LU table
+
+20160502
+
+- pyCollector - SerialPortManager.kv/py - Fix add_equipment + add_comport ListViews - not toggling/showing
+
+20160429
+
+- SpecialActionsScreen.qml - Implement upsert_list_item
+- SpecialActions.py - initialize_list > add query to DB for existing special actions specimen data
+- SpecialActionsScreen.qml - initialize_list > need to update the right side of screen with the correctly selected/inputted value (M,F,U,etc)
+- ProcessCatchScreen.qml - display protocol of selected species - on addSpecies + initialize_screen
+- ProcessCatchScreen.qml - BUG!!! - Add Mix, Add Canary to Mix, Weight 2 baskets of canary, can then do FishSampling for it
+- SpecialActionsScreen.qml - Implement delete_list_item - delete parent if all children are deleted
+- Database - SPECIES_SAMPLING_PLAN - SexLength Protocols for Hake - need taxonomy_lu updates from beth
+- Database - Populate STRATUM_LU Table
+- Database - Populate PROTOCOL_LU Table
+
+20160427
+
+- SpecialActionsScreen.qml - Add Coral to the Coral specialActions in tvSpecimens table
+
+20160425
+
+- ProcessCatchScreen.qml - Click Fish Sampling with No Protocol Fish - confirm dlg warning
+- SpecialActionsScreen.qml - Implement / Merge SalmonSamplingScreen.qml + CoralsSamplingScreen.qml into SpecialActionsScreen.qml
+- WeighBasketsScreen.qml - When in Modify Weight/Count - auto select number in numPad
+- Database - SPECIES_SAMPLING_PLAN - Add SPECIMEN_TYPE_ID - comprises PROTOCOL ACTION + PI - used to print out the label & get tag id
+- FishSamplingScreen.qml - BUG!!! - Assign Tag ID to Ovary - program crashes
+- FishSamplingScreen.qml - BUG!!! - Label is not quite correct - Investigator is wrong, Measurement overlaps, Specimen # bleeds, barcode bleeds
+
+20160424
+
+- SpecialActionsScreen.qml - Park + OSIC are species-specific, not universal
+- ProcessCatchScreen.qml - BUG!!! - sometimes CATCH are getting added with the CATCH_CONTENT_ID not being populated
+- ProcessCatchScreen.qml - BUG!!! - Remove selected species, it gets added back to the Most Recent List, even when not on it
+
+20160422
+
+- WeighBasketsScreen.qml - BUG!!! - Species + Protocol are missing
+- ProcessCatchScreen.qml - BUG!!! - Individual baskets show, due to PARENT_CATCH_ID and CATCH_CONTENT_ID missing
+- WeighBasketsScreen.qml - BUG!!! - Weight basket manually in species #1, go to ProcessScreen, select species #2, go to WB, scale weight doesn't work
+- WeighBasketsScreen.qml - Modify Weight - play the usual weight sound
+- WeighBasketsScreen.qml - BUG!!! - Count is not always working
+- ProcessCatchScreen.qml - BUG!!! - Remove is sometimes disabled even when selecting a Selected Species
+- Database - Add to CATCH_CONTENT_LU:  Rockfish: Bocaccio, Rockfish: Cowcod, Rockfish: Pacific Ocean Perch
+- FishSamplingScreen.qml - Printing Label - check for printer success regarding upping the A to B to C element of printer label
+- FishSamplingScreen.qml - Printer - encode proper information to print / unique numbers per year+vessel (not species)
+- HaulSamplingScreen.qml - Sort by date/time/haul ID, with the newest on the bottom
+- FishSamplingScreen.qml - Print Label, don't show the msg popup box if successful
+
+20160420
+
+- FishSamplingScreen.qml - Assign Tag ID in Ovary/Stomach Tab - Implement
+- FishSamplingScreen.qml - tvSamples numbers are different than what are saving in the model (mismatch with long numbers)
+
+20160419
+
+- FishSamplingScreen.qml - Species has no protocol, show popup in ProcessCatch on clicking FishSampling
+- FishSamplingScreen.qml - update_list_item - check valid length/weight ratio - confirm dlg - update length / width / sex
+- FishSamplingScreen.qml - update_list_item - Barcode numbers range:  100,000,000 - 103,000,000 / Must be 9 digits long
+- FishSamplingScreen.qml - update_list_item - Barcode must be unique / no duplicates
+- FishSamplingScreen.qml - update_list_item - Barcode override, play Homer Undo Undo, show popup, and if yes, play shotgun sound
+
+20160418
+
+- Database - Upload historical barcodes to support duplicatiaon checks
+- FishSamplingScreen.qml - Ovary-Stomach Tab - Assign Tag ID - Auto-Highlight the row after Tag ID assignment
+- FishSamplingScreen.qml - initialize_list - when a user enters the screen - populate the model from the DB - TEST TEST TEST
+- FishSamplingScreen.qml - disable btnSpecialActions until sex/length/weight are populated
+- FishSamplingScreen.qml - Barcode age override - confirmation dialog box
+- FishSamplingScreen.qml - delete specimen, are you sure confirm dialogue
+- FishSamplingScreen.qml - tfAge, tfWeight - change from using fishSampling.currentValues to using updateTabValues function
+- FishSamplingScreen.qml - update_list_item - add new specimen record or update existing record based on the ACTION_TYPE_ID
+- FishSamplingScreen.qml - delete_list_item - recursively delete the parent + all children with new recursive SPECIMEN table
+- FishSamplingScreen.qml - add_list_item - use new recursive SPECIMEN table
+- WeighBasketsScreen.qml - Display Protocol
+- WeighBasketsScreen.qml / FishSamplingScreen.qml - don't take auto weights or lengths at times > incorrect activeTab
+- SerialPortManager.py - CPU Hog when serial ports are active = 30% CPU - due to using inWaiting() method
+
+20160404
+
+- main_trawl_backdeck.py - Prevent from running more than one trawl_backdeck.exe at a time
+- Database - Review Corals listing with JB / Beth - Lillipathes sp. + Bathypathes sp. both missing
+- HaulSelectionScreen.qml - selectHaul: 23 broken - looking for model.haulId, check roles
+- FishSampling.py - Print Label - use FRAM Standard Survey as the Principal Investigator
+- FishSampling.py - highlight row when it is auto-added by fishmeter board
+- FishSampling.py - Do not accept auto barcodes / scale weights if in sex-length mode
+- FishSampling.py - accept updates from Ovary / Stomach / Tissue / Finclip
+- FishSampling.py - play sounds on add specimen (length), update barcode, update weight
+- FishSamplingScreen.qml - Ovary-Stomach Tab - do not auto-advance to the next row
+- FishSamplingScreen.qml - Disable Age-Weight + Ovary-Stomach tabs when no Specimen is selected
+- FishSamplingScreen.qml - Auto-Lengths not taking when going to SpecialActionsScreen and returning to FishSamplingScreen
+
+20160328
+
+- WeighBasketsScreen.qml - If in manual weight/count mode, do not accept scale weight
+- WeighBasketsScreen.qml - Add new debris or mix item in process catch, do manual weight, then try manual count and get error
+- ProcessCatchScreen.qml - Fixed issue when returning from WeighBasketsScreen, and expanded mixes were collapsing back down
+
+20160322
+
+- FishSamplingScreen.qml - Change Printer options to Printer1 / Printer2 toggle buttons
+- FishSamplingScreen.qml - Remove modify via Fishmeter
+- WeighBasketsScreen.qml - Play donuts sound when a weight is added
+- WeighBasketsScreen.qml - Enter 0 for Nth basket subsample, this should null out the Nth frequency
+- WeightBasketsScreen.qml - Scale weights are getting converted to integers as opposed to floats
+- SerialPortManagerScreen.qml - Barcode numbers final digit get dropped

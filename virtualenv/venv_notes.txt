@@ -1,0 +1,26 @@
+* NOTE: Using 64-bit Python 3.5.2 and PyQt 5.6 (also seems to work fine with 32-bit equivalent)
+
+* Install 64-bit python 3.5.2 (I used c:\python35)
+  * from cmd prompt,
+  * easy_install pip to upgrade (pip version was stuck for me, (pip install -U --force-reinstall pip errored out))
+  * pip install -U setuptools (I had to log out of windows and do this before starting pycharm)
+
+* create virtualenv with c:\Python35 interpreter, set project to use it (and build project)
+* locate wheels for apsw and cx_Freeze \\NWCFile\FRAM\Users\Will.Smith\pyCollector Binary .whl dependencies\python3.5\
+(note, cx_Freeze 4.x is broken on python 3.5, acquired version at https://github.com/sekrause/cx_Freeze-Wheels/blob/master/cx_Freeze-5.0-cp35-cp35m-win_amd64.whl)
+  * copy wheels to virtualenv directory for convenience
+
+* Open cmd prompt, navigate to your virtualenv and run scripts\activate.bat
+  * repeat upgrade of pip and setuptools as above (might need to close pycharm)
+  * pip install apsw###.whl and pip install cx_Freeze###.whl
+  * pip install -r requirements.txt (or let pycharm do it)
+
+* File->Settings->Tools-> Python Integrated Tools, point to appropriate requirements.txt
+
+* the pyPI version of pyqt5 doesn't have qml, so install it in two steps:
+  * For base PyQt5, requirements.txt should install it (or pip install pyqt5) but also had to:
+  * Install PyQt5.6 64-bit to c:\Python35 (PyQt5-5.6-gps-Py3.5-Qt5.6.0-x64.exe)
+  * Manually copy c:\Python35\Lib\site-packages\PyQt5 to <virtualenv>Lib\site-packages\PyQt5
+
+* At one point I needed Windows Sys Env variable, but probably don't need it any more:
+  * QML2_IMPORT_PATH -> C:\Python35\Lib\site-packages\PyQt5\qml

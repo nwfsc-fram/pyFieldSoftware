@@ -1,0 +1,69 @@
+.git
+.cache/
+.idea/
+.flake8
+__pycache__/
+**/.mypy_cache/
+**/venv/
+bin/
+
+**/kivy_logs/
+**/resources/sounds/
+sandbox/
+# Skip ALL data for github
+data/
+**/*.whl
+**/*.dll
+**/*.pdf
+**/*.exe
+angular/
+
+# Skip all sqlite databases in data and data's subdirectories (where clean_observer versions may be)
+
+data/**/*.db
+# Skip WAL and shared memory file, if SQLite observer.db using in Write-Ahead-Log mode
+data/**/*.db-shm
+data/**/*.db-wal
+data/_cleandb.bat
+data/cleandb.sh
+# Skip dated json files in data directory
+data/*201[0-9]*.json
+
+# Skip data not used by OPTECS
+data/2016_data_loading
+data/2017_data_loading
+data/hookandline/tides
+data/planning_data_to_load
+
+# Skip all log files, regardless of directory location.
+**/*.log
+
+build/*.spec
+build/dist/
+build/build/
+*_qrc.py
+*.zip
+build/exe.win32-3.4/
+build/exe.win32-3.5/
+tables/
+virtualenv/optecs/Lib/
+virtualenv/optecs/Scripts/
+virtualenv/venv-jms-optecs-dip/
+virtualenv/venv-jms-optecs-py36/
+virtualenv/jim*
+/qml/common/HookandlineSetIdDialog.qml
+
+# Skip unused resources
+resources/images/possible_images
+resources/sounds/other_sounds
+
+# Skip certain docs
+doc/notes_for_trawl_backdeck
+doc/hookandline
+angular/optecs-admin-util/.editorconfig
+angular/optecs-admin-util/.history/
+angular/optecs-admin-util/.vscode/settings.json
+angular/optecs-db-util/.history/
+doc/notes_from_PyCollector/JohnBuchanon_Notes.jpg
+doc/dev_env/SshGitClone.md
+test/sqlite_encryption_test/

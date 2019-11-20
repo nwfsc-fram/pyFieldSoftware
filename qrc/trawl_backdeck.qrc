@@ -1,0 +1,89 @@
+<RCC>
+    <qresource prefix="/">
+        <file>../qml/trawl/main_backdeck.qml</file>
+        <file>../qml/trawl/TrawlBackdeckStateMachine.qml</file>
+        <file>../qml/trawl/HomeScreen.qml</file>
+        <file>../qml/trawl/HaulSelectionScreen.qml</file>
+        <file>../qml/trawl/ProcessCatchScreen.qml</file>
+        <file>../qml/trawl/WeighBasketsScreen.qml</file>
+        <file>../qml/trawl/FishSamplingScreen.qml</file>
+        <file>../qml/trawl/SalmonSamplingScreen.qml</file>
+        <file>../qml/trawl/CoralSamplingScreen.qml</file>
+        <file>../qml/trawl/SpecialActionsScreen.qml</file>
+        <file>../qml/trawl/QAQCScreen.qml</file>
+        <file>../qml/trawl/ReportScreen.qml</file>
+        <file>../qml/trawl/SerialPortManagerScreen.qml</file>
+        <file>../qml/trawl/NetworkTestingScreen.qml</file>
+        <file>../qml/trawl/SettingsScreen.qml</file>
+        <file>../qml/trawl/SpecimenTagsDialog.qml</file>
+
+        <file>../qml/trawl/SpeciesModel.qml</file>
+        <file>../qml/trawl/BasketsModel.qml</file>
+        <file>../qml/trawl/LengthsModel.qml</file>
+<!--        <file>../qml/trawl/SampleTypesModel.qml</file>  -->
+        <file>../qml/trawl/SalmonModel.qml</file>
+        <file>../qml/trawl/SalmonCountModel.qml</file>
+        <file>../qml/trawl/CoralsModel.qml</file>
+        <file>../qml/trawl/ValidationsModel.qml</file>
+        <file>../qml/trawl/StandardActionsModel.qml</file>
+<!--        <file>../qml/trawl/SpecialActionsModel.qml</file> -->
+        <file>../qml/trawl/SpecimensModel.qml</file>
+        <file>../qml/trawl/ProtocolManagerScreen.qml</file>
+        <file>../qml/trawl/MapView.qml</file>
+        <file>../qml/trawl/SensorDataFeedsScreen.qml</file>
+        <file>../qml/trawl/StandardProtocolScreen.qml</file>
+        <file>../qml/trawl/FishSamplingScreenOld.qml</file>
+        <file>../qml/common/TrawlBackdeckButton.qml</file>
+        <file>../qml/common/TrawlBackdeckMenuButton.qml</file>
+        <file>../qml/common/TrawlBackdeckGroupBox.qml</file>
+        <file>../qml/common/TrawlBackdeckTableView.qml</file>
+        <file>../qml/common/TrawlBackdeckTreeView.qml</file>
+        <file>../qml/common/TrawlBackdeckComboBox.qml</file>
+        <file>../qml/common/TrawlBackdeckTextFieldDisabled.qml</file>
+        <file>../qml/common/FramNumPad.qml</file>
+        <file>../qml/common/FramNumPadButton.qml</file>
+        <file>../qml/common/FramKeyboard.qml</file>
+        <file>../qml/common/FramKeyboardButton.qml</file>
+        <file>../qml/common/FramComboBox.qml</file>
+        <file>../qml/common/FramSlidingKeyboard.qml</file>
+        <file>../qml/common/FramConfirmDialog.qml</file>
+        <file>../qml/common/FramTableViewDialog.qml</file>
+        <file>../qml/common/ScreenUnits.qml</file>
+        <file>../qml/common/CommonUtil.qml</file>
+        <file>../qml/common/qmldir</file>
+        <file>../qml/common/TrawlDataEntryCheckDialog.qml</file>
+        <file>../qml/common/TrawlConfirmDialog.qml</file>
+        <file>../qml/common/TrawlValidateDialog.qml</file>
+        <file>../qml/common/TrawlNoteDialog.qml</file>
+        <file>../qml/common/TrawlOkayDialog.qml</file>
+        <file>../resources/images/start.png</file>
+        <file>../resources/images/stop.png</file>
+        <file>../resources/images/delete.png</file>
+        <file>../resources/images/info.png</file>
+        <file>../resources/images/new.png</file>
+        <file>../resources/images/open.png</file>
+        <file>../resources/images/save.png</file>
+        <file>../resources/images/datafeeds.png</file>
+        <file>../resources/images/map2.png</file>
+        <file>../resources/images/settings.png</file>
+        <file>../resources/images/lightning-bolt.png</file>
+        <file>../resources/images/button_default.png</file>
+        <file>../resources/images/button_pressed.png</file>
+        <file>../resources/images/icon-calendar.png</file>
+        <file>../resources/images/navigation_next_item - Copy.png</file>
+        <file>../resources/images/navigation_next_item.png</file>
+        <file>../resources/images/navigation_next_item_dark.png</file>
+        <file>../resources/images/navigation_page_down_dark.png</file>
+        <file>../resources/images/navigation_page_up_dark.png</file>
+        <file>../resources/images/navigation_previous_item_dark.png</file>
+        <file>../resources/images/navigation_previous_item - Copy.png</file>
+        <file>../resources/images/navigation_previous_item.png</file>
+        <file>../resources/images/NOTICE.txt</file>
+        <file>../resources/images/scrollbar.png</file>
+        <file>../resources/images/tab_selected.png</file>
+        <file>../resources/images/tabs_standard.png</file>
+        <file>../resources/images/textinput.png</file>
+        <file>../resources/images/toolbar.png</file>
+        <file>../resources/sounds/weighbaskets_buzzer.wav</file>
+    </qresource>
+</RCC>

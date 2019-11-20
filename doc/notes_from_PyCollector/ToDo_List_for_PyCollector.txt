@@ -1,0 +1,59 @@
+- FEATURE - PI44 Data - Only accept when quality is 22
+- BUG - When starting the nightly backup, stop SerialPortManager so we're not trying to write to the
+	database at the same time that we're trying to copy it to the external harddrive
+- FEATURE - TowLogger - 7:30 / 12min Manual Depth Entries - Focus on TextInput
+- FEATURE - On Clear Waypoint, add an FPC Log Entry
+- BUG - TowLogger - Select New Tow w/ existing waypoints, Abort Popup, if yes, write FSCS HDR + OPSEG DEACTIVATION DTG
+- BUG - TowLogger - Station Search - Clear it should clear tow_id.text + CONFIG_SETTINGS Tow ID + Tow Number (when else should this be cleared)
+- BUG - TowLogger - Select Haul ID, new station exists, lightning bolt already green, activate start_haul capture_id
+- BUG - TowLogger - Popup Sequential Number - is currently displaying the next sequential number versus the current number (I think, confirm).
+- FEATURE - SerialPortManagerScreen - Delete SerialPortRow - Confirmation Popup
+- BUG - TowLogger - Search - 7956.02 - weird behavior - after enter, removes .02 / select 7922 as secondary instead of 7956.02 / does not enable Tow ID TextInput
+- BUG - SerialPortManager - xml.parsers.expat.ExpatError - ITI starting does this, why?
+- FEATURE - TowLogger + SerialPortManager - send message to TowLogger at 5 mins of stream no activity to show popup in TowLogger
+- HOLD - TASK - TowLogger - 11,000 stations - Load to DB
+- FEATURE - Anemometer - show real-time wind speed
+- BUG - TowLogger - Move updating meatball status to Consumer/Publisher model for drawing purposes
+- BUG - SerialPortManagerScreen - Move updating meatball status to Consumer/Publisher model for drawing purposes
+- FEATURE - TowLogger - Click New Tow, then click New Tow again, asks if want to Abort the Tow, shouldn't do this when a blank screen
+- FEATURE - DB Direct Query in SQLiteExpert - Give me all of the waypoints for a given Tow Number
+- FEATURE - SetFscsPathScreen - Write from SetupScreen.py
+- FEATURE - MD5 hash on SensorFileUploadScreen reupload
+- DB - SerialPortManager - Tweak ENVIRO_NET_RAW_STRINGS Code - http://stackoverflow.com/questions/1711631/improve-insert-per-second-performance-of-sqlite
+- FEATURE - TowLogger - MapView - Draw Waypoints on map as well.  
+- FEATURE - TowLogger - MapView - Draw vessel + net track from Start Haul > End of Haul
+- BUG - SerialPortManagerScreen.py - Turn simulator rate way up and then back down, and then untoggle +
+		toggle on the serialportrow display.  It takes 10s or so to actually display the data readout
+- BUG - FC - TowLogger - trying to stop threads via <name>.terminate() does not work, must issue <thread-name>._stop() !!!!
+- BUG - FC - TowLogger - Click Exit, having to issue self._meatball_thread._stop() to work instead of terminate(), fix
+- BUG - Threading - Check how we're stopping/handling all threading - maybe can't call class method as a thread, only full class
+			-- SerialPortThread
+			-- MeatballThread
+			-- DataFlowThread
+- FEATURE - TowLogger - FPC Log - Resize FpcLogEntry Height to text size - Lambda args_converter set Height - _create_fpc_log_listview
+	http://kivy.org/docs/api-kivy.uix.listview.html
+	http://stackoverflow.com/questions/19932614/dynamically-resizing-a-label-within-a-scrollview
+- FEATURE - TowLogger - QA - Net Location v. Vessel Location - <= 1km
+- FEATURE - TowLogger - Weighted BCS - Implement Panel
+- FEATURE - TowLogger - QA/QC - Manual Entries of:  Local Time / Manual Depth / BCS
+- FEATURE - TowLogger - Manual Depth Entry - OnEnter or OnDeFocus Update TOW_WAYPOINTS table record + QA checking / Remove altogether ???
+- FEATURE - TowLogger - MapView - On New Tow - center on Vessel location + set MapView mode to vessel tracking mode
+- FEATURE - TowLogger - MapView - Center On Vessel / Center on Station buttons
+- FEATURE - TowLogger - Remove "test" TOW ID use case (000 Tow ID - instead use 2014/EXCAL/Pass2-Leg1)
+- FEATURE - SerialPortManager - write all sentences to DB in a given 1s using execute_many
+- TEST - Load All 2014 Excalibur ENVIRO_NET_RAW_STRINGS data to Stress test SELECT + INSERT statements
+- FEATURE - TowLogger - MapView - Zoom In / Out
+- FEATURE - TowLogger - MapView - OnHover Tooltip with Coordinate display
+- FEATURE - TowLogger - MapView - Search Mode - Add trackline to MapView
+- TASK - Update ENVIRO_NET_RAW_STRINGS for 20140823 EXCALIBUR Data to add DEPLOYED_EQUIPMENT_ID
+- FEATURE - TowLogger - Change FPC to TextInput + Search with Drop-Down ListView
+- BUG - TowLogger - Fullscreen on dual monitors, can't get out of fullscreen mode
+- FEATURE - TowLogger.py - Station ID Panel - Implement catching the down arrow to move from TextInput to move to ListView
+- FEATURE - ScreenManager - fix Home > Setup,  ...  buttons - Retheme to gray+white
+- FEATURE - TowLogger - Do we need to enable users to look at an old TOW in TowLogger or Tow Performance screens?
+- FEATURE - TowLogger - Station Panel - type in partial cell # (e.g. 43), click on ListView value, it does not highlight in listview
+- BUG - FC - TowLogger - Station Panel - Fix On Focus for overall panel
+- BUG - FC - SetupScreen - Change FPC, doesn't change FPC on TowLogger
+- FEATURE - FC - SerialPortManagerScreen.py - add / delete serialportrow, check if TL is open, if yes, send signal of SPR change
+- FEATURE - Multiprocess Queue - clear it before launching TowLogger + Don't even push to it if TowLogger is not even running
+- FEATURE - SerialPortManagerScreen.py - Implement Copy Config Button Logic

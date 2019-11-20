@@ -1,0 +1,65 @@
+<RCC>
+    <qresource prefix="/">
+
+        // Main Application
+        <file>../qml/hookandline_hookmatrix/main_hookmatrix.qml</file>
+
+        // State Machine
+        <file>../qml/hookandline_hookmatrix/HookMatrixStateMachine.qml</file>
+
+        // Screens
+        <file>../qml/hookandline_hookmatrix/SitesScreen.qml</file>
+        <file>../qml/hookandline_hookmatrix/DropsScreen.qml</file>
+        <file>../qml/hookandline_hookmatrix/HooksScreen.qml</file>
+        <file>../qml/hookandline_hookmatrix/GearPerformanceScreen.qml</file>
+        <file>../qml/hookandline_hookmatrix/HookMatrixStateMachine.qml</file>
+
+        // Items
+        <file>../qml/hookandline_hookmatrix/DropTab.qml</file>
+        <file>../qml/hookandline_hookmatrix/DropAngler.qml</file>
+        <file>../qml/hookandline_hookmatrix/HookItem.qml</file>
+        <file>../qml/hookandline_hookmatrix/HooksFullSpeciesList.qml</file>
+        <file>../qml/hookandline_hookmatrix/PersonnelItem.qml</file>
+        <file>../qml/hookandline_hookmatrix/NumPad.qml</file>
+
+        // Dialogs
+        <file>../qml/hookandline_hookmatrix/SinkerWeightDialog.qml</file>
+        <file>../qml/hookandline_hookmatrix/PersonnelDialog.qml</file>
+        <file>../qml/hookandline_hookmatrix/OkayCancelDialog.qml</file>
+        <file>../qml/hookandline_hookmatrix/EditTimeDialog.qml</file>
+        <file>../qml/hookandline_hookmatrix/NotesDialog.qml</file>
+        <file>../qml/hookandline_hookmatrix/OkayDialog.qml</file>
+        <file>../qml/hookandline_hookmatrix/DrawingNotesDialog.qml</file>
+
+        <!--// Widgets-->
+        <file>../qml/hookandline_hookmatrix/NumPadButton.qml</file>
+        <file>../qml/hookandline_hookmatrix/Footer.qml</file>
+        <file>../qml/hookandline_hookmatrix/Header.qml</file>
+        <file>../qml/hookandline_hookmatrix/BackdeckButton.qml</file>
+        <file>../qml/hookandline_hookmatrix/BackdeckTableView.qml</file>
+        <file>../qml/hookandline_hookmatrix/FramScalingKeyboard.qml</file>
+        <file>../qml/hookandline_hookmatrix/FramScalingKeyboardButton.qml</file>
+        <!--<file>../qml/common/TrawlBackdeckTextFieldDisabled.qml</file>-->
+        <!--<file>../qml/hookandline/ToolTip.qml</file>-->
+
+        <!--// Resources-->
+        <file>../resources/ico/hooklogger.ico</file>
+        <file>../resources/images/navigation_previous_item_dark.png</file>
+        <file>../resources/images/navigation_next_item_dark.png</file>
+        <file>../resources/sounds/hookmatrix_15secs.wav</file>
+        <!--<file>../resources/images/wave.png</file>-->
+        <!--<file>../resources/images/start.png</file>-->
+        <!--<file>../resources/images/stop.png</file>-->
+        <!--<file>../resources/images/delete.png</file>-->
+        <!--<file>../resources/images/info.png</file>-->
+        <!--<file>../resources/images/new.png</file>-->
+        <!--<file>../resources/images/open.png</file>-->
+        <!--<file>../resources/images/save.png</file>-->
+        <!--<file>../resources/images/datafeeds.png</file>-->
+        <!--<file>../resources/images/map2.png</file>-->
+        <!--<file>../resources/images/settings.png</file>-->
+        <!--<file>../resources/images/lightning_green.png</file>-->
+        <!--<file>../resources/images/lightning_yellow.png</file>-->
+
+    </qresource>
+</RCC>

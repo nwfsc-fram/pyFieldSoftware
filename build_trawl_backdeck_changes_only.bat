@@ -1,0 +1,3 @@
+pushd build
+python.exe build_trawl_backdeck_changes_only.py build
+popd

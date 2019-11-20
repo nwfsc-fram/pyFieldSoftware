@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='utf-8'?>
+<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap-env:Header>
+        <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+            <wsse:UsernameToken>
+                <wsse:Username>obsclient</wsse:Username>
+                <wsse:Password
+                        Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">
+                    br3wcr3w_2014$$
+                </wsse:Password>
+            </wsse:UsernameToken>
+        </wsse:Security>
+    </soap-env:Header>
+    <soap-env:Body>
+        <ns0:updateClientScripts xmlns:ns0="http://impl.webservices.obofflinesync.sdm.nwfsc.nmfs.noaa.gov/types/">
+            <ns0:userName>SystemAdministrator</ns0:userName>
+            <ns0:password>xxx</ns0:password>
+            <ns0:transaction_id>111692</ns0:transaction_id>
+            <ns0:version>2017</ns0:version>
+            <ns0:var1></ns0:var1>
+            <ns0:var2></ns0:var2>
+            <ns0:var3></ns0:var3>
+            <ns0:var4></ns0:var4>
+        </ns0:updateClientScripts>
+    </soap-env:Body>
+</soap-env:Envelope>
+
+        <?xml version='1.0' encoding='utf-8'?>
+<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/">
+<soap-env:Header>
+    <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+        <wsse:UsernameToken>
+            <wsse:Username>obsclient</wsse:Username>
+            <wsse:Password
+                    Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">
+                br3wcr3w_2014$$
+            </wsse:Password>
+        </wsse:UsernameToken>
+    </wsse:Security>
+</soap-env:Header>
+<soap-env:Body>
+    <ns0:uploadClientData1 xmlns:ns0="http://impl.webservices.obofflinesync.sdm.nwfsc.nmfs.noaa.gov/types/">
+        <ns0:userName>WILLSMITH</ns0:userName>
+        <ns0:password>DFDF2AAD0AF03B8B36D738789E4093253F1F8B..</ns0:password>
+        <ns0:fileName>FISHING_ACTIVITIES#16_2027_06NOV2018_1126.csv</ns0:fileName>
+        <ns0:data>
+            IkZJU0hJTkdf...
+        </ns0:data>
+        <ns0:version>2018</ns0:version>
+        <ns0:var1>2027</ns0:var1>
+        <ns0:var2>optecs NWCLW04008104</ns0:var2>
+        <ns0:var3></ns0:var3>
+        <ns0:var4></ns0:var4>
+    </ns0:uploadClientData1>
+</soap-env:Body>
+</soap-env:Envelope>
+
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+<SOAP-ENV:Header/>
+<SOAP-ENV:Body>
+    <ns2:uploadClientData1Response xmlns:ns2="http://impl.webservices.obofflinesync.sdm.nwfsc.nmfs.noaa.gov/types/">
+        <ns2:result>&lt;br&gt;SUCCESS: Parsed 1 FISHING_ACTIVITIES row.</ns2:result>
+    </ns2:uploadClientData1Response>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

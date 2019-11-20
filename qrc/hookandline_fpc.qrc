@@ -1,0 +1,53 @@
+<RCC>
+    <qresource prefix="/">
+
+        // Main Application
+        <file>../qml/hookandline/main_fpc.qml</file>
+
+        // Screens
+        <file>../qml/hookandline/MainForm.qml</file>
+        <file>../qml/hookandline/SensorDataFeeds.qml</file>
+        <file>../qml/hookandline/FpcScreen.qml</file>
+        <file>../qml/hookandline/SettingsScreen.qml</file>
+        <file>../qml/hookandline/SitesManagerScreen.qml</file>
+
+        // Dialogs
+        <file>../qml/hookandline/SetIdDialog.qml</file>
+        <file>../qml/hookandline/NewMeasurementDialog.qml</file>
+        <file>../qml/hookandline/AddComportDialog.qml</file>
+        <file>../qml/hookandline/LineEndingDialog.qml</file>
+        <file>../qml/hookandline/OpenOperationDialog.qml</file>
+        <file>../qml/hookandline/OkayDialog.qml</file>
+        <file>../qml/hookandline/OkayCancelDialog.qml</file>
+        <file>../qml/hookandline/ListViewDialog.qml</file>
+        <file>../qml/hookandline/AdjustWaypointTimeDialog.qml</file>\
+        <file>../qml/hookandline/SpeciesReviewDialog.qml</file>
+        <file>../qml/hookandline/EndOfSiteValidationDialog.qml</file>
+
+        // Widgets
+        <file>../qml/common/TrawlBackdeckButton.qml</file>
+        <file>../qml/common/TrawlBackdeckTextFieldDisabled.qml</file>
+        <file>../qml/hookandline/ToolTip.qml</file>
+
+        // Legacy
+        <file>../qml/hookandline/MapView.qml</file>
+        <file>../qml/hookandline/BlackButtonBackground.qml</file>
+        <file>../qml/hookandline/BlackButtonStyle.qml</file>
+
+        // Resources
+        <file>../resources/ico/hooklogger.ico</file>
+        <file>../resources/images/wave.png</file>
+        <file>../resources/images/start.png</file>
+        <file>../resources/images/stop.png</file>
+        <file>../resources/images/delete.png</file>
+        <file>../resources/images/info.png</file>
+        <file>../resources/images/new.png</file>
+        <file>../resources/images/open.png</file>
+        <file>../resources/images/save.png</file>
+        <file>../resources/images/datafeeds.png</file>
+        <file>../resources/images/map2.png</file>
+        <file>../resources/images/settings.png</file>
+        <file>../resources/images/lightning_green.png</file>
+        <file>../resources/images/lightning_yellow.png</file>
+    </qresource>
+</RCC>

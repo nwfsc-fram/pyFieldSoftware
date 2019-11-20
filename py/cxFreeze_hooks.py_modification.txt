@@ -1,0 +1,13 @@
+"""
+FIELD-602 - Required for playing sounds using QMediaPlayer
+
+Add the following method to your cx_Freeze hooks.py module in
+<PYTHON_PATH>\lib\site-packages\cx_Freeze\hooks.py
+"""
+
+def load_PyQt5_QtMultimedia(finder, module):
+    name, QtCore = _qt_implementation(module)
+    finder.IncludeModule("%s.QtCore" % name)
+    finder.IncludeModule("%s.QtMultimedia" % name)
+    finder.IncludeModule("%s.QtMultimediaWidgets" % name)
+    copy_qt_plugins("mediaservice", finder, QtCore)
