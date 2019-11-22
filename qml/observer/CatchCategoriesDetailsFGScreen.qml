@@ -120,9 +120,6 @@ Item {
 
     Component.onCompleted: {
         init_ui();
-        if (is_phlb) {
-            rptWMButtons.selectWM9();
-        }
     }
 
     function init_ui() {
@@ -161,7 +158,7 @@ Item {
         // For certain weight methods, a numpad for weight entry is provided on this Catch Cat Details screen.
         if (wm === "13" || wm === '6' || wm === '14') { // '2' || wm === '6' || wm === '7' || wm === '14') {
             return true;
-        }        
+        }
         return false;
     }
 
@@ -273,17 +270,17 @@ Item {
                                  if (!dispositionRow.allowDispChange) {
                                      dlgCannotChangeDispositionWithData.open();
                                      checked = false;
-                                     buttonDispR.checked = true;                                     
+                                     buttonDispR.checked = true;
                                  } else if (dispositionRow.catchIsNoSpeciesCompWithBiospecimens()) {
                                      dlgCannotChangeDispositionIfNoSpeciesCompWithBiospecimens.open();
                                      checked = false;
-                                     buttonDispR.checked = true;                                     
-                                 } else {                                     
+                                     buttonDispR.checked = true;
+                                 } else {
                                      appstate.catches.setData('catch_disposition', 'D')
-                                     appstate.catches.species.isRetained = false;                                 
+                                     appstate.catches.species.isRetained = false;
                                  }
                                  catchCatsDetailsFG.check_details_complete();
-                             }                             
+                             }
                          }
                      }
                      Connections {
@@ -324,10 +321,10 @@ Item {
                                      appstate.catches.setData('catch_disposition', 'R')
                                      // Note: setData is asynchronous, not instant
                                      rowDR.clear_discard_reason();
-                                     appstate.catches.species.isRetained = true;                                     
+                                     appstate.catches.species.isRetained = true;
                                  }
                                  catchCatsDetailsFG.check_details_complete();
-                             }                             
+                             }
                          }
                      }
                }
@@ -359,11 +356,7 @@ Item {
                         Repeater {
                             id: rptWMButtons
 
-                            model: ["13", "14", "9"]
-                            function selectWM9() {
-                                itemAt(2).checked = true;
-                                itemAt(2).clicked();
-                            }
+                            model: ["13", "14", "9", "19"]
 
                             ObserverGroupButton {
                                 text: modelData
@@ -373,7 +366,7 @@ Item {
                                 checked: appstate.catches.weightMethod === text
 
                                 // Hide Weight Methods 9 and 19 unless Catch Category is PHLB
-                                visible: is_phlb ? modelData == '9' : modelData != '9' // PHLB = show 9 only
+                                visible: is_phlb ? modelData == '9' || modelData == '19': modelData != '9' && modelData != '19'// PHLB = show 9/19 only
 
 
                                 onClicked: {
@@ -440,7 +433,7 @@ Item {
                                             btnManualWt.visible = true;
                                             break;
                                         default:
-                                            numPadRect.visible = false;                                            
+                                            numPadRect.visible = false;
                                             btnManualWt.visible = false;
                                         }
 
@@ -457,6 +450,7 @@ Item {
                                             break;
                                         case "13":
                                         case "9":
+                                        case "19":
                                             rowTotalFish.visible = false;
                                             rowCW.visible = false;
                                             rowHooksPotsSampled.visible = true;
@@ -469,7 +463,7 @@ Item {
 
                                     }
                                     catchCatsDetailsFG.check_details_complete();
-                                }                               
+                                }
                             }
                             function restoreCheckedButton() {
                                 var cur_WM = appstate.catches.weightMethod;
@@ -739,12 +733,12 @@ Item {
 
                         Component.onCompleted: {
                             current_discard_id = appstate.catches.getData('discard_reason');
-                            gridDR.set_discard_desc(gridDR.current_discard_id);                            
+                            gridDR.set_discard_desc(gridDR.current_discard_id);
                         }
 
                         function set_discard_desc() {
                             if (gridDR.current_discard_id === null) {
-                                tfDRDesc.text = "";                                
+                                tfDRDesc.text = "";
                                 return;
                             }
 
@@ -766,12 +760,12 @@ Item {
 
                                 // Check if PHLB can navigate to Biospecimens:
                                 catchCatsDetailsFG.check_details_complete();
-                            }                            
+                            }
                         }
 
                         function update_wm() {
                             // FIELD-1327
-                            appstate.catches.biospecimens.currentWM = appstate.catches.weightMethod;                            
+                            appstate.catches.biospecimens.currentWM = appstate.catches.weightMethod;
                             console.log("Updated WM to " + appstate.catches.biospecimens.currentWM);
                         }
 
@@ -781,7 +775,7 @@ Item {
                             if (appstate.catches.biospecimens.currentCatchDisposition === 'R') {
                                 // clear DR for retained
                                 appstate.catches.species.discardReason = null;
-                                appstate.catches.biospecimens.currentParentDiscardReason = null;                                                                
+                                appstate.catches.biospecimens.currentParentDiscardReason = null;
                             }
 
                             console.log("Updated disp to " + appstate.catches.biospecimens.currentCatchDisposition);
@@ -860,7 +854,7 @@ Item {
                         Layout.preferredWidth: 250
                         Layout.preferredHeight: 50
                         font.pixelSize: 18
-                        text: setTextValue()    // May vary according to Weight Method                        
+                        text: setTextValue()    // May vary according to Weight Method
                         placeholderText: "Enter Weight"
                         Component.onCompleted: {
                             numPad.directConnectTf(tfCW);
@@ -880,7 +874,7 @@ Item {
                             if (catchCatsDetailsFG.weightMethodHasNumpadOnThisScreen(cur_WM)) {
                                 tfCW.text = appstate.catches.getData('catch_weight') ?
                                         appstate.catches.getData('catch_weight').toFixed(dec_places) : "";
-                            }                            
+                            }
                         }
 
                         onActiveFocusChanged:  {
@@ -989,7 +983,7 @@ Item {
                     FramScalingNumPad {
                         id: numPad
                         anchors.fill: numPadRect
-                        state: numPadRect.getNumPadState()  
+                        state: numPadRect.getNumPadState()
                         direct_connect: true
                         btnOk.visible: true    // Only show OK when add or subtract is in progress.
                         limitToTwoDecimalPlaces: true   // Don't allow more than two decimal places for weight.
