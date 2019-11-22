@@ -448,7 +448,7 @@ class ObserverDBSyncController(QObject):
                 # "RETURN_PORT_ID", "RETURN_DATE", "LOGBOOK_NUMBER", "NOTES",
                 row.data_quality, row.created_by, row.created_date, None,
                 # "DATA_QUALITY", "CREATED_BY", "CREATED_DATE", "MODIFIED_BY",
-                None, row.otc_kp, row.total_hooks_kp, row.observer_logbook,
+                None, None, None, row.observer_logbook,
                 # "MODIFIED_DATE", "OTC_KP", "TOTAL_HOOKS_KP", "OBSERVER_LOGBOOK",
                 row.evaluation, row.partial_trip, skipper, row.fishery, row.crew_size,
                 # "EVALUATION_ID", "PARTIAL_TRIP", "SKIPPER_ID", "FISHERY", "CREW_SIZE",
@@ -511,9 +511,9 @@ class ObserverDBSyncController(QObject):
                 # "TOTAL_HOOKS", "GEAR_TYPE", "GEAR_PERFORMANCE",
                 row.beaufort_value, row.volume, row.volume_um, row.density, row.density_um, row.notes,
                 # "BEAUFORT_VALUE", "VOLUME", "VOLUME_UM", "DENSITY", "DENSITY_UM", "NOTES",
-                row.created_by, row.created_date, None, None, target_strategy, row.catch_weight_kp,
+                row.created_by, row.created_date, None, None, target_strategy, None,
                 # "CREATED_BY", "CREATED_DATE", "MODIFIED_BY", "MODIFIED_DATE", "TARGET_STRATEGY_ID", "CATCH_WEIGHT_KP",
-                row.catch_count_kp, row.hooks_sampled_kp, row.efp, row.sample_weight_kp, row.sample_count_kp,
+                None, None, row.efp, None, None,
                 # "CATCH_COUNT_KP", "HOOKS_SAMPLED_KP", "EFP", "SAMPLE_WEIGHT_KP", "SAMPLE_COUNT_KP",
                 deterrent_used, row.avg_soak_time, row.tot_gear_segments, row.gear_segments_lost, None,
                 # "DETERRENT_USED", "AVG_SOAK_TIME", "TOT_GEAR_SEGMENTS", "GEAR_SEGMENTS_LOST", "EXCLUDER_TYPE",
@@ -637,7 +637,7 @@ class ObserverDBSyncController(QObject):
                 # "DENSITY_BASKET_WEIGHT_ITQ", "WIDTH_ITQ", "DEPTH_ITQ", "BASKETS_WEIGHED_ITQ",
                 None, None, None, None,
                 # "TOTAL_BASKETS_ITQ", "PARTIAL_BASKET_WEIGHT_ITQ", "UNITS_SAMPLED_ITQ", "TOTAL_UNITS_ITQ",
-                row.gear_segments_sampled, row.basket_weight_kp, row.addl_basket_weight_kp, row.basket_weight_count_kp,
+                row.gear_segments_sampled, None, None, None,
                 # "GEAR_SEGMENTS_SAMPLED", "BASKET_WEIGHT_KP", "ADDL_BASKET_WEIGHT_KP", "BASKET_WEIGHT_COUNT_KP",
                 ObserverDBUtil.get_data_source(), None, None
                 # "DATA_SOURCE", "ROW_PROCESSED", "ROW_STATUS"
@@ -688,7 +688,7 @@ class ObserverDBSyncController(QObject):
             row_values = [
                 row.species_composition, row.catch.catch, row.sample_method, row.notes, row.created_by,
                 # "SPECIES_COMPOSITION_ID", "CATCH_ID", "SAMPLE_METHOD", "NOTES", "CREATED_BY",
-                row.created_date, None, None, row.species_weight_kp, row.species_number_kp,
+                row.created_date, None, None, None, None,
                 # "CREATED_DATE", "MODIFIED_BY", "MODIFIED_DATE", "SPECIES_WEIGHT_KP", "SPECIES_NUMBER_KP",
                 row.basket_number, row.data_quality, ObserverDBUtil.get_data_source(), None, None
                 # "BASKET_NUMBER", "DATA_QUALITY", "DATA_SOURCE", "ROW_PROCESSED", "ROW_STATUS"
@@ -945,9 +945,9 @@ class ObserverDBSyncController(QObject):
             row_values = [
                 row.bio_specimen, row.catch.catch, row.species.species, row.sample_method, row.notes,
                 # "BIO_SPECIMEN_ID", "CATCH_ID", "SPECIES_ID", "SAMPLE_METHOD", "NOTES",
-                row.created_by, row.created_date, None, None, row.specimen_length_kp,
+                row.created_by, row.created_date, None, None, None,
                 # "CREATED_BY", "CREATED_DATE", "MODIFIED_BY", "MODIFIED_DATE", "SPECIMEN_LENGTH_KP",
-                row.specimen_weight_kp, row.lf_length_kp, row.frequency_kp, row.discard_reason,
+                None, None, None, row.discard_reason,
                 ObserverDBUtil.get_data_source(),
                 # "SPECIMEN_WEIGHT_KP", "LF_LENGTH_KP", "FREQUENCY_KP", "DISCARD_REASON", "DATA_SOURCE",
                 None, None
