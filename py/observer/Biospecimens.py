@@ -76,7 +76,7 @@ class Biospecimens(QObject):
     currentSpeciesIDChanged = pyqtSignal(name='currentSpeciesIDChanged')
     unusedSignal = pyqtSignal(name='unusedSignal')  # Make QML warning go away
     bioCountChanged = pyqtSignal(QVariant, arguments=['bio_count'], name='bioCountChanged')
-
+    bioSampleMethodChanged = pyqtSignal(QVariant, arguments=['bio_method'], name='bioSampleMethodChanged')
     phlb_correlation = PHLBCorrelation()
 
     def __init__(self, observer_catches, db):
@@ -378,7 +378,7 @@ class Biospecimens(QObject):
         """
         return self._existing_tags_model
 
-    @pyqtProperty(QVariant, notify=modelChanged)
+    @pyqtProperty(QVariant, notify=bioSampleMethodChanged)
     def bioSampleMethod(self):
         """
         Biosample Method for current Biospecimens row
@@ -751,6 +751,7 @@ class Biospecimens(QObject):
         action_text = 'Created new' if created else 'Switched to existing'
         self._logger.debug(f'{action_text} parent BioSpecimen (id={self._current_bio_specimen.bio_specimen}, '
                            f'sm={biosample_method})')
+        self.bioSampleMethodChanged.emit(biosample_method)
 
     @pyqtSlot(QVariant, QVariant, name='set_existing_tag')
     def set_existing_tag(self, index, tag_value):

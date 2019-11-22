@@ -16,6 +16,7 @@ ColumnLayout {
 
     property bool isCHLB: false
     property bool isPHLB: false
+    property bool isBM10Set: false
     property bool isGSTG: false
     property bool isCrab: false
     property bool isSalmon: false
@@ -32,23 +33,29 @@ ColumnLayout {
     signal updateEggs
     signal updateAdipose
 
+    function isBM10() {
+       return appstate.catches.biospecimens.bioSampleMethod === '10';
+    }
+
     function update_ui(species_name) {
         isPHLB = false;
         isGSTG = false;
         isCHLB = false;
         isCrab = false;
         isSalmon = false;
+        isBM10Set = false;
         var species = species_name.toLowerCase();
 
         // TODO verify this covers all cases
         // TODO: Don't hardcode the species and protocols
         if (species.indexOf("pacific halibut") !== -1) {
             isPHLB = true;
+            isBM10Set = rectVia.isBM10();
             updateViability();
         } else if (species.indexOf("green sturgeon") !== -1) {
             isGSTG = true;
             updateViability();
-        } else if (species.indexOf("california halibut") != -1) {
+        } else if (species.indexOf("california halibut") !== -1) {
             isCHLB = true;
             updateViability();
         } else if (species.indexOf("crab") !== -1) {
@@ -91,6 +98,14 @@ ColumnLayout {
         }
     }
 
+    Connections {
+        target: appstate.catches.biospecimens
+        onBioSampleMethodChanged: {
+            console.error("BM changed to " + bio_method + " BM10 " + rectVia.isBM10());
+            isBM10Set = rectVia.isBM10();
+        }
+    }
+
     onCurrentIDChanged: {
         // TODO: update_ui is called here, onSpeciesNameChanged, and onSelectedItemChanged. Redundant?
         console.log("Biospecimen ID changed to " + currentID);
@@ -100,6 +115,12 @@ ColumnLayout {
     function check_pending_protocols() {
 
         pending_protocols = appstate.catches.species.requiredProtocolsViability;
+        if (isPHLB && isBM10Set) {
+           // FIELD-1953 prevent viability requirement if BM = 10
+           pending_protocols = pending_protocols.filter(function(value, index, arr){
+                return value !== 'V';
+            });
+        }
         var via_prots = ['V', 'A', 'E'];
         var via_fields = ['viability', 'adipose_present', 'maturity'];
         for (var i = 0; i < via_prots.length; i++) {
@@ -107,6 +128,7 @@ ColumnLayout {
             var cur_field = via_fields[i];
             var current_val = appstate.catches.biospecimens.getData(cur_field);
             var protocol_specified = (pending_pos !== -1 && current_val && current_val.length > 0);
+
             if (protocol_specified) {
                 console.log(cur_field + ' protocol set to ' + current_val + ', removed.');
                 pending_protocols.splice(pending_pos, 1);
@@ -125,7 +147,7 @@ ColumnLayout {
     }
 
     function check_label_highlighting(currentProtocol, protocolSatisfied) {
-        if (currentProtocol == 'viability') {
+        if (currentProtocol === 'viability') {
             if (isPHLB) {
                 lblPhlbLongline.highlight(!protocolSatisfied);
                 lblPhlbTrawl.highlight(!protocolSatisfied);
@@ -137,12 +159,12 @@ ColumnLayout {
                 lblCHLB.highlight(!protocolSatisfied);
                 console.debug("CHLB label highlighted: " + !protocolSatisfied);
             }
-        } else if (currentProtocol == 'maturity') {
+        } else if (currentProtocol === 'maturity') {
             if (isCrab) {
                 lblCrab.highlight(!protocolSatisfied);
                 console.debug("Crab label highlighted: " + !protocolSatisfied);
             }
-        } else if (currentProtocol == 'adipose_present') {
+        } else if (currentProtocol === 'adipose_present') {
             if (isSalmon) {
                 lblSalmon.highlight(!protocolSatisfied);
                 console.debug("Salmon label highlighted: " + !protocolSatisfied);
