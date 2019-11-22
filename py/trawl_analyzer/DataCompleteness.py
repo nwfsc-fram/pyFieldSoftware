@@ -1362,7 +1362,8 @@ class LoadSensorSerialDataThread(QObject):
                                     logging.info(f"\t\tReading type = {stream.rules.reading_type}, Field_format = {stream.rules.field_format}")
 
                                     # TODO Todd Hay - Why is the boolean not working, have Beth fix parsing_rules_vw is_numeric
-                                    if "0" in stream.rules.field_format:
+                                    # if "0" in stream.rules.field_format:
+                                    if stream.rules.is_numeric:
 
                                         # PI44 - Further reduce sentences based on the channel number and reading_type_code
                                         reading_code_pos = stream.rules.reading_type_position
@@ -1386,18 +1387,42 @@ class LoadSensorSerialDataThread(QObject):
                                             # logging.info(f'raw_split length: {len(raw_split)}')
 
                                         # PX - Further parsing - Added 20191106
-                                        if stream.rules.line_starting == "$PSIMTV80" and stream.rules.reading_type_code\
+                                        if stream.rules.line_starting == "$PSIMTV80":
+
+                                            if stream.rules.reading_type_code\
                                                 and stream.rules.measurement_to\
                                                 and stream.rules.measurement_to_position\
                                                 and stream.rules.measurement_from\
                                                 and stream.rules.measurement_from_position:
-                                            reading_type_pos = stream.rules.reading_type_position
-                                            raw_split = [x for x in raw_split if reading_type_pos - 1 < len(x[2])
-                                                 and x[2][reading_type_pos - 1] == stream.rules.reading_type_code
-                                                 and x[2][stream.rules.measurement_from_position - 1] == stream.rules.measurement_from
-                                                 and x[2][stream.rules.measurement_to_position - 1] == stream.rules.measurement_to]
 
-                                        # values = [float(x[2][pos-1]) if pos - 1 < len(x[2]) and self._functions.is_float(x[2][pos-1]) else None for x in raw_split]
+                                                reading_type_pos = stream.rules.reading_type_position
+                                                meas_from_pos = stream.rules.measurement_from_position
+                                                meas_to_pos = stream.rules.measurement_to_position
+                                                raw_split = [x for x in raw_split
+                                                    if reading_type_pos - 1 < len(x[2])
+                                                    and meas_from_pos-1 < len(x[2])
+                                                    and meas_to_pos-1 < len(x[2])
+                                                    and x[2][reading_type_pos - 1] == stream.rules.reading_type_code
+                                                    and x[2][meas_from_pos - 1] == stream.rules.measurement_from
+                                                    and x[2][meas_to_pos - 1] == stream.rules.measurement_to]
+                                                logging.info(f"\t\tPX Spread Distance raw_split for $PSIMTV80 > {stream.rules.reading_basis} > "
+                                                             f"{stream.rules.measurement_from}, {stream.rules.measurement_to}")
+
+                                            elif stream.rules.reading_type_code\
+                                                    and stream.rules.measurement_from\
+                                                    and stream.rules.measurement_from_position:
+                                                # Only the measurement_from_position exists, i.e. measurement_to is blank
+
+                                                reading_type_pos = stream.rules.reading_type_position
+                                                meas_from_pos = stream.rules.measurement_from_position
+                                                raw_split = [x for x in raw_split
+                                                    if reading_type_pos - 1 < len(x[2])
+                                                    and meas_from_pos-1 < len(x[2])
+                                                    and x[2][reading_type_pos - 1] == stream.rules.reading_type_code
+                                                    and x[2][meas_from_pos - 1] == stream.rules.measurement_from]
+                                                logging.info(f"\t\tPX Spread Distance raw_split for $PSIMTV80 > "
+                                                             f"{stream.rules.reading_basis} > "
+                                                             f"{stream.rules.measurement_from}")
 
                                         # Convert to a floating point value data type
                                         clean_data = [{"raw_string": x[0], "date_time": x[1], "reading_numeric": float(x[2][pos-1])}
@@ -1439,7 +1464,7 @@ class LoadSensorSerialDataThread(QObject):
 
                                     end = arrow.now()
                                     if DEBUG:
-                                        logging.info(f"\t\tclean_data just created")
+                                        logging.info(f"\t\tclean_data just created, size = {len(clean_data)}")
 
                                     if not self._is_running:
                                         raise BreakIt
