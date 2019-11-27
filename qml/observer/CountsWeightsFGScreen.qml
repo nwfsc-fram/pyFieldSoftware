@@ -433,7 +433,7 @@ Item {
                     font.bold: true
                     verticalAlignment: Text.AlignVCenter
                     text: "Release\nMethod: " + appstate.catches.species.currentHandlingMethod
-                    visible: appstate.catches.species.currentHandlingMethod !== undefined
+                    visible: appstate.catches.species.isRockfish && appstate.catches.species.currentHandlingMethod !== undefined
 //                    appstate.sets.currentGearType === '8' &&
 //                             appstate.catches.species.isRockfish &&
 //                             appstate.catches.species.discardReason === '13'
@@ -447,7 +447,7 @@ Item {
                     onClicked: {
                         appstate.catches.species.currentHandlingMethod = undefined;
                     }
-                    visible: appstate.catches.species.currentHandlingMethod !== undefined
+                    visible: appstate.catches.species.isRockfish && appstate.catches.species.currentHandlingMethod !== undefined
                 }
                 FramButton {
                     id: bSetReleaseMethod
@@ -458,7 +458,7 @@ Item {
                     onClicked: {
                         dlgReleaseMethod.open();
                     }
-                    visible: appstate.catches.species.currentHandlingMethod === undefined
+                    visible: appstate.catches.species.isRockfish && appstate.catches.species.currentHandlingMethod === undefined
                 }
             }
         }
