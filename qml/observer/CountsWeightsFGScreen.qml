@@ -326,7 +326,7 @@ Item {
                         appstate.sets.currentGearType === '8' &&
                                                      appstate.catches.species.isRockfish &&
                                                      appstate.catches.species.discardReason === '13') {
-                            console.info('Prompting for release method (WM8, rockfish, DR 13)');
+                            console.info('Prompting for release method (Gear Type 8, rockfish, DR 13)');
                             //dlgReleaseMethod.releaseMethod = // get release method
                             dlgReleaseMethod.open();
                         }
@@ -428,14 +428,36 @@ Item {
                 Label {
                     width: 200
                     height: lblDisposition.height
-                    Layout.preferredHeight: 40
                     font.pixelSize: 18
                     font.bold: true
                     verticalAlignment: Text.AlignVCenter
-                    text: "Release Method: " + appstate.catches.species.currentHandlingMethod
-                    visible: appstate.sets.currentGearType === '8' &&
-                             appstate.catches.species.isRockfish &&
-                             appstate.catches.species.discardReason === '13'
+                    text: "Release\nMethod: " + appstate.catches.species.currentHandlingMethod
+                    visible: appstate.catches.species.currentHandlingMethod !== undefined
+//                    appstate.sets.currentGearType === '8' &&
+//                             appstate.catches.species.isRockfish &&
+//                             appstate.catches.species.discardReason === '13'
+                }
+                FramButton {
+                    id: bClearReleaseMethod
+                    text: "Clear\nRM"
+                    fontsize: 18
+                    height: lblDisposition.height
+                    width: 60
+                    onClicked: {
+                        appstate.catches.species.currentHandlingMethod = undefined;
+                    }
+                    visible: appstate.catches.species.currentHandlingMethod !== undefined
+                }
+                FramButton {
+                    id: bSetReleaseMethod
+                    text: "Set Release Method"
+                    fontsize: 22
+                    height: lblDisposition.height
+                    width: 220
+                    onClicked: {
+                        dlgReleaseMethod.open();
+                    }
+                    visible: appstate.catches.species.currentHandlingMethod === undefined
                 }
             }
         }
