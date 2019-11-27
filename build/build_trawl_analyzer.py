@@ -27,8 +27,8 @@ path_sqlite_dll = os.path.join(PYTHON_DIR, 'Scripts\sqlite3.dll')
 PYQT5_DIR = os.path.join(PYTHON_DIR, 'lib\site-packages\PyQt5')
 includes = ['PyQt5.Qt', 'PyQt5.QtNetwork', 'PyQt5.QtCore', 'PyQt5.QtGui', 'PyQt5.QtWidgets', 'PyQt5.QtMultimedia', 'PyQt5.QtChart']
 
-os.environ["TCL_LIBRARY"] = os.path.join(PYTHON_DIR, "tcl", "tcl8.6")
-os.environ["TK_LIBRARY"] = os.path.join(PYTHON_DIR, "tcl", "tk8.6")
+os.environ["TCL_LIBRARY"] = os.path.join(PYTHON_DIR, "lib", "tcl8.6")
+os.environ["TK_LIBRARY"] = os.path.join(PYTHON_DIR, "lib", "tk8.6")
 
 # Compile the QML into the qrc.py file
 PYRCC_DIR = os.path.join(PYTHON_DIR, 'Scripts\pyrcc5.exe')
@@ -68,8 +68,8 @@ includefiles = [
 #        (os.path.join(PYQT5_DIR, 'Qt', 'qml', 'QtGraphicalEffects'), 'QtGraphicalEffects'),
 #		(os.path.join(PYQT5_DIR, 'Qt', 'qml', 'Qt'), 'Qt'),
 #		(os.path.join(PYTHON_DIR, 'Lib', 'site-packages', 'scipy'), 'scipy'),
-		(os.path.join(PYTHON_DIR, 'DLLs', 'tcl86t.dll'), 'tcl86t.dll'),
-		(os.path.join(PYTHON_DIR, 'DLLs', 'tk86t.dll'), 'tk86t.dll')
+		(os.path.join(PYTHON_DIR, 'Scripts', 'tcl86t.dll'), 'tcl86t.dll'),
+		(os.path.join(PYTHON_DIR, 'Scripts', 'tk86t.dll'), 'tk86t.dll')
         ]
 excludes = []
 packages = ['os', 'apsw', 'asyncio', 'peewee', 'playhouse', 'cProfile', 'timeit', 'numpy',
