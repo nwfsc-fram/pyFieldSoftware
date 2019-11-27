@@ -322,8 +322,9 @@ Item {
                     }
 
                     function showReleaseMethod() {
-                        if (
-                        appstate.sets.currentGearType === '8' &&
+
+
+                        if (appstate.sets.currentGearType === '8' &&
                                                      appstate.catches.species.isRockfish &&
                                                      appstate.catches.species.discardReason === '13') {
                             console.info('Prompting for release method (Gear Type 8, rockfish, DR 13)');
@@ -971,62 +972,6 @@ Item {
 
                 property int widthTF: 100
                 property int fontsize: 18
-
-//                Label {
-//                    text: "Release Method"
-//                    font.pixelSize: 15
-//                    visible: appstate.sets.currentGearType === '8' &&
-//                             appstate.catches.species.isRockfish &&
-//                             appstate.catches.species.discardReason === '13'
-//                }
-
-//                GridLayout {
-//                    id: rowHandlingMethod
-//                    columns: 4
-//                    visible: appstate.sets.currentGearType === '8' &&
-//                             appstate.catches.species.isRockfish &&
-//                             appstate.catches.species.discardReason === '13'
-
-//                    Label {
-//                        id: lblGear
-//                        text: "Gear Type 8? " + (appstate.sets.currentGearType === '8')
-//                    }
-//                    Label {
-//                        id: lblCode
-//                        text: "Code " + appstate.catches.species.currentSpeciesItemCode
-//                    }
-//                    Label {
-//                        id: lblReleaseMethod
-//                        text: "Is Rockfish? " + appstate.catches.species.isRockfish
-//                    }
-//                    Label {
-//                        id: lblDR13
-//                        text: "Is DR 13? " + (appstate.catches.species.discardReason === '13')
-//                }
-//                    ExclusiveGroup { id: rfGroup }
-//                    Repeater {
-//                        id: rpttest
-
-//                        model: appstate.catches.RockfishHandlingMethods
-
-//                        Button{
-//                            text: display
-//                            exclusiveGroup: rfGroup
-//                            onClicked: {
-//                                releaseMethodDesc.text = "TODO Description"
-//                            }
-//                        }
-//                    }
-//               }
-//                Label {
-//                    id: releaseMethodDesc
-//                    text: ""
-//                    font.pixelSize: 15
-//                    visible: appstate.sets.currentGearType === '8' &&
-//                             appstate.catches.species.isRockfish &&
-//                             appstate.catches.species.discardReason === '13'
-//                }
-
 
                 RowLayout {
                     Layout.alignment: Qt.AlignLeft
