@@ -247,6 +247,12 @@ ColumnLayout {
             case "Male":
                 slw.currentSex = "M";
                 break;
+            case "Transtl.":
+                slw.currentSex = "T";
+                break;
+            case "Juvenile":
+                slw.currentSex = "J";
+                break;
             case "Undet.":
                 slw.currentSex = "U";
                 break;
@@ -260,9 +266,11 @@ ColumnLayout {
 
         Repeater {
             id: rptSex
-            model: ["Female", "Male", "Undet.", "N/A"]
+            model: appstate.catches.species.currentSpeciesItemCode === '794' ?
+                   ["Female", "Male", "Transtl.", "Juvenile", "Undet.", "N/A"] : ["Female", "Male", "Undet.", "N/A"]
             ObserverGroupButton {
-                Layout.preferredWidth: slw.width / 5
+                Layout.preferredWidth: model.length < 5 ? slw.width / (model.length - 1) : 60
+                font_size: model.length < 5 ? 20: 16
                 Layout.preferredHeight: 50
                 text: modelData
                 exclusiveGroup: egSex
@@ -319,6 +327,10 @@ ColumnLayout {
                         return expected_val === "F";                        
                     case "Male":
                         return expected_val === "M";                        
+                    case "Transtl.":
+                        return expected_val === "T";
+                    case "Juvenile":
+                        return expected_val === "J";
                     case "Undet.":
                         return expected_val === "U";                        
                     case "N/A":
