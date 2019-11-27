@@ -17,6 +17,7 @@
         <file>../qml/common/FramLabelHighlightCapable.qml</file>
         <file>../qml/common/FramNoteDialog.qml</file>
         <file>../qml/common/FramNumPad.qml</file>
+        <file>../qml/common/FramNumPadMultiply.qml</file>
         <file>../qml/common/FramNumPadButton.qml</file>
         <file>../qml/common/FramRadioButton.qml</file>
         <file>../qml/common/FramScalingKeyboard.qml</file>

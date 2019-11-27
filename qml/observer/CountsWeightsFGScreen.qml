@@ -81,16 +81,6 @@ Item {
         appstate.catches.species.counts_weights.addToTallyFGCount(count)
     }
 
-
-    FramNoteDialog {
-        id: dlgBasketWeightTooHeavy
-        property string invalidWeight
-        property string weightMax
-        message: "Weight of basket (" + invalidWeight + " lbs)\n" +
-                " exceeds " + weightMax + " lbs."
-        font_size: 18
-    }
-
     FramNoteDialog {
         id: dlgBasketWeightBadDecimalDigits
         property string invalidWeight
@@ -516,7 +506,7 @@ Item {
                     }
                 }
                 Row {
-                    FramNumPad {
+                    FramNumPadMultiply {
                         id: numPad
                         x: 175
                         y: 300
@@ -575,16 +565,7 @@ Item {
                         }
 
                         function numpadEnteredWeight(basket_id, value) {
-                            if (basketWeightIsTooHigh(value)) {
-                                // Throw up error dialog box
-                                dlgBasketWeightTooHeavy.invalidWeight = value;
-                                dlgBasketWeightTooHeavy.weightMax = appstate.trawlMaxBasketWeightLbs;
-                                dlgBasketWeightTooHeavy.open();
-                                numPad.clearAndSelect();
-                            } else if (basketWeightNeedsConfirmation(value)) {
-                                console.debug("Weight of " + value + " requires confirmation dialog.");
-                                confirmAddHeavyBasket.show("add this heavy basket", "add_heavy_basket")
-                            } else if (value > 0.0 && !decimalPortionOfWeightIsOK(value)) {
+                            if (value > 0.0 && !decimalPortionOfWeightIsOK(value)) {
                                 // FIELD-1423: Require that decimal portion of weight ends in .x0 or .x5
                                 console.debug("Decimal digits of weight " + value +
                                         " don't end in .x0 or .x5.");
