@@ -16,7 +16,7 @@ Semantic Versioning 2.0.0 (http://semver.org/#semantic-versioning-200) -
 the standard three major, minor, and patch fields, plus a field for an incrementing
 build number.
 
-From semver:
+From semver:cdi
 
 "Given a version number MAJOR.MINOR.PATCH, increment the:
 
@@ -40,7 +40,7 @@ The justification for including a build number: it is useful when supporting app
 that each build has a unique version string which could be used to bring up the source tree
 as it stood for that particular build.  
 """
-optecs_version = "2.1.0+26"
+optecs_version = "2.1.0+27"
 
 # Number of floating point decimal places to display for weight etc.
 display_decimal_places = 2
