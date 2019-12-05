@@ -9,6 +9,7 @@
 # ------------------------------------------------------------------------------
 
 import logging
+from decimal import Decimal
 
 from PyQt5.QtCore import pyqtProperty, QVariant, QObject, pyqtSignal, pyqtSlot
 
@@ -514,7 +515,10 @@ class CountsWeights(QObject):
     @pyqtProperty(QVariant, notify=tallyFGFishCountChanged)
     def tallyTimesAvgWeight(self):
         if self.avgWeight and self.tallyFGFishCount:
-            return self.avgWeight * self.tallyFGFishCount
+            val = Decimal(self.avgWeight) * Decimal(self.tallyFGFishCount)
+            round_val = round(val, 2)
+            # https://stackoverflow.com/questions/56820/round-doesnt-seem-to-be-rounding-properly#56833
+            return float(round_val)
         else:
             return None
 
