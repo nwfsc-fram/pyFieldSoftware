@@ -7,7 +7,7 @@ geographiclib==1.50
 kiwisolver==1.1.0
 matplotlib==2.2.4
 numpy==1.17.4
-pandas==0.25.3
+pandas==0.23.4
 peewee==3.12.0
 psycopg2==2.6.2
 pyparsing==2.4.5

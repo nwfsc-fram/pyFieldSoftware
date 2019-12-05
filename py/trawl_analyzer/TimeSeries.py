@@ -3442,6 +3442,7 @@ class TimeSeries(QObject):
         # Exact point not found, need to interpolate for it
         else:
             idx = df_vessel["times"].searchsorted(rounded_datetime)
+            # WS - throws ValueError Timezones don't match https://github.com/pandas-dev/pandas/blob/master/pandas/core/arrays/datetimes.py#L576
             if idx:
                 best_event_latitude = df_vessel["latitude"].iloc[idx[0]-1]
                 best_event_longitude = df_vessel["longitude"].iloc[idx[0]-1]
