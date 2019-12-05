@@ -264,6 +264,9 @@ class TripChecksDisabledInOptecs:
         3821,   # FIELD-1703
                 # Species weight not ending in 0 or 5, invalid check for OPTECS
         3221,   # FIELD-1961, a KP we use internally
+        2137,   # FIELD-1965 PHLB
+        2139,   # FIELD-1965 PHLB
+        1498,   # FIELD-1965 PHLB
     ]
 
 
