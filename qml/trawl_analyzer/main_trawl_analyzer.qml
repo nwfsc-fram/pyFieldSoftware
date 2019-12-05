@@ -172,7 +172,7 @@ ApplicationWindow {
             } // btnSettings
 
 //            Item { Layout.fillWidth: true }
-            Item { Layout.preferredWidth: 100 }
+            Item { Layout.preferredWidth: 10 }
 
             Label {
                 id: lblYear
@@ -221,7 +221,7 @@ ApplicationWindow {
             } // lblHaul
             ComboBox {
                 id: cbHaul
-                Layout.preferredWidth: 120
+                Layout.preferredWidth: 200
                 enabled: settings.loggedInStatus & !settings.isLoading
                 model: timeSeries.haulsModel
                 onCurrentIndexChanged: {
