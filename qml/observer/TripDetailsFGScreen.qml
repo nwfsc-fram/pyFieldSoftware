@@ -603,7 +603,7 @@ Item {
                 verticalAlignment: Text.AlignVCenter
                 font.pixelSize: 25
                 placeholderText: qsTr("Number")
-                text: appstate.trips.currentAvgHookCount
+                text: appstate.trips.currentAvgHookCount.toFixed(2)
                 readOnly: true;
             }
         }
@@ -743,7 +743,7 @@ Item {
         onAccepted: {
 //            if (avgHookCount > 0.0) {
               // Allow 0 average
-              appstate.trips.currentAvgHookCount = avgHookCount.toFixed(2);
+              appstate.trips.currentAvgHookCount = avgHookCount;
               appstate.sets.updateTripHookCounts(appstate.currentTripId, avgHookCount)
 //            } else {
 //                console.error("Avg hook count invalid, not setting data: " + avgHookCount)
