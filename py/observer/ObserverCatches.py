@@ -561,6 +561,7 @@ class ObserverCatches(QObject):
                 self._logger.error('gear_segments_sampled error: {}'.format(e))
         elif data_name == 'hooks_sampled':
             try:
+                # this value is rounded in the setData call
                 self._current_catch.hooks_sampled = int(data_val) if (
                         data_val and data_val > 0) else None
             except ValueError as e:
