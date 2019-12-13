@@ -90,42 +90,46 @@ class DistanceFished:
 
         # Gather the waypoint times to use to mask the vessel dataframe, df_vessel
         if "waypoints" not in tracklines["vessel"]:
-            logging.info(f"waypoints are missing for some reason, returning from calculating distance fished")
+            logging.error(f"waypoints are missing for some reason, returning from calculating distance fished")
             return None
 
         waypoints = tracklines["vessel"]["waypoints"]
-        start_haul = arrow.get(waypoints.loc["Start Haul", "best_datetime"]).isoformat() \
-            if waypoints.loc["Start Haul", "best_datetime"] is not None and \
-               waypoints.loc["Start Haul", "best_datetime"] is not pd.NaT else \
-                arrow.get(waypoints.loc["Start Haul", "datetime"]).isoformat()
-        set_doors = arrow.get(waypoints.loc["Set Doors", "best_datetime"]).isoformat() \
-            if waypoints.loc["Set Doors", "best_datetime"] is not None and \
-                waypoints.loc["Set Doors", "best_datetime"] is not pd.NaT else \
-                arrow.get(waypoints.loc["Set Doors", "datetime"]).isoformat()
-        doors_fully_out = arrow.get(waypoints.loc["Doors Fully Out", "best_datetime"]).isoformat() \
-            if waypoints.loc["Doors Fully Out", "best_datetime"] is not None and \
-               waypoints.loc["Doors Fully Out", "best_datetime"] is not pd.NaT else \
-                arrow.get(waypoints.loc["Doors Fully Out", "datetime"]).isoformat()
-        begin_tow = arrow.get(waypoints.loc["Begin Tow", "best_datetime"]).isoformat() \
-            if waypoints.loc["Begin Tow", "best_datetime"] is not None and \
-               waypoints.loc["Begin Tow", "best_datetime"] is not pd.NaT else \
-                arrow.get(waypoints.loc["Begin Tow", "datetime"]).isoformat()
-        start_haulback = arrow.get(waypoints.loc["Start Haulback", "best_datetime"]).isoformat() \
-            if waypoints.loc["Start Haulback", "best_datetime"] is not None and \
-               waypoints.loc["Start Haulback", "best_datetime"] is not pd.NaT else \
-                arrow.get(waypoints.loc["Start Haulback", "datetime"]).isoformat()
-        net_off_bottom = arrow.get(waypoints.loc["Net Off Bottom", "best_datetime"]).isoformat() \
-            if waypoints.loc["Net Off Bottom", "best_datetime"] is not None and \
-               waypoints.loc["Net Off Bottom", "best_datetime"] is not pd.NaT else \
-                arrow.get(waypoints.loc["Net Off Bottom", "datetime"]).isoformat()
-        doors_at_surface = arrow.get(waypoints.loc["Doors At Surface", "best_datetime"]).isoformat() \
-            if waypoints.loc["Doors At Surface", "best_datetime"] is not None and \
-               waypoints.loc["Doors At Surface", "best_datetime"] is not pd.NaT else \
-                arrow.get(waypoints.loc["Doors At Surface", "datetime"]).isoformat()
-        end_of_haul = arrow.get(waypoints.loc["End Of Haul", "best_datetime"]).isoformat() \
-            if waypoints.loc["End Of Haul", "best_datetime"] is not None and \
-               waypoints.loc["End Of Haul", "best_datetime"] is not pd.NaT else \
-                arrow.get(waypoints.loc["End Of Haul", "datetime"]).isoformat()
+        try:
+            start_haul = arrow.get(waypoints.loc["Start Haul", "best_datetime"]).isoformat() \
+                if waypoints.loc["Start Haul", "best_datetime"] is not None and \
+                   waypoints.loc["Start Haul", "best_datetime"] is not pd.NaT else \
+                    arrow.get(waypoints.loc["Start Haul", "datetime"]).isoformat()
+            set_doors = arrow.get(waypoints.loc["Set Doors", "best_datetime"]).isoformat() \
+                if waypoints.loc["Set Doors", "best_datetime"] is not None and \
+                    waypoints.loc["Set Doors", "best_datetime"] is not pd.NaT else \
+                    arrow.get(waypoints.loc["Set Doors", "datetime"]).isoformat()
+            doors_fully_out = arrow.get(waypoints.loc["Doors Fully Out", "best_datetime"]).isoformat() \
+                if waypoints.loc["Doors Fully Out", "best_datetime"] is not None and \
+                   waypoints.loc["Doors Fully Out", "best_datetime"] is not pd.NaT else \
+                    arrow.get(waypoints.loc["Doors Fully Out", "datetime"]).isoformat()
+            begin_tow = arrow.get(waypoints.loc["Begin Tow", "best_datetime"]).isoformat() \
+                if waypoints.loc["Begin Tow", "best_datetime"] is not None and \
+                   waypoints.loc["Begin Tow", "best_datetime"] is not pd.NaT else \
+                    arrow.get(waypoints.loc["Begin Tow", "datetime"]).isoformat()
+            start_haulback = arrow.get(waypoints.loc["Start Haulback", "best_datetime"]).isoformat() \
+                if waypoints.loc["Start Haulback", "best_datetime"] is not None and \
+                   waypoints.loc["Start Haulback", "best_datetime"] is not pd.NaT else \
+                    arrow.get(waypoints.loc["Start Haulback", "datetime"]).isoformat()
+            net_off_bottom = arrow.get(waypoints.loc["Net Off Bottom", "best_datetime"]).isoformat() \
+                if waypoints.loc["Net Off Bottom", "best_datetime"] is not None and \
+                   waypoints.loc["Net Off Bottom", "best_datetime"] is not pd.NaT else \
+                    arrow.get(waypoints.loc["Net Off Bottom", "datetime"]).isoformat()
+            doors_at_surface = arrow.get(waypoints.loc["Doors At Surface", "best_datetime"]).isoformat() \
+                if waypoints.loc["Doors At Surface", "best_datetime"] is not None and \
+                   waypoints.loc["Doors At Surface", "best_datetime"] is not pd.NaT else \
+                    arrow.get(waypoints.loc["Doors At Surface", "datetime"]).isoformat()
+            end_of_haul = arrow.get(waypoints.loc["End Of Haul", "best_datetime"]).isoformat() \
+                if waypoints.loc["End Of Haul", "best_datetime"] is not None and \
+                   waypoints.loc["End Of Haul", "best_datetime"] is not pd.NaT else \
+                    arrow.get(waypoints.loc["End Of Haul", "datetime"]).isoformat()
+        except KeyError as ke:
+            logging.error(f'Error reading waypoints: {waypoints}  Error = {ke}')
+            return None
 
         """
         Make waypoint adjustments. 
