@@ -14,7 +14,7 @@ Dialog {
     title: "Hook Count Calculations"
 
 
-    property bool enable_audio: false
+    property bool enable_audio: ObserverSettings.enableAudio
     property string currentRequiredInfo: "";
     property bool isEnteringGearUnits: false
     property int reqHookCounts: appstate.trips.HookCountsModel.RequiredHookCounts
@@ -218,7 +218,7 @@ Dialog {
                     id: numPad
                     max_digits: numPad.max_digits
                     placeholderText: numPad.placeholderText
-                    enable_audio: false
+                    enable_audio: ObserverSettings.enableAudio
                     onNumpadok: {
                         if (!isEnteringGearUnits&& appstate.trips.HookCountsModel.RequiredHookCounts >= 0 && text_result != "0" && text_result != "") {
 
