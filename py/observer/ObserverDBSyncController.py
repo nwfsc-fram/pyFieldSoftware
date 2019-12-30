@@ -41,7 +41,7 @@ class ObserverDBSyncController(QObject):
     SyncInfoModelChanged = pyqtSignal(name='SyncInfoModelChanged')
     syncStarted = pyqtSignal(name='syncStarted')
     abortSync = pyqtSignal(QVariant, name='abortSync', arguments=['reason'])
-    pullComplete = pyqtSignal(bool, QVariant, name='pullComplete', arguments=['success', 'result'])
+    pullComplete = pyqtSignal(bool, QVariant, int, name='pullComplete', arguments=['success', 'result', 'recordsUpdated'])
     pushComplete = pyqtSignal(bool, QVariant, name='pushComplete', arguments=['success', 'result'])
     readyToPush = pyqtSignal(name='readyToPush')
     dbSyncTimeChanged = pyqtSignal(name='dbSyncTimeChanged')
@@ -358,16 +358,17 @@ class ObserverDBSyncController(QObject):
         """
         self.readyToPush.emit()
 
-    def _pull_complete(self, success, message):
+    def _pull_complete(self, success, message, count=0):
         """
         Method to catch the DB pulldown results
         @param success: True/False if succeeded
         @param message: Description of status
+        @param count: count of records successfully updated
         @return:
         """
-        self._logger.info(f'Got {success} {message}')
+        self._logger.info(f'Got {success} {message} {count}')
         if success:
-            self.pullComplete.emit(success, message)
+            self.pullComplete.emit(success, message, count)
             self._update_db_sync_time()
         else:
             self.abortSync.emit(message)

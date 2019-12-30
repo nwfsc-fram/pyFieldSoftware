@@ -36,7 +36,7 @@ class SyncDBWorker(QThread):
     Run a thread to perform downloading of the database DDL and uploading of trip data
     Either pulls down only, or pushes to DB (upload_trips flag.)
     """
-    pullComplete = pyqtSignal(bool, str)  # Success/Fail, Result Description
+    pullComplete = pyqtSignal(bool, str, int)  # Success/Fail, Result Description, record count
     pushComplete = pyqtSignal(bool, str)  # Success/Fail, Result Description
     readyForPush = pyqtSignal()
     is_running = False
@@ -67,18 +67,18 @@ class SyncDBWorker(QThread):
 
         SyncDBWorker.is_running = True
         try:
-            sync_ok, sync_msg = self.soap.update_client_pull()
+            sync_ok, sync_msg, records_updated = self.soap.update_client_pull()
             if not self.upload_trips:
                 if self.send_push_signal and sync_ok:
                     self.readyForPush.emit()
                 else:
-                    self.pullComplete.emit(sync_ok, sync_msg)
+                    self.pullComplete.emit(sync_ok, sync_msg, records_updated)
             else:
                 push_ok, push_msg = self.perform_upload()
                 self.pushComplete.emit(push_ok, push_msg)
         except Exception as e:
-            self.syncStatusChanged.emit(False, f'ERROR: {e}')
-
+            #self.syncStatusChanged.emit(False, f'ERROR: {e}')
+            self.pullComplete.emit(False, f'ERROR: {e}', 0)
         SyncDBWorker.is_running = False
 
         while True:
