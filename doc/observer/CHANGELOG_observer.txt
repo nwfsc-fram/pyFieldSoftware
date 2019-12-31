@@ -1,5 +1,7 @@
 Change Log - OPTECS Observer Electronic Back Deck
 
+[ Note - Future Changelogs will be in Release Notes on Github. This doc is no longer updated.]
+
 -- 8/9/2019 2.0.0+1
 * Update to PyQt 5.13
 * More UI, state machine, QML screens for Sets
