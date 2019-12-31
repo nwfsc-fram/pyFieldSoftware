@@ -16,7 +16,7 @@ from PyQt5.QtCore import pyqtProperty, QObject, QVariant
 from py.observer.ObserverDBUtil import ObserverDBUtil
 
 from py.observer.ObserverDBModels import Lookups, Users, Vessels, \
-    Programs, Contacts, VesselContacts, Ports, CatchCategories, FirstReceiver, Species
+    Programs, Contacts, VesselContacts, Ports, CatchCategories, IfqDealers, Species
 
 from py.observer.ObserverUsers import ObserverUsers
 
@@ -199,9 +199,9 @@ class ObserverData(QObject):
 
         self._first_receivers = list()
 
-        fr_q = FirstReceiver. \
-            select(FirstReceiver, Ports). \
-            join(Ports, on=(FirstReceiver.port_code == Ports.ifq_port_code).alias('port'))
+        fr_q = IfqDealers. \
+            select(IfqDealers, Ports). \
+            join(Ports, on=(IfqDealers.port_code == Ports.ifq_port_code).alias('port'))
 
         for fr in fr_q:
             fr_line = '{} {}'.format(fr.dealer_name, fr.port.port_name)

@@ -87,18 +87,18 @@ class Programs(BaseModel):
         db_table = 'PROGRAMS'
 
 
-class FirstReceiver(BaseModel):
+class IfqDealers(BaseModel):
     active = IntegerField(db_column='ACTIVE', null=True)
     agency = IntegerField(db_column='AGENCY_ID', null=True)
     dealer_name = TextField(db_column='DEALER_NAME', null=True)
     dealer_number = TextField(db_column='DEALER_NUMBER', null=True)
-    first_receiver = PrimaryKeyField(db_column='FIRST_RECEIVER_ID')
+    ifq_dealer = PrimaryKeyField(db_column='IFQ_DEALER_ID')
     port_code = IntegerField(db_column='PORT_CODE', null=True)
     receiver_code = TextField(db_column='RECEIVER_CODE', null=True)
     receiver_number = IntegerField(db_column='RECEIVER_NUMBER', null=True)
 
     class Meta:
-        db_table = 'FIRST_RECEIVER'
+        db_table = 'IFQ_DEALERS'
 
 
 class Users(BaseModel):
@@ -168,8 +168,8 @@ class Trips(BaseModel):
     evaluation = IntegerField(db_column='EVALUATION_ID', null=True)
     export = FloatField(db_column='EXPORT', null=True)
     external_trip = IntegerField(db_column='EXTERNAL_TRIP_ID', null=True)
-    first_receiver = ForeignKeyField(db_column='FIRST_RECEIVER_ID', null=True, rel_model=FirstReceiver,
-                                     to_field='first_receiver')
+    first_receiver = ForeignKeyField(db_column='FIRST_RECEIVER_ID', null=True, rel_model=IfqDealers,
+                                     to_field='ifq_dealer')
     fishery = TextField(db_column='FISHERY', null=True)
     fishing_days_count = IntegerField(db_column='FISHING_DAYS_COUNT', null=True)
     fish_processed = TextField(db_column='FISH_PROCESSED', null=True)
