@@ -152,6 +152,16 @@ class ObserverDBMigrations(QObject):
             pass
         ObserverDBUtil.db_fix_empty_string_nulls(self._logger)
 
+        # Add float fields to FISHING_ACTIVITIES
+        try:
+            migrate(
+                self.migrator.add_column('FISHING_ACTIVITIES', 'TOTAL_HOOKS_UNROUNDED', self.nullable_float_field),
+                self.migrator.add_column('CATCHES', 'HOOKS_SAMPLED_UNROUNDED', self.nullable_float_field)
+            )
+            self._logger.info('Migrated FISHING_ACTIVITIES.EFP_LOCALONLY')
+        except SQLError:
+            pass
+
     def migrate_created_modified(self, table_name: str) -> None:
         """
         Migration adds "standard" CREATED_BY, CREATED_DATE, 

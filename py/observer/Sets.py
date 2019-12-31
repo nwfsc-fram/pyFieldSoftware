@@ -197,7 +197,8 @@ class Sets(QObject):
                 self._logger.debug(f'Set {set_rec.fishing_activity_num} new total hooks {new_total_hooks}')
                 set_rec.save()
                 self._recalculate_catches_hooks_sampled(set_rec, avg_hook_count)
-                new_otc = ObserverCatches.calculate_OTC_FG(self._logger, set_rec, new_total_hooks)
+                new_total_hooks_unrounded = avg_hook_count * set_rec.tot_gear_segments
+                new_otc = ObserverCatches.calculate_OTC_FG(self._logger, set_rec, new_total_hooks_unrounded)
                 self.update_model_otc(new_otc, set_rec.fishing_activity_num)
                 self.otcFGWeightChanged.emit(new_otc)
 
@@ -453,6 +454,8 @@ class Sets(QObject):
             self._current_set.gear_segments_lost = int(data_val) if data_val else None
         elif data_name == 'total_hooks':
             self._current_set.total_hooks = int(data_val) if data_val else None
+        elif data_name == 'total_hooks_unrounded':
+            self._current_set.total_hooks_unrounded = float(data_val) if data_val else None
         elif data_name == 'total_hooks_lost':
             self._current_set.total_hooks_lost = int(data_val) if data_val else None
         elif data_name == 'gear_performance':

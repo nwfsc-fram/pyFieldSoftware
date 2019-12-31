@@ -227,6 +227,7 @@ class FishingActivities(BaseModel):
     target_strategy = ForeignKeyField(db_column='TARGET_STRATEGY_ID', null=True, rel_model=CatchCategories,
                                       to_field='catch_category')
     total_hooks = IntegerField(db_column='TOTAL_HOOKS', null=True)
+    total_hooks_unrounded = FloatField(db_column='TOTAL_HOOKS_UNROUNDED', null=True)
     total_hooks_lost = IntegerField(db_column='TOTAL_HOOKS_LOST', null=True)
     tot_gear_segments = IntegerField(db_column='TOT_GEAR_SEGMENTS', null=True)
     trip = ForeignKeyField(db_column='TRIP_ID', rel_model=Trips, to_field='trip')
@@ -263,6 +264,7 @@ class Catches(BaseModel):
                                        to_field='fishing_activity')
     gear_segments_sampled = IntegerField(db_column='GEAR_SEGMENTS_SAMPLED', null=True)
     hooks_sampled = IntegerField(db_column='HOOKS_SAMPLED', null=True)
+    hooks_sampled_unrounded = FloatField(db_column='HOOKS_SAMPLED_UNROUNDED', null=True)
     notes = TextField(db_column='NOTES', null=True)
     sample_count = IntegerField(db_column='SAMPLE_COUNT', null=True)
     sample_weight = FloatField(db_column='SAMPLE_WEIGHT', null=True)
