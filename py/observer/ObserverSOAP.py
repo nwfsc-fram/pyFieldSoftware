@@ -326,7 +326,7 @@ class ObserverSoap(QObject):
         ObserverDBUtil.db_fix_empty_string_nulls(self._logger)
         final_result = f'Update Successful.\nRetrieved {success_count} updates from DB.\n' \
                        f'Ignored: {fail_count}'
-        return True, final_result
+        return True, final_result, success_count
 
     def perform_ddl(self, ddl_results):
         """

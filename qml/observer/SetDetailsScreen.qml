@@ -673,11 +673,13 @@ Item {
                             appstate.sets.setData('tot_gear_segments', gearUnits)
                             var totalHooks = Math.round(gearUnits * appstate.trips.currentAvgHookCount);
                             appstate.sets.setData('total_hooks', totalHooks)
+                            appstate.sets.setData('total_hooks_unrounded', gearUnits * appstate.trips.currentAvgHookCount)
                             checkRequiredFieldsAreSpecified();
                             tfTotalHooks.text = totalHooks;
                         } else if (text == "0") {
                             appstate.sets.setData('tot_gear_segments', null)
                             appstate.sets.setData('total_hooks', null)
+                            appstate.sets.setData('total_hooks_unrounded', null)
                             checkRequiredFieldsAreSpecified();
                             tfTotalHooks.text = "";
                             text = "";

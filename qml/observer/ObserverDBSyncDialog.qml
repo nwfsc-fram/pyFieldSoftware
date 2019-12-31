@@ -59,6 +59,9 @@ Dialog {
             appstate.catches.species.reloadSpeciesDatabase();
             appstate.users.updateProgramsForUser(username);
             // TODO Other DB refreshes? Vessels etc
+            if (recordsUpdated > 0) { // For now, force restart of software
+                showRestartDlg();
+            }
         }
 
         onPushComplete: {
@@ -105,6 +108,21 @@ Dialog {
         lblStatus.color = "black";
         lblStatus.font.bold = false;
         lblStatus.font.pixelSize = 20;
+    }
+
+    function showRestartDlg() {
+        dlgRestartSoftware.display();
+    }
+
+    FramNoteDialog {
+        id: dlgRestartSoftware
+        function display() {
+           message = "Databases updated.\nPlease restart software (closing now.)";
+           open();
+        }
+        onAccepted: {
+            Qt.quit() // close the app
+        }
     }
 
     contentItem: ColumnLayout {

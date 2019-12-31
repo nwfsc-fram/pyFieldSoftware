@@ -566,6 +566,12 @@ class ObserverCatches(QObject):
                         data_val and data_val > 0) else None
             except ValueError as e:
                 self._logger.error('hooks_sampled error: {}'.format(e))
+        elif data_name == 'hooks_sampled_unrounded':
+            try:
+                self._current_catch.hooks_sampled_unrounded = float(data_val) if (
+                        data_val and data_val > 0) else None
+            except ValueError as e:
+                self._logger.error('hooks_sampled_unrounded error: {}'.format(e))
         elif data_name == 'discard_reason':
             self._current_catch.discard_reason = data_val
         elif data_name == 'density':
@@ -1020,14 +1026,14 @@ class ObserverCatches(QObject):
         current_set = FishingActivities.get(FishingActivities.fishing_activity == self._current_catch.fishing_activity)
         otc_sample_weight = ObserverCatches.calculate_OTC_FG(self._logger,
                                          current_set,
-                                         current_set.total_hooks)
+                                         current_set.total_hooks_unrounded)
 
         # Update Model
         if otc_sample_weight:
             self.otcFGWeightChanged.emit(otc_sample_weight, self._current_catch.fishing_activity)
 
     @staticmethod
-    def calculate_OTC_FG(logger, current_set: FishingActivities, total_hooks: int):
+    def calculate_OTC_FG(logger, current_set: FishingActivities, total_hooks_unrounded: float):
         # FIELD-1890: Calculate OTC
         # For FISHING_ACTIVITIES use OTC_WEIGHT_METHOD, populate OBSERVER_TOTAL_CATCH, OTC_WEIGHT_UM
         # 6: Should be blank, something weird happened - comment required
@@ -1035,6 +1041,9 @@ class ObserverCatches(QObject):
         # 8: Extrapolation: OTC=(Sum of catch category wts./ number of gear units sampled) x number of gear units set
         otc_wm = current_set.otc_weight_method
         if otc_wm == '6':
+            current_set.observer_total_catch = 0
+            current_set.otc_weight_um = 'LB'
+            current_set.save()
             return
         otc_sample_weight = 0
         otc_sample_count = 0
@@ -1043,10 +1052,11 @@ class ObserverCatches(QObject):
             catches_q = Catches.select().where(Catches.fishing_activity == current_set)
             for c in catches_q:
                 c_weight = c.sample_weight
-                c_sampled = c.hooks_sampled
+                #c_sampled = c.hooks_sampled
+                c_sampled = c.hooks_sampled_unrounded
                 # c_count = c.sample_count
-                if c_weight and c_sampled and total_hooks:
-                    otc_sample_weight += (c_weight / c_sampled) * total_hooks
+                if c_weight and c_sampled and total_hooks_unrounded:
+                    otc_sample_weight += (c_weight / c_sampled) * total_hooks_unrounded
         else:
             # WM 11, others?
             otc_sample_weight = Catches.select().where(Catches.fishing_activity == current_set).aggregate(

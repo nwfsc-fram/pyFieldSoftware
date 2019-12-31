@@ -685,6 +685,7 @@ Item {
                             var hooksSampled = Math.round(unitsSampled * appstate.trips.currentAvgHookCount);
                             console.info('Calculated hooks_sampled to be ' + hooksSampled);
                             appstate.catches.setData('hooks_sampled', hooksSampled);
+                            appstate.catches.setData('hooks_sampled_unrounded', unitsSampled * appstate.trips.currentAvgHookCount);
                             lblHooksSampled.visible = true;
                             lblHooksSampled.text = " = " + hooksSampled + " hooks/pots"
                         }
