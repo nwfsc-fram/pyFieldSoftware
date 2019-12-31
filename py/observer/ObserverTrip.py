@@ -22,7 +22,7 @@ from playhouse.shortcuts import model_to_dict, dict_to_model
 from peewee import fn, IntegrityError
 
 from py.observer.ObserverDBModels import Trips, Vessels, Settings, Users, Programs, \
-    Contacts, Ports, FishTickets, TripCertificates, FirstReceiver, FishingActivities, Lookups
+    Contacts, Ports, FishTickets, TripCertificates, IfqDealers, FishingActivities, Lookups
 from py.observer.ObserverDBSyncController import ObserverDBSyncController
 from py.observer.ObserverTripsModel import TripsModel
 from py.observer.FishTicketsModel import FishTicketsModel
@@ -842,14 +842,14 @@ class ObserverTrip(QObject):
     def _query_first_receiver_join_ports(self, first_receiver_id=None):
 
         if not first_receiver_id:
-            return FirstReceiver. \
-                select(FirstReceiver, Ports). \
-                join(Ports, on=(FirstReceiver.port_code == Ports.ifq_port_code).alias('port'))
+            return IfqDealers. \
+                select(IfqDealers, Ports). \
+                join(Ports, on=(IfqDealers.port_code == Ports.ifq_port_code).alias('port'))
         else:
-            return FirstReceiver. \
-                select(FirstReceiver, Ports). \
-                join(Ports, on=(FirstReceiver.port_code == Ports.ifq_port_code).alias('port')). \
-                where(FirstReceiver.first_receiver == first_receiver_id)
+            return IfqDealers. \
+                select(IfqDealers, Ports). \
+                join(Ports, on=(IfqDealers.port_code == Ports.ifq_port_code).alias('port')). \
+                where(IfqDealers.ifq_dealer == first_receiver_id)
 
     @pyqtProperty(str, notify=tripDataChanged)
     def firstReceiver(self):
@@ -878,7 +878,7 @@ class ObserverTrip(QObject):
         for fr in fr_q:
             fr_line = '{} {}'.format(fr.dealer_name, fr.port.port_name)
             if first_receiver_text == fr_line:
-                id_lookup = fr.first_receiver
+                id_lookup = fr.ifq_dealer
                 break
 
         if id_lookup:

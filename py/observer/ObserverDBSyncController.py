@@ -435,7 +435,7 @@ class ObserverDBSyncController(QObject):
         for row in activities_q:
             return_port = row.return_port.port if row.return_port else None
             departure_port = row.departure_port.port if row.departure_port else None
-            first_receiver = row.first_receiver.first_receiver if row.first_receiver else None
+            first_receiver = row.first_receiver.ifq_dealer if row.first_receiver else None
             fishing_days = row.fishing_days_count if row.fishing_days_count else None
             skipper = row.skipper.contact if row.skipper else None
             trip_status = "1"  # TODO what is this
