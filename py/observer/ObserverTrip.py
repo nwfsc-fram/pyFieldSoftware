@@ -844,7 +844,8 @@ class ObserverTrip(QObject):
         if not first_receiver_id:
             return IfqDealers. \
                 select(IfqDealers, Ports). \
-                join(Ports, on=(IfqDealers.port_code == Ports.ifq_port_code).alias('port'))
+                join(Ports, on=(IfqDealers.port_code == Ports.ifq_port_code).alias('port')). \
+                where(IfqDealers.active == 1)
         else:
             return IfqDealers. \
                 select(IfqDealers, Ports). \
