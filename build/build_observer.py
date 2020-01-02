@@ -35,7 +35,8 @@ from buildzipper import buildzipper
 import argparse
 
 parser = argparse.ArgumentParser(description='Build OPTECS')
-parser.add_argument("--mode", choices=['ifqadmin', 'prod', 'training'], help="Build DEV version and update DB", action="store", required=True)
+parser.add_argument("--mode", choices=['ifqadmin', 'prod', 'training'], help="Build type, ifqadmin updates version #",
+                    action="store", required=True)
 args = parser.parse_args()
 
 print(f'Build selected: {args.mode}')
