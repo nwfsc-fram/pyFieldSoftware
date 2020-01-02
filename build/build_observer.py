@@ -5,8 +5,7 @@
 # Modify path_platforms as required
 
 # Usage:
-# build_observer.py build
-# build_observer.py bdist_msi
+# build_observer.py --mode ifqadmin
 
 # PYTHON 3.6 build requires patch to freezer.py
 # comment out lines 626-7
@@ -33,13 +32,21 @@ from time import sleep
 from cx_Freeze import setup, Executable
 from buildzipper import buildzipper
 
+import argparse
+
+parser = argparse.ArgumentParser(description='Build OPTECS')
+parser.add_argument("--mode", choices=['ifqadmin', 'prod', 'training'], help="Build DEV version and update DB", action="store", required=True)
+args = parser.parse_args()
+
+print(f'Build selected: {args.mode}')
+
 SCRIPT_DEBUG_MODE = False
 
 # IMPORTANT: Only enable one of these at a time: (Slow disk/? (McAfee) usually causes overlapping build issues.)
 BUILD_IFQDEV_VERSION = False  # Obsolete - might not need this again
-BUILD_IFQADMIN_VERSION = True  # increments build #
-BUILD_PRODUCTION_VERSION = False  # does not increment
-BUILD_TRAINING_VERSION = False  # does not increment
+BUILD_IFQADMIN_VERSION = args.mode == 'ifqadmin'  # also increments build #
+BUILD_PRODUCTION_VERSION = args.mode == 'prod'  # does not increment
+BUILD_TRAINING_VERSION = args.mode == 'training'  # does not increment
 
 ICON_FILE_PROD = '../resources/ico/optecs.ico'
 ICON_FILE_TEST = '../resources/ico/optecs_training.ico'
@@ -53,6 +60,10 @@ USE_ENCRYPTED_DATABASES = False if BUILD_IFQDEV_VERSION else True
 custom_build_suffix = '_NoEncryption' if BUILD_IFQDEV_VERSION else ''
 # example format: _NoEncryption (used when making one-off builds)
 
+# At this point, we are done with our custom args.
+# cx_Freeze requires the 'build' arg, so let's set it explicitly now
+newArgs = [sys.argv[0], 'build']
+sys.argv = newArgs
 
 if USE_ENCRYPTED_DATABASES:
     print(' ******* BE SURE ENCRYPTION IS ENABLED IN ObserverConfig.py *******')
