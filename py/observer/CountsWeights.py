@@ -586,12 +586,14 @@ class CountsWeights(QObject):
     def currentSpeciesCompItem(self, item_id):
         if item_id is None:
             self._current_species_comp_item = None
+            self._clear_counts_and_weights()
             self._logger.debug('Cleared')
         else:
             try:
                 self._current_species_comp_item = SpeciesCompositionItems.get(
                     SpeciesCompositionItems.species_comp_item == item_id)
                 species_name = self._current_species_comp_item.species.common_name
+                self._clear_counts_and_weights()
                 self.tallyFGFishCount = self._current_species_comp_item.species_number
                 self._logger.debug('Set species comp item id {} ({})'.format(item_id, species_name))
             except SpeciesCompositionItems.DoesNotExist as e:
