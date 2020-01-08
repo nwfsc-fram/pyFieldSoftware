@@ -95,7 +95,8 @@ class HookCountsModel(FramListModel):
 
     @pyqtProperty(QVariant, notify=avgHookCountChanged)
     def AvgHookCount(self):
-        return self._top_hc_record.avg_hook_count if self._top_hc_record else None
+        val = self._top_hc_record.avg_hook_count if self._top_hc_record else None
+        return val if val else 1.0
 
     @pyqtSlot(int, name='addHookCount')
     def add_hook_count(self, hook_count):

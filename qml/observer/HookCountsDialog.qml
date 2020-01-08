@@ -47,8 +47,6 @@ Dialog {
         //clear();
     }
     onAccepted: {
-        if (avgHookCount === 0)
-            avgHookCount = 1;
         console.info("Accepted Hook Counts " + avgHookCount);
 
     }
@@ -179,11 +177,11 @@ Dialog {
                         ObserverSunlightButton {
                             Layout.preferredWidth: 180
                             Layout.preferredHeight: 50
-                            text: reqHookCounts > 0 ? "Accept with\nWarning" : (avgHookCount == 0.0 ? "Accept as 1:1" : "Accept Avg.\nHook Count")
+                            text: reqHookCounts > 0 ? "Accept with\nWarning" : (avgHookCount == 1.0 ? "Accept as 1:1" : "Accept Avg.\nHook Count")
                             Layout.rightMargin: 10
                             fontsize: 20
                             highlightColor: reqHookCounts > 0 ? "red" :"lightgreen"
-                            visible: appstate.trips.HookCountsModel.count || (avgHookCount == 0.0 && reqHookCounts == 0)
+                            visible: appstate.trips.HookCountsModel.count || (avgHookCount == 1.0 && reqHookCounts == 0)
 
                             onClicked: {
                                 dlg.accept();

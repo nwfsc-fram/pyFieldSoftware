@@ -281,8 +281,11 @@ class Sets(QObject):
         @param value: value to store
         @return:
         """
-        self._sets_model.setProperty(self._internal_set_idx,
-                                     model_prop, value)
+        if self._internal_set_idx is not None:
+            self._sets_model.setProperty(self._internal_set_idx,
+                                         model_prop, value)
+        else:
+            self._logger.warning(f'_internal_set_idx is None, skipping prop update {model_prop}: {value}')
 
     @pyqtSlot(str, result='QVariant', name='getDataOrSetDefault')
     def get_data_or_default(self, data_name):
