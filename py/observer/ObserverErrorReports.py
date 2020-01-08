@@ -267,6 +267,7 @@ class TripChecksDisabledInOptecs:
         2137,   # FIELD-1965 PHLB
         2139,   # FIELD-1965 PHLB
         1498,   # FIELD-1965 PHLB
+        1847,   # FIELD-1985 TER on KP
     ]
 
 
