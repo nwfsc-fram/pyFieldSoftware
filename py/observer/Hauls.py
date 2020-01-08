@@ -630,6 +630,13 @@ class Hauls(QObject):
         haul_num = self._current_haul.fishing_activity_num if self._current_haul else 0
         return (self._trip_seed + haul_num) % 3 + 1
 
+    def isTrainingMode(self):
+        """
+        @return: True if training mode
+        """
+        mode = ObserverDBUtil.get_setting('training')
+        return True if mode == 'TRUE' else False
+
     def _set_trip_biolist_seed(self, trip_id):
         """
         For new trip, get a new biolist num seed
@@ -639,6 +646,12 @@ class Hauls(QObject):
         if trip_id is None:
             self._logger.warning(f'Warn, None trip id passed to RNG.')
             return
-        random.seed(self._device_random_seed + int(trip_id))  # repeatable RNG seed
-        self._trip_seed = random.randint(1, 1000)
-        self._logger.debug(f'RNG seed {self._device_random_seed} with trip id {trip_id} -> {self._trip_seed} trip seed')
+
+        if not self.isTrainingMode():
+            random.seed(self._device_random_seed + int(trip_id))  # repeatable RNG seed
+            self._trip_seed = random.randint(1, 1000)
+            self._logger.debug(f'RNG seed {self._device_random_seed} with trip id {trip_id} -> {self._trip_seed} trip seed')
+        else:
+            random.seed(self._device_random_seed)
+            self._trip_seed = 2
+            self._logger.info(f'TRAINING MODE: SET BIOLIST SEED')
