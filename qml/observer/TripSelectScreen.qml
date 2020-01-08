@@ -91,7 +91,7 @@ Item {
                 role: "user_name"
                 title: "User"
                 width: 200
-                visible: appstate.trips.debrieferMode
+                visible: appstate.trips.debrieferMode || appstate.isTrainingMode
                 delegate: Text {
                     text: model ? model.user_name : ""
                     horizontalAlignment: Text.AlignHCenter

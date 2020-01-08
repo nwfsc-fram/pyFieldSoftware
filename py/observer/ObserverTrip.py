@@ -73,6 +73,14 @@ class ObserverTrip(QObject):
         self._logger.info(f'Debriefer mode: {self._enable_debriefer_mode}')
         self.debrieferModeChanged.emit(is_set)
 
+    @staticmethod
+    def isTrainingMode():
+        """
+        @return: True if training mode
+        """
+        mode = ObserverDBUtil.get_setting('training')
+        return True if mode == 'TRUE' else False
+
     @pyqtProperty(bool, notify=debrieferModeChanged)
     def debrieferMode(self):
         return self._enable_debriefer_mode
@@ -89,7 +97,7 @@ class ObserverTrip(QObject):
         program_id = ObserverDBUtil.get_current_program_id()
         is_fixed_gear = ObserverTrip.get_fg_value()
 
-        if debriefer_mode:
+        if debriefer_mode or ObserverTrip.isTrainingMode():
             logging.info('Debriefer mode set, loading ALL trips.')
             trips_query = Trips.select().where((Trips.is_fg_trip_local == is_fixed_gear))
         else:
