@@ -104,7 +104,6 @@
         <file>../qml/observer/TripSelectScreen.qml</file>
         <file>../qml/observer/SetDetailsModel.qml</file>
         <file>../qml/observer/SetDetailsScreen.qml</file>
-        <file>../qml/observer/SetsModel.qml</file>
         <file>../qml/observer/SetsScreen.qml</file>
         <file>../qml/observer/SettingsScreen.qml</file>
         <file>../qml/observer/SpeciesScreen.qml</file>
