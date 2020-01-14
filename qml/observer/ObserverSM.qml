@@ -181,6 +181,9 @@ DSM.StateMachine {
             case "species_entry_state":
                 obsSM.to_species_entry_state();
                 break;
+            case "cw_entry_state":
+                obsSM.to_cw_entry_state();
+                break;
             case "species_fg_entry_state":
                 obsSM.to_species_fg_entry_state();
                 break;

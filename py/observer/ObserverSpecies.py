@@ -528,7 +528,7 @@ class ObserverSpecies(QObject):
 
     def _handle_tally_times_avg_weight_changed(self, tally_weight: float):
         # Fixed Gear Tally is different than Trawl tally
-        if self._current_speciescomp_item:
+        if self.isFixedGear and self._current_speciescomp_item:
             # self._logger.debug(f'FG Tally species Weight {tally_weight}')
             idx = self._get_cur_species_comp_item_idx()
 
@@ -537,7 +537,7 @@ class ObserverSpecies(QObject):
             # self._logger.debug(f'Species Weight updated to {tally_weight}')
 
     def _handle_tally_avg_weight_changed(self, avg_weight: float):
-        if self._current_speciescomp_item:
+        if self.isFixedGear and self._current_speciescomp_item:
             # This seems to be setting wrong values for index??
             self._logger.debug(f'FG Tally avg Weight {avg_weight}')
             idx = self._get_cur_species_comp_item_idx()
@@ -563,15 +563,16 @@ class ObserverSpecies(QObject):
         :return:
         """
         if self._current_speciescomp_item:
-            # self._logger.debug(f'HANDLE ACTUAL WEIGHT {actual_wt}')
+            self._logger.debug(f'HANDLE ACTUAL WEIGHT {actual_wt}')
             # update view model
             idx = self._get_cur_species_comp_item_idx()
             # Return float value. QML will handle formatting via toFixed()
             actual_wt = actual_wt if actual_wt else None  # remove zero weights
-            # For Fixed Gear, this is different, handled in COuntsWeights
+            # For Fixed Gear, this is different, handled in CountsWeights
             if not self._is_fixed_gear:
                 self._species_comp_items_model.setProperty(
                            idx, 'species_weight', actual_wt)
+                self._logger.debug(f'Sample Weight #{idx} updated to {actual_wt}')
 
     def _handle_extrapolated_weight_changed(self, extrap_wt: float):
         if self._current_speciescomp_item and not self.isFixedGear:
@@ -646,11 +647,14 @@ class ObserverSpecies(QObject):
         self._species_comp_items_model.setProperty(idx, 'species_number', ct)
 
         # Update avg_weight view model for CURRENT_SPECIES_ITEM
+
         spec_wt = self._current_speciescomp_item.species_weight
         spec_num = self._current_speciescomp_item.species_number
-        avg_wt = spec_wt / spec_num if spec_wt and spec_num else None
-        self._species_comp_items_model.setProperty(idx, 'avg_weight', avg_wt)
-
+        self._species_comp_items_model.setProperty(idx, 'species_weight', spec_wt)
+        # DISABLED, incorrect calculation
+        # avg_wt = spec_wt / spec_num if spec_wt and spec_num else None  # this is wrong
+        # self._species_comp_items_model.setProperty(idx, 'avg_weight', avg_wt)
+        # END DISABLE
         self._calculate_total_catch_weight_current()
 
     def _handle_species_count_changed(self, ct, tally_ct):

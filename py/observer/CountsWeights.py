@@ -68,6 +68,8 @@ class CountsWeights(QObject):
         self._current_species_comp_item = None
         self._wm15_ratio = 1.0
         self._clear_counts_and_weights()
+        self.emit_calculated_weights()
+
 
     def _clear_counts_and_weights(self):
         self._avg_weight = None
@@ -80,7 +82,6 @@ class CountsWeights(QObject):
         self._tally_fg_fish_count = None
         if self._baskets_model:
             self._baskets_model.clear()
-        self.emit_calculated_weights()
         # self.dataExistsChanged.emit()
 
     @pyqtSlot(name="speciesIsNotCounted", result=bool)
@@ -93,6 +94,7 @@ class CountsWeights(QObject):
     def _build_baskets_model(self):
         if self._current_species_comp_item is None:
             self._clear_counts_and_weights()
+            self.emit_calculated_weights()
             return
 
         if self._is_mixed_species():
@@ -427,7 +429,7 @@ class CountsWeights(QObject):
         self.tallyFGFishCountChanged.emit(self._tally_fg_fish_count)
         self.tallyFishCountChanged.emit(self._tally_table_fish_count)
         self.speciesWeightChanged.emit(self._species_weight)
-        self.tallyTimesAvgWeightChanged.emit(self.tallyTimesAvgWeight)
+        self.tallyTimesAvgWeightChanged.emit(self.tallyTimesAvgWeight)  # ws - is this FG only?
         if not self.isFixedGear:
             self.speciesFishCountChanged.emit(self._extrapolated_species_fish_count, self._total_tally)
             self.extrapolatedWeightChanged.emit(self._extrapolated_species_weight)
@@ -484,6 +486,8 @@ class CountsWeights(QObject):
 
     @tallyFGFishCount.setter
     def tallyFGFishCount(self, count: int):
+        if not self.isFixedGear:
+            return
         self._logger.debug(f'Tally FG count now {count}')
         try:
             self._tally_fg_fish_count = count
@@ -493,6 +497,9 @@ class CountsWeights(QObject):
             pass
 
     def _updateFGTallyCalculations(self, count: int):
+        if not self.isFixedGear:
+            return
+
         if self._current_species_comp_item:
             self._species_fish_count = count
             self._tally_fg_fish_count = count
@@ -587,6 +594,7 @@ class CountsWeights(QObject):
         if item_id is None:
             self._current_species_comp_item = None
             self._clear_counts_and_weights()
+            self.emit_calculated_weights()
             self._logger.debug('Cleared')
         else:
             try:
@@ -594,6 +602,8 @@ class CountsWeights(QObject):
                     SpeciesCompositionItems.species_comp_item == item_id)
                 species_name = self._current_species_comp_item.species.common_name
                 self._clear_counts_and_weights()
+                # self.emit_calculated_weights()
+
                 self.tallyFGFishCount = self._current_species_comp_item.species_number
                 self._logger.debug('Set species comp item id {} ({})'.format(item_id, species_name))
             except SpeciesCompositionItems.DoesNotExist as e:
