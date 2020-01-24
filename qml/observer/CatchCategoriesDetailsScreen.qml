@@ -815,9 +815,10 @@ Item {
                             // For WMs with a numpad on this screen for weight,
                             // initialize the catch weight with the persisted value.
                             if (catchCatsDetails.weightMethodHasNumpadOnThisScreen(cur_WM)) {
-                                tfCW.text = appstate.catches.getData('catch_weight') ?
-                                        appstate.catches.getData('catch_weight').toFixed(dec_places) : "";
-                            }                            
+                               var weight_field = appstate.isFixedGear ? 'sample_weight' : 'catch_weight';
+                               tfCW.text = appstate.catches.getData(weight_field) ?
+                               appstate.catches.getData(weight_field).toFixed(dec_places) : "";
+                            }
                         }
 
                         onActiveFocusChanged:  {
@@ -834,11 +835,15 @@ Item {
                                 console.debug("Adding or subtracting");
                             } else {
                                 var value = parseFloat(text);
+                                var weight_field = appstate.isFixedGear ? 'sample_weight' : 'catch_weight';
+
                                 if (value > 0.0) {
-                                  appstate.catches.setData('catch_weight', value)
+                                  appstate.catches.setData(weight_field, value)
                                 } else {
-                                  appstate.catches.setData('catch_weight', null)
+                                  appstate.catches.setData(weight_field, null)
                                 }
+
+
                             }
                         }
                     }
@@ -912,8 +917,9 @@ Item {
                             }
                             // For WMs with a numpad on this screen for fish count (WM14),
                             // initialize the catch count with the persisted value.
-                            var textValue = appstate.catches.getData('catch_count') ?
-                                        appstate.catches.getData('catch_count') : "";
+                            var count_field = appstate.isFixedGear ? 'sample_count' : 'catch_count';
+                            var textValue = appstate.catches.getData(count_field) ?
+                                        appstate.catches.getData(count_field) : "";
                             return textValue;
                         }
 
@@ -932,10 +938,11 @@ Item {
                                 console.debug("Adding or subtracting");
                             } else {
                                 var value = parseFloat(text);
+                                var count_field = appstate.isFixedGear ? 'sample_count' : 'catch_count';
                                 if (value > 0.0) {
-                                  appstate.catches.setData('catch_count', value)
+                                  appstate.catches.setData(count_field, value)
                                 } else {
-                                  appstate.catches.setData('catch_count', null)
+                                  appstate.catches.setData(count_field, null)
                                 }
                             }
                         }

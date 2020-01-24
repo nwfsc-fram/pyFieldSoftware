@@ -540,17 +540,20 @@ class ObserverCatches(QObject):
             pass  # Readonly values
         elif data_name == 'sample_weight':
             try:
-                data_val = float(data_val) if data_val else None
-                self._current_catch.sample_weight = data_val
-                self._current_catch.sample_weight_um = 'LB'
+                new_val = float(data_val) if data_val else None
+                if self._current_catch.sample_weight != new_val:
+                  self._current_catch.sample_weight = data_val
+                  self._current_catch.sample_weight_um = 'LB'
+                  #delayed recalculate self._calculate_OTC_FG()
             except ValueError as e:
                 self._logger.error('sample weight error: {}'.format(e))
 
         elif data_name == 'sample_count':
             try:
-                if self._current_catch.catch_weight_method != '13':
-                    self._current_catch.sample_count = int(data_val) if (
-                            data_val and data_val > 0) else None
+                new_val = int(data_val) if (data_val and data_val > 0) else None
+                if self._current_catch.catch_weight_method != '13' and self._current_catch.sample_count != new_val:
+                    self._current_catch.sample_count = new_val
+                    # delayed recalculate self._calculate_OTC_FG()
             except ValueError as e:
                 self._logger.error('sample count error: {}'.format(e))
         elif data_name == 'gear_segments_sampled':
@@ -1020,6 +1023,10 @@ class ObserverCatches(QObject):
             self._set_cur_prop('sample_count', ct)
         self._calculate_OTC_FG()
 
+    @pyqtSlot(name='recalcOTCFG')
+    def recalc_otc_fg(self):
+        self._calculate_OTC_FG()
+
     def _calculate_OTC_FG(self):
         if not self._is_fixed_gear:
             return
@@ -1027,7 +1034,7 @@ class ObserverCatches(QObject):
         otc_sample_weight = ObserverCatches.calculate_OTC_FG(self._logger,
                                          current_set,
                                          current_set.total_hooks_unrounded)
-
+        self._logger.info(f'OTC SAMPLE WEIGHT CALC {otc_sample_weight}')
         # Update Model
         if otc_sample_weight:
             self.otcFGWeightChanged.emit(otc_sample_weight, self._current_catch.fishing_activity)
