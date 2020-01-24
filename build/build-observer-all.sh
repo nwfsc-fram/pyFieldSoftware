@@ -18,3 +18,6 @@ echo Running All Builds...
 cd /c/git/pyFieldSoftware/build
 
 python build_observer.py --mode ifqadmin && python build_observer.py --mode prod && python build_observer.py --mode training
+
+echo Opening Build Folder...
+start dist
