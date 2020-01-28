@@ -19,7 +19,7 @@ Item {
     }
 
     Component.onCompleted: {
-        var ccCode = appstate.catches.currentCatchCatCode(); //appstate.catches.currentCatch.catch_category.catch_category_code;
+        var ccCode = appstate.catches.currentCatchCatCode;
         console.debug("Updating WM3 catch weight calculation for CC Code " +  ccCode);
 
         init_ui();
