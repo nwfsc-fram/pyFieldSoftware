@@ -248,14 +248,17 @@ Item {
                                         console.debug("Weight of " + value + " requires confirmation dialog.");
                                         confirmWM3AddHeavyBasket.basket_id = basket_id;
                                         confirmWM3AddHeavyBasket.show("add this heavy basket", "add_heavy_basket")
+                                    } else if (parseFloat(value) === 0) {
+                                        value = null;
+                                        modeWM3.removeNewestRowIfZeroWeight();
+                                        numPadWM3.clearAndSelect();
                                     } else {
                                         // Typical - no error, no confirmation needed
-                                        if (value === 0)
-                                            value = null;
                                         modeWM3.setBasketWeight(basket_id, parseFloat(value));
                                         colWM3Calculation.recalculate();
                                         console.debug("Weight is OK without need for confirmation: " + value);
                                     }
+
                                 }
 
                                 onNumpadinput: {
