@@ -375,11 +375,16 @@ class CountsWeights(QObject):
 
         try:
             if self._current_weight_method == '15':
-                self._extrapolated_species_weight = self._species_weight / self._wm15_ratio
+                self._extrapolated_species_weight = Decimal(self._species_weight) / Decimal(self._wm15_ratio)
+                self._extrapolated_species_weight = float(
+                    Decimal(self._extrapolated_species_weight).quantize(Decimal('.01'), rounding=ROUND_UP))
             elif self._current_weight_method == '8':
+                ex_wt = float(
+                    Decimal(Decimal(species_unweighted_count) * Decimal(self._avg_weight))
+                    .quantize(Decimal('.01'), rounding=ROUND_UP))
                 self._logger.info(
                     'WM8 adding to extrapolated weight: {} * {}'.format(species_unweighted_count, self._avg_weight))
-                extrapolated_species_weight += self._species_weight + species_unweighted_count * self._avg_weight
+                extrapolated_species_weight += self._species_weight + ex_wt
                 self._extrapolated_species_weight = extrapolated_species_weight
                 # Question: Should tally for WM8 be included in species_fish_count?
                 # FIELD-1403: Including tally count in count incorrectly triggers TC1897. Don't.
@@ -387,8 +392,9 @@ class CountsWeights(QObject):
                 # Save tally to species db entry
                 self._total_tally = species_unweighted_count
                 self._logger.info(f"WM8: species_fish_number={self._species_fish_count}, " +
-                                   f"total tally={self._total_tally}.")
-        except TypeError:
+                                  f"total tally={self._total_tally}.")
+        except TypeError as e:
+            self._logger.error(e)
             pass
 
         # Now that we recalculated average fish weight, calculate extrapolated counts
@@ -401,7 +407,8 @@ class CountsWeights(QObject):
 
                     indiv_extrapolated_number = 0
                     if cur_wt and self._avg_weight and not cur_fish_count:
-                        indiv_extrapolated_number = cur_wt / self._avg_weight  # round(cur_wt / self._avg_weight)
+                        indiv_extrapolated_number = Decimal(cur_wt) / Decimal(self._avg_weight)  # round(cur_wt / self._avg_weight)
+                        indiv_extrapolated_number = float(indiv_extrapolated_number).quantize(Decimal('.01', rounding=ROUND_UP))
                     self._baskets_model.setProperty(i, 'extrapolated_number', indiv_extrapolated_number)
                     species_extrapolated_count += indiv_extrapolated_number
             except Exception as e:
