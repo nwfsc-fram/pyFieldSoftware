@@ -1060,7 +1060,7 @@ Item {
                         font.pixelSize: colWeightInfo.fontsize
                         readOnly: true
                         text: appstate.catches.species.counts_weights.tallyTimesAvgWeight ?
-                                  appstate.catches.species.counts_weights.tallyTimesAvgWeight.toFixed(dec_places) : ""
+                                  appstate.catches.species.counts_weights.tallyTimesAvgWeight : ""
 
                         Layout.alignment: Qt.AlignRight
                         horizontalAlignment: TextInput.AlignRight
