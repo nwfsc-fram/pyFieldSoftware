@@ -623,7 +623,7 @@ class ObserverCatches(QObject):
                 cur_notes = cur_notes.replace(orig_ratio, '')
                 self.catchRatioChanged.emit(1.0)
             return
-        ratio_str = f'Ratio={ratio:.6f}'
+        ratio_str = f'Ratio={ratio:.16f}'
         ratio_re = re.compile('Ratio=([\S_]+)')
         match = ratio_re.search(cur_notes)
         if match:

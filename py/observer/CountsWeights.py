@@ -375,13 +375,12 @@ class CountsWeights(QObject):
 
         try:
             if self._current_weight_method == '15':
-                self._extrapolated_species_weight = Decimal(self._species_weight) / Decimal(self._wm15_ratio)
-                self._extrapolated_species_weight = float(
-                    Decimal(self._extrapolated_species_weight).quantize(Decimal('.01'), rounding=ROUND_UP))
+                tmp_ex = float((Decimal(self._species_weight) / Decimal(self._wm15_ratio)).quantize(Decimal('.001')))
+                self._extrapolated_species_weight = round(float(tmp_ex), 2)
             elif self._current_weight_method == '8':
-                ex_wt = float(
+                ex_wt = round(
                     Decimal(Decimal(species_unweighted_count) * Decimal(self._avg_weight))
-                    .quantize(Decimal('.01'), rounding=ROUND_UP))
+                    .quantize(Decimal('.001')), 2)
                 self._logger.info(
                     'WM8 adding to extrapolated weight: {} * {}'.format(species_unweighted_count, self._avg_weight))
                 extrapolated_species_weight += self._species_weight + ex_wt
@@ -408,7 +407,7 @@ class CountsWeights(QObject):
                     indiv_extrapolated_number = 0
                     if cur_wt and self._avg_weight and not cur_fish_count:
                         indiv_extrapolated_number = Decimal(cur_wt) / Decimal(self._avg_weight)  # round(cur_wt / self._avg_weight)
-                        indiv_extrapolated_number = float(indiv_extrapolated_number).quantize(Decimal('.01', rounding=ROUND_UP))
+                        indiv_extrapolated_number = round(float(indiv_extrapolated_number.quantize(Decimal('.001'))), 2)
                     self._baskets_model.setProperty(i, 'extrapolated_number', indiv_extrapolated_number)
                     species_extrapolated_count += indiv_extrapolated_number
             except Exception as e:
@@ -530,7 +529,7 @@ class CountsWeights(QObject):
     def tallyTimesAvgWeight(self):
         if self.avgWeight and self.tallyFGFishCount:
             val = Decimal(self.avgWeight) * Decimal(self.tallyFGFishCount)
-            round_val = val.quantize(Decimal('.01'), rounding=ROUND_UP)
+            round_val = round(val.quantize(Decimal('.001')), 2)
             # https://stackoverflow.com/questions/56820/round-doesnt-seem-to-be-rounding-properly#56833
             return float(round_val)
         else:
