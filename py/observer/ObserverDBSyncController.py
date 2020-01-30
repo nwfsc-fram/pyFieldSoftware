@@ -820,8 +820,9 @@ class ObserverDBSyncController(QObject):
         # Get species comp baskets
         species_baskets_q = SpeciesCompositionBaskets.select(). \
             where((SpeciesCompositionBaskets.species_comp_item << species_comp_item_ids) &
-                  (SpeciesCompositionBaskets.basket_weight_itq.is_null(False)) &  # omit trawl tallies
-                  (SpeciesCompositionBaskets.is_fg_tally_local.is_null(True)))  # omit fg tallies
+                  (SpeciesCompositionBaskets.basket_weight_itq.is_null(False)))# omit trawl tallies
+                  # & (SpeciesCompositionBaskets.is_fg_tally_local.is_null(True)))  # omit fg tallies
+
 
         if not len(species_baskets_q):
             return filename, None
