@@ -158,7 +158,7 @@ if __name__ == '__main__' or __name__ == 'observer__main__':
     log_fmt = ObserverLogUtility.get_log_format()
     date_fmt = ObserverLogUtility.get_date_format()
     log_mode_append = 'a'  # Append mode so that all sessions on one day are logged to same file.
-    log_level = logging.INFO if ObserverState.getset_setting('logging_level', 'INFO') == 'INFO' else 'DEBUG'
+    log_level = logging.INFO if ObserverState.getset_setting('logging_level', 'INFO') == 'INFO' else logging.DEBUG
     logging.basicConfig(level=log_level, filename=log_filename_for_today, format=log_fmt, datefmt=date_fmt,
                         filemode=log_mode_append)
 

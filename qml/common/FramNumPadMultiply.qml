@@ -564,21 +564,36 @@ Item {
                 adding_mode = false;
                 var sr_val = parseFloat(stored_result);
                 var add_val = parseFloat(textNumPad.text);
-                setnumpadvalue(sr_val + add_val);
+                var finalVal = sr_val + add_val;
+                if (finalVal % 1 !== 0) {
+                    finalVal = finalVal.toFixed(2);
+                }
+
+                setnumpadvalue(finalVal);
             }
 
             function subtracting_mode_ok() {
                 subtracting_mode = false;
                 var sr_val = parseFloat(stored_result);
                 var sub_val = parseFloat(textNumPad.text);
-                setnumpadvalue(sr_val - sub_val);
+                var finalVal = sr_val - sub_val;
+                if (finalVal % 1 !== 0) {
+                    finalVal = finalVal.toFixed(2);
+                }
+
+                setnumpadvalue(finalVal);
             }
 
             function multiplying_mode_ok() {
                 multiplying_mode = false;
                 var sr_val = parseFloat(stored_result);
                 var sub_val = parseFloat(textNumPad.text);
-                setnumpadvalue(sr_val * sub_val);
+                var finalVal = sr_val * sub_val;
+                if (finalVal % 1 !== 0) {
+                    finalVal = finalVal.toFixed(2);
+                }
+
+                setnumpadvalue(finalVal);
             }
 
             onClicked: {
