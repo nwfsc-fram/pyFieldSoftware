@@ -438,7 +438,7 @@ class ObserverDBSyncController(QObject):
             first_receiver = row.first_receiver.ifq_dealer if row.first_receiver else None
             fishing_days = row.fishing_days_count if row.fishing_days_count else None
             skipper = row.skipper.contact if row.skipper else None
-            trip_status = "1"  # TODO what is this
+            trip_status = "2"  # "Open-Restricted"
             program_id = row.program.program
             row_values = [
                 row.trip, row.vessel.vessel, row.user.user, program_id, row.debriefing,
