@@ -688,7 +688,6 @@ ColumnLayout {
                 var needTags = tags_screen ? tags_screen.remaining_protocol_count() > 0 : false
                 var needBC = barcodes_screen ? barcodes_screen.remaining_protocol_count() > 0 : false
 
-
                 // FIELD-1554: premature tab switch when entering barcode
                 // To fix this, if we're on a tab that needs protocols, don't change currentIndex
                 var doNotSwitch = false;
@@ -747,7 +746,16 @@ ColumnLayout {
                         tabsBiospecimens.moveToNextTab();
                     }
                     onAddTally: {
-                        appstate.catches.biospecimens.addPHLBTally(7); // FIELD-1527
+                        if(!labelBSMethodDesc.is_selected()) {
+                            dlgSelectBMWarning.open();
+                            return false;
+                        }
+                        const biosampleMethod = rowBiosample.currentBM;
+                        //appstate.catches.biospecimens.bioSampleMethod;
+                        console.log('BIOSAMPLE METHOD ' + biosampleMethod);
+                        appstate.catches.biospecimens.addPHLBTally(biosampleMethod);
+                        // No longer relevant:
+                        // FIELD-1527
                         // Uses 7 instead of appstate.catches.biospecimens.bioSampleMethod for all Tally
                     }
                     onDecTally: {
