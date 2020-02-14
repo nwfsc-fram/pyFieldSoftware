@@ -164,7 +164,7 @@ if __name__ == '__main__' or __name__ == 'observer__main__':
 
     # Also output to console (stderr)
     console = logging.StreamHandler()
-    console.setLevel(logging.DEBUG)
+    console.setLevel(log_level)
     formatter = logging.Formatter(log_fmt, date_fmt)
     console.setFormatter(formatter)
     logging.getLogger('').addHandler(console)
