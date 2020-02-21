@@ -156,7 +156,7 @@ Dialog {
             Layout.fillWidth: true
             model: db_sync.SyncInfoModel
             visible: !download_only
-            selectionMode: appstate.trips.debrieferMode ? SelectionMode.SingleSelection : SelectionMode.NoSelection
+            selectionMode: appstate.trips.debrieferMode || appstate.isTrainingMode ? SelectionMode.SingleSelection : SelectionMode.NoSelection
             TableViewColumn {
                 title: "Trip ID"
                 role: "trip_id"
@@ -196,7 +196,7 @@ Dialog {
             FramButton {
                 id: btnRetrieveUpdates
                 Layout.alignment: Qt.AlignCenter
-                text: download_only ? "Retrieve\nUpdates" : (appstate.trips.debrieferMode ? "Sync All\n\"Ready to Sync\" Trips": "Perform\nSync")
+                text: download_only ? "Retrieve\nUpdates" : (appstate.trips.debrieferMode || appstate.isTrainingMode ? "Sync All\n\"Ready to Sync\" Trips": "Perform\nSync")
                 onClicked: {
                     db_sync.currentSOAPUsername = username;
                     db_sync.currentSOAPPassword = password;
@@ -225,8 +225,8 @@ Dialog {
             }
             FramButton {
                 id: btnCycleSyncStatus
-                text: "Cycle Sync Status\n(Debriefer Mode)"
-                visible: appstate.trips.debrieferMode
+                text: "Cycle Sync Status\n(Debriefer/ Training Mode)"
+                visible: appstate.trips.debrieferMode || appstate.isTrainingMode
                 enabled: tableSyncStatus.selection.count > 0
                 onClicked: {
                     var row = tableSyncStatus.currentRow;
