@@ -831,6 +831,11 @@ Item {
                         }
 
                         onTextChanged: {
+                            if (!focus) {
+                                // FIELD-2000 reject this - side effect from somewhere else
+                                return;
+                            }
+
                             if (numPad.adding_mode || numPad.subtracting_mode) {
                                 console.debug("Adding or subtracting");
                             } else {
