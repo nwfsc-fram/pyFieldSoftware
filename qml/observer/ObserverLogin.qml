@@ -516,6 +516,8 @@ ApplicationWindow {
             stackLoginView.pop();
             state = "login";
             dlgDBSync.download_only = true;
+            // FIELD-2009 exit the app
+            Qt.quit();
         }
     }
 

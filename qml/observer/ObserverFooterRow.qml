@@ -351,7 +351,7 @@ RowLayout {
         TrawlConfirmDialog {
             id: confirmLogout
 
-            message: "Are you sure you want to log out?"
+            message: "Are you sure you want to log out & exit?"
             action: ""
 
             onAccepted: {
