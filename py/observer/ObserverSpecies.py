@@ -8,6 +8,8 @@
 # License:     MIT
 # ------------------------------------------------------------------------------
 import re
+from decimal import Decimal, ROUND_HALF_UP
+
 from PyQt5.QtCore import pyqtProperty, QVariant, QObject, pyqtSignal, pyqtSlot
 
 from playhouse.shortcuts import model_to_dict
@@ -732,16 +734,39 @@ class ObserverSpecies(QObject):
         return self._species_comp_items_model.get_item_index('species_comp_item',
                                                              self._current_speciescomp_item.species_comp_item)
 
+
+    @staticmethod
+    def get_wm15_ratio(notes):
+        wm15_ratio = ObserverDBUtil.get_current_catch_ratio_from_notes(notes)
+        if wm15_ratio:
+            return wm15_ratio
+        return 1.0
+
     def _calculate_catch_weight(self, species_comp_item):
-        self._total_haul_weight = SpeciesCompositionItems. \
-            select(). \
-            where(SpeciesCompositionItems.species_composition == species_comp_item.species_composition). \
-            aggregate(fn.Sum(SpeciesCompositionItems.extrapolated_species_weight))
+        current_weight_method = species_comp_item.catch.catch_weight_method
+
+        if current_weight_method == '15':
+            agg_species_weight = self._total_haul_weight = SpeciesCompositionItems. \
+                select(). \
+                where(SpeciesCompositionItems.species_composition == species_comp_item.species_composition). \
+                aggregate(fn.Sum(SpeciesCompositionItems.species_weight))
+            # FIELD-2013 changed this to use species_weight instead of extrapolated weight for WM15
+
+            notes = species_comp_item.catch.notes
+            wm15_ratio = self.get_wm15_ratio(notes)
+
+            wm15_weight = (Decimal(agg_species_weight) /
+                  Decimal(wm15_ratio)).quantize(Decimal('.01'), rounding=ROUND_HALF_UP)
+            self._total_haul_weight = float(wm15_weight)
+        else:
+            self._total_haul_weight = SpeciesCompositionItems. \
+                select(). \
+                where(SpeciesCompositionItems.species_composition == species_comp_item.species_composition). \
+                aggregate(fn.Sum(SpeciesCompositionItems.extrapolated_species_weight))
 
         self.totalCatchWeightChanged.emit(self._total_haul_weight)
 
         self._total_haul_count = None
-        current_weight_method = species_comp_item.catch.catch_weight_method
         if current_weight_method in CatchCategory.WEIGHT_METHODS_WITH_NO_COUNT:
             self._logger.debug(f'No count, this is WM {current_weight_method}, '
                                f'which is in {CatchCategory.WEIGHT_METHODS_WITH_NO_COUNT}')
