@@ -746,18 +746,21 @@ class ObserverSpecies(QObject):
         current_weight_method = species_comp_item.catch.catch_weight_method
 
         if current_weight_method == '15':
-            agg_species_weight = self._total_haul_weight = SpeciesCompositionItems. \
+            agg_species_weight = SpeciesCompositionItems. \
                 select(). \
                 where(SpeciesCompositionItems.species_composition == species_comp_item.species_composition). \
                 aggregate(fn.Sum(SpeciesCompositionItems.species_weight))
             # FIELD-2013 changed this to use species_weight instead of extrapolated weight for WM15
 
             notes = species_comp_item.catch.notes
-            wm15_ratio = self.get_wm15_ratio(notes)
+            if notes and agg_species_weight:
+                wm15_ratio = self.get_wm15_ratio(notes)
 
-            wm15_weight = (Decimal(agg_species_weight) /
-                  Decimal(wm15_ratio)).quantize(Decimal('.01'), rounding=ROUND_HALF_UP)
-            self._total_haul_weight = float(wm15_weight)
+                wm15_weight = (Decimal(agg_species_weight) /
+                      Decimal(wm15_ratio)).quantize(Decimal('.01'), rounding=ROUND_HALF_UP)
+                self._total_haul_weight = float(wm15_weight)
+            else:
+                self._total_haul_weight = None
         else:
             self._total_haul_weight = SpeciesCompositionItems. \
                 select(). \
