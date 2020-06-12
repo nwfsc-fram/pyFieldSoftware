@@ -11,3 +11,5 @@ PyQtChart==5.7.1
 pyserial==3.2.1
 python-dateutil==2.6.0
 pytz==2016.10
+sip==4.19.8
+six==1.12.0
