@@ -1,7 +1,7 @@
 apsw-3.16.2.post1-cp36-cp36m-win32.whl
 arrow==0.10.0
 click==6.7
-cx-Freeze==5.0.1
+cx-Freeze==5.1.1
 docutils==0.13.1
 peewee==2.8.5
 pypiwin32==220
