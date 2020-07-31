@@ -18,7 +18,7 @@ pywin32-ctypes==0.0.1
 pypiwin32==220
 requests==2.20.0
 requests-toolbelt==0.7.0
-sip==4.19.3
+sip==4.19.4
 six==1.10.0
 sqlparse==0.2.3
 typed-ast==1.0.4
