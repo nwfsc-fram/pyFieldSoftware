@@ -1,5 +1,5 @@
 appdirs==1.4.0
-apsw==3.16.2.post1 # NOTE - installed apsw from .whl
+apsw==3.16.2.post1 # NOTE - REQUIRED installed apsw from .whl has SEE extensions baked in
 arrow==0.10.0
 cached-property==1.3.0
 click==6.7
