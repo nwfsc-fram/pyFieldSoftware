@@ -245,7 +245,7 @@ excludes = []
 packages = ['os', 'apsw', 'peewee', 'playhouse', 'fractions',
             'dateutil', 'encodings', 'arrow',
             'logging', 'keyring', 'lxml', 'socket',
-            'sqlparse', 'typing', 'zeep', 'filecmp', 'asyncio', 'pygame']
+            'sqlparse', 'typing', 'zeep', 'filecmp', 'asyncio', 'pygame', 'idna']
 path = []
 
 # Dependencies are automatically detected, but it might need fine tuning.
