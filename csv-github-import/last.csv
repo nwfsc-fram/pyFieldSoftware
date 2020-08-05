@@ -1,0 +1,2 @@
+labels,Component,,,PartialTitle,description,title
+"CutterStation",FishSamplingEntryDialog,,,Do a length / weight relationship lookup (high priority),"Force the user to acknowledge, yes, keep the outlier.  Set to 10% tolerance, store as value in DB.  Skip entries for when we don't have Species + Sex values.  Don't do this check until the weight, length, and sex values are entered",H&L: FishSamplingEntryDialog: Do a length / weight relationship lookup (high priority)
