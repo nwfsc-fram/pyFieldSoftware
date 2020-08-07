@@ -265,7 +265,7 @@ class SpecialActions(QObject):
 
             # Item 5 - Specimen Number
             # Query for specimen number - get the latest one for the given specimen type (i.e. ovary, stomach, tissue, finclip)
-            spec_num_length = 20
+            spec_num_length = 24
             # if pi_action_code_id != 999:
                 # specimens = (Specimen.select(Specimen, TypesLu)
                 #          .join(SpeciesSamplingPlanLu,
@@ -291,14 +291,14 @@ class SpecialActions(QObject):
             #                     (fn.substr(Specimen.alpha_value, 6, 3) == vessel_id)).order_by(
             #     fn.substr(Specimen.alpha_value, 18, 3).desc()))
 
-            specimens = (Specimen.select(fn.substr(Specimen.alpha_value, 18, 3).alias('specimen_number'))
+            specimens = (Specimen.select(fn.substr(Specimen.alpha_value, 22, 3).alias('specimen_number'))
                 .join(TypesLu, on=(Specimen.action_type == TypesLu.type_id).alias('types'))
                 .where(TypesLu.type_id == action_type_id,
                        ((fn.length(Specimen.alpha_value) == spec_num_length) |
                         (fn.length(Specimen.alpha_value) == spec_num_length + 1)),
                        (fn.substr(Specimen.alpha_value, 1, 4) == year),
-                       (fn.substr(Specimen.alpha_value, 6, 3) == vessel_id)).order_by(
-                fn.substr(Specimen.alpha_value, 18, 3).desc()))
+                       (fn.substr(Specimen.alpha_value, 10, 3) == vessel_id)).order_by(
+                fn.substr(Specimen.alpha_value, 22, 3).desc()))
 
             # else:
             #
