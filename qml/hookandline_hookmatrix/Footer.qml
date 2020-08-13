@@ -296,9 +296,9 @@ RowLayout {
     } // lblSpeciesList
     Label {
         id: lblNotes
-        text: qsTr("Notes")
+        text: stateMachine.screen.charAt(0).toUpperCase() + stateMachine.screen.slice(1).replace('s','').replace('_',' ') + qsTr("\nNote")
         verticalAlignment: Text.AlignVCenter
-        font.pixelSize: 25
+        font.pixelSize: 20
         width: defaultitemwidth
         visible: true
         MouseArea {
