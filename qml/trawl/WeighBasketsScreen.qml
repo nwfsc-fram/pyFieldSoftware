@@ -190,6 +190,10 @@ Item {
 
     }
 
+    function checkTare() {
+        console.warn("Tare val:", lblTareVal.text);
+    }
+
     RowLayout {
         id: rwlHeader
         x: 20
@@ -228,7 +232,6 @@ Item {
         x: rwlHeader.x
         y: rwlHeader.y + rwlHeader.height + 40
         width: rwMeasurementTypes.width + 2 * rwMeasurementTypes.spacing
-        height: 570
         title: qsTr("Weights & Counts")
         ExclusiveGroup {
             id: egMeasurementType
@@ -303,6 +306,32 @@ Item {
                             numPadValue = numPadValue ? parseInt(numPadValue) : null
                         }
                         processNumPadEntry(numPadValue)
+                    }
+                }
+        }
+        RowLayout {
+        id: rwlTare
+        x: 100
+        y: grpMeasurementType.height - 40
+        Label {
+            id: lblTare
+            text: qsTr("Tare:")
+            font.pixelSize: 20
+            Layout.preferredWidth: 80
+        }
+        Label {
+            id: lblTareVal
+            text: qsTr("0.00")
+            font.pixelSize: 20
+            Layout.preferredWidth: 80
+        }
+        TrawlBackdeckButton {
+                    id: btnTare
+                    text: qsTr("Print Tare Val")
+                    checkable: true
+                    //exclusiveGroup: egMeasurementType
+                    onClicked: {
+                        checkTare()
                     }
                 }
         }

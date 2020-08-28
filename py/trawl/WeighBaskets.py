@@ -59,8 +59,8 @@ class WeighBaskets(QObject):
         self._model = BasketsListModel()
         self._subsample_count = 0
         self._last_subsample_basket = -1
-        self._mode = "takeWeight"
-        # self._weight_type = "scaleWeight"
+        # self._mode = "takeWeight"
+        self._weight_type = "scaleWeight"
 
     # @pyqtProperty(str, notify=weightTypeChanged)
     # def weightType(self):
