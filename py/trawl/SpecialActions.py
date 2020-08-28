@@ -234,14 +234,21 @@ class SpecialActions(QObject):
         specimen_id = item["specimenId"]
 
         try:
-            # Item 1 - Year
-            now = datetime.now()
-            year = now.strftime('%Y')
-            date_stamp = now.strftime('%Y%m%d')
 
-            # Item 2 - Vessel
+            # Item 1 - Year / Item 2 - Vessel
             for setting in Settings.select():
-                if setting.parameter == "Vessel ID":
+                if setting.parameter == "Survey Year":
+                    year = setting.value
+                    try:
+                        now_year = datetime.now().strftime("%Y")
+                        if year != now_year:
+                            year = now_year
+                    except Exception as ex2:
+                        year = datetime.now().strftime("%Y")
+                        logging.info(f"unable to update the year: {ex2}")
+                    logging.info(f"year = {year}")
+
+                elif setting.parameter == "Vessel ID":
                     vessel_id = setting.value
 
             # Item 3 - Haul ID
@@ -347,7 +354,7 @@ class SpecialActions(QObject):
                 return item["value"]
 
             sep = "-"
-            tag_id = date_stamp + sep + vessel_id + sep + haul_number + sep + specimen_type_id + \
+            tag_id = year + sep + vessel_id + sep + haul_number + sep + specimen_type_id + \
                      sep + specimen_num
 
             # One final confirmation that this tag_id does not already exist in the database
