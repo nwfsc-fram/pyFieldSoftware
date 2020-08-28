@@ -889,8 +889,10 @@ class SpecialActions(QObject):
                 if parentSpecimenId == -1:
                     logging.info('no parent found, inserting one...')
                     try:
-                        q = Specimen.insert(catch = self._app.state_machine.species["catch_id"],
-                                            species_sampling_plan = species_sampling_plan)
+                        q = Specimen.insert(catch=self._app.state_machine.species["catch_id"],
+                                            species_sampling_plan=species_sampling_plan,
+                                            cpu=self._app.host_cpu
+                                            )
                         q.execute()
                         parentSpecimenId = Specimen.select().order_by(Specimen.specimen.desc()).get().specimen
 
@@ -903,7 +905,9 @@ class SpecialActions(QObject):
                                         catch=self._app.state_machine.species["catch_id"],
                                         species_sampling_plan = species_sampling_plan,
                                         action_type=item["specialActionId"],
-                                        numeric_value=item["value"])
+                                        numeric_value=item["value"],
+                                        cpu=self._app.host_cpu
+                                        )
 
                 elif value_type == "alpha":
 
@@ -911,7 +915,9 @@ class SpecialActions(QObject):
                                     catch = self._app.state_machine.species["catch_id"],
                                     species_sampling_plan = species_sampling_plan,
                                     action_type = item["specialActionId"],
-                                    alpha_value = item["value"])
+                                    alpha_value = item["value"],
+                                    cpu = self._app.host_cpu
+                                    )
                 q.execute()
                 new_specimen_id = Specimen.select().order_by(Specimen.specimen.desc()).get().specimen
 
