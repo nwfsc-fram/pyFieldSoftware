@@ -301,6 +301,7 @@ class Specimen(BaseModel):
     parent_specimen = ForeignKeyField(db_column='PARENT_SPECIMEN_ID', null=True, model='self', to_field='specimen')
     species_sampling_plan = ForeignKeyField(db_column='SPECIES_SAMPLING_PLAN_ID', null=True, model=SpeciesSamplingPlanLu, to_field='species_sampling_plan')
     specimen = PrimaryKeyField(db_column='SPECIMEN_ID')
+    cpu = TextField(db_column='CPU', null=True)
 
     class Meta:
         db_table = 'SPECIMEN'

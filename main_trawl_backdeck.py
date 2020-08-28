@@ -17,6 +17,7 @@ import traceback
 import io
 import os
 import arrow
+import socket
 
 from PyQt5.QtCore import QUrl, qInstallMessageHandler
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel
@@ -87,6 +88,7 @@ class TrawlBackdeck:
 
         appGuid = 'F3FF80BA-BA05-4277-8063-82A6DB9245A2'
         self.app = QtSingleApplication(appGuid, sys.argv)
+        self.host_cpu = socket.gethostname()
         if self.app.isRunning():
             sys.exit(0)
 
