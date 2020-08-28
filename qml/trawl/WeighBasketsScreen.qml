@@ -233,6 +233,7 @@ Item {
         y: rwlHeader.y + rwlHeader.height + 40
         width: rwMeasurementTypes.width + 2 * rwMeasurementTypes.spacing
         title: qsTr("Weights & Counts")
+        height: 610
         ExclusiveGroup {
             id: egMeasurementType
         }
