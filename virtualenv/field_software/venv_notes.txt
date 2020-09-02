@@ -1,0 +1,9 @@
+Venv should hopefully work with the following:
+
+trawl_backdeck
+trawl_analyzer*
+hookandline_fpc
+hookandline_hookmatrix
+survey_backdeck (cutter_station)
+
+*was originally being built with PyQt5==5.7, any issues could probably be resolved with downgrading.
