@@ -323,7 +323,7 @@ class ComportModel(FramListModel):
                 except EnvironmentError:
                     break
 
-        except WindowsError:
+        except WindowsError as ex:
             logging.info(f"Error accessing serial ports in registry: {ex}")
             # raise WindowsError
 
