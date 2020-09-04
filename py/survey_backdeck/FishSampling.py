@@ -940,6 +940,32 @@ class FishSampling(QObject):
 
             logging.error(f"\tError upserting the species: {ex}")
 
+    @pyqtSlot(str, name="countDispTags", result=int)
+    def count_disp_tags(self, tag_id):
+        """
+        method fires when user 'OKs' disposition tag via
+        qml/survey_backdeck/fishSamplingTabs/DispositionItem.qml --> FramNumPad
+        tag_id: val entered in disp. numpad, goes in alpha_value col
+        :return: bool, IF tag_id already exists: TRUE
+        """
+        print('Taking in tag value for query: ', tag_id)
+        sql = '''
+        select 		count(*)
+        from 		specimens 
+        where 		action_type_id in (
+                        select 	lookup_id 
+                        from 		lookups 
+                        where 	value = 'Disposition' 
+                                and subvalue <> 'Sacrificed'
+                    )
+                    and alpha_value = ?
+        '''
+        # take tag, query db, if count > 0 return true
+        results = self._app.rpc.execute_query(sql=sql, params=[tag_id])[0][0]
+        print('Other tags found: ', results)
+        return results
+
+
     @pyqtSlot(QVariant, QVariant, QVariant, QVariant, QVariant, name="upsertObservation")
     def upsert_observation(self, dialog_specimen_id: QVariant, model_action: QVariant,
                            value: QVariant, data_type,

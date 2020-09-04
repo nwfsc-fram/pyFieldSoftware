@@ -112,9 +112,12 @@ Item {
         state: qsTr("counts")
         onNumpadok: {
             setDisposition("num", numPad.textNumPad.text);
-            dlgOkay.title = "Duplicate Disposition Tag";
-            dlgOkay.message = "Disposition tag " + numPad.textNumPad.text + " already exists in DB!";
-            dlgOkay.open()
+            var tagCt = fishSampling.countDispTags(num);
+            if (tagCt > 0) {
+                dlgOkay.title = "Duplicate Disposition Tag";
+                dlgOkay.message = tagCt + " tag IDs = " + num + " already exist in DB!";
+                dlgOkay.open();
+            }
             if (tbActions.currentIndex < tbActions.count - 1) {
                 tbActions.currentIndex = tbActions.currentIndex + 1;
             }
