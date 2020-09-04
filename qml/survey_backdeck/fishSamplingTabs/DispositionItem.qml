@@ -111,24 +111,26 @@ Item {
         enabled: false
         state: qsTr("counts")
         onNumpadok: {
-            setDisposition("num", numPad.textNumPad.text);
-            var tagCt = fishSampling.countDispTags(num);
+            var tag = numPad.textNumPad.text;
+            var tagCt = fishSampling.countDispTags(tag);
             if (tagCt > 0) {
-                dlgOkay.title = "Duplicate Disposition Tag";
-                dlgOkay.message = tagCt + " tag IDs = " + num + " already exist in DB!";
-                dlgOkay.open();
-            }
-            if (tbActions.currentIndex < tbActions.count - 1) {
-                tbActions.currentIndex = tbActions.currentIndex + 1;
+                dlgTagDupe.title = "Duplicate Disposition Tag";
+                dlgTagDupe.message = tagCt + " tag ID(s) = '" + tag + "' already exist in DB!";
+                dlgTagDupe.action = "Please choose a different tag id"
+                dlgTagDupe.open()
+            } else {
+                setDisposition("num", tag);
+                if (tbActions.currentIndex < tbActions.count - 1) {
+                    tbActions.currentIndex = tbActions.currentIndex + 1;
+                }
             }
         }
     } // numPad
 
     OkayDialog {
-        id: dlgOkay
+        id: dlgTagDupe
         message: ""
-        property string target: "test"
-        onAccepted: {}
-        onRejected: {}
+        onAccepted: { }
+        onRejected: { }
     }
 }
