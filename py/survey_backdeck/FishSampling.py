@@ -948,7 +948,6 @@ class FishSampling(QObject):
         tag_id: val entered in disp. numpad, goes in alpha_value col
         :return: bool, IF tag_id already exists: TRUE
         """
-        print('Taking in tag value for query: ', tag_id)
         sql = '''
         select 		count(*)
         from 		specimens 
@@ -960,10 +959,8 @@ class FishSampling(QObject):
                     )
                     and alpha_value = ?
         '''
-        # take tag, query db, if count > 0 return true
-        results = self._app.rpc.execute_query(sql=sql, params=[tag_id])[0][0]
-        print('Other tags found: ', results)
-        return results
+        # take tag, query db, return count of other tags (0 is good)
+        return self._app.rpc.execute_query(sql=sql, params=[tag_id.zfill(5)])[0][0]
 
 
     @pyqtSlot(QVariant, QVariant, QVariant, QVariant, QVariant, name="upsertObservation")
