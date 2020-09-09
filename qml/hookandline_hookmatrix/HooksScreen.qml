@@ -66,6 +66,7 @@ Item {
         target: hooks
         onHooksSelected: populateHooks(results)
     } // hooks.onHooksSelected
+
     function populateHooks(results) {
         console.info('popuplateHooks: ' + JSON.stringify(results));
         var key;
@@ -73,6 +74,7 @@ Item {
         for (key in results) {
             item = hooksMap[key];
             item.text = results[key] ? results[key] : "";
+            highlightFish(item, item.text);
         }
         for (key in hooksMap) {
             hooksMap[key].cursorPosition = 0;
@@ -124,7 +126,11 @@ Item {
     }
 
     function highlightFish(h, species) {
-        //use to highlight fish entries in green & bold
+        /*
+        use to highlight fish entries in green & bold
+        h: tfHook object
+        species: species name str
+        */
         var gearList = [
             "Bait Back",
             "No Bait",
@@ -134,13 +140,13 @@ Item {
         ]
         for(var i = 0; i < gearList.length; i++) {
             if (gearList[i] === species) {
-                h.tfHook.textColor = "black";
-                h.tfHook.font.bold = false;
+                h.textColor = "black";
+                h.font.bold = false;
                 return;
             }
         }
-        h.tfHook.textColor = "green";
-        h.tfHook.font.bold = true;
+        h.textColor = "green";
+        h.font.bold = true;
         return;
     }
 
@@ -150,7 +156,7 @@ Item {
         if (currentHook === null) return;
 
         hooks.saveHook(currentHook.hookNumber, species);
-        highlightFish(currentHook, species);
+        highlightFish(currentHook.tfHook, species);
         switch (currentHook) {
             case hook5:
                 hook5.tfHook.text = species;
