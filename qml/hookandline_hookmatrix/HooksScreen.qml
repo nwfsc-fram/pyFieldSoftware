@@ -122,12 +122,35 @@ Item {
         }
         stateMachine.hook = value;
     }
+
+    function highlightFish(h, species) {
+        //use to highlight fish entries in green & bold
+        var gearList = [
+            "Bait Back",
+            "No Bait",
+            "No Hook",
+            "Multiple Hook",
+            "Undeployed"
+        ]
+        for(var i = 0; i < gearList.length; i++) {
+            if (gearList[i] === species) {
+                h.tfHook.textColor = "black";
+                h.tfHook.font.bold = false;
+                return;
+            }
+        }
+        h.tfHook.textColor = "green";
+        h.tfHook.font.bold = true;
+        return;
+    }
+
     function populateHook(species) {
 
     //    if (currentHook == "") return;
         if (currentHook === null) return;
 
         hooks.saveHook(currentHook.hookNumber, species);
+        highlightFish(currentHook, species);
         switch (currentHook) {
             case hook5:
                 hook5.tfHook.text = species;
