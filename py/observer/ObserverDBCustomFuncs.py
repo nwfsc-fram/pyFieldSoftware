@@ -1,4 +1,19 @@
 
+"""
+-----------------------------------------------------------------------------
+Name:        ObserverDBCustomFuncs.py
+Purpose:     Load custom functions into SQLite db ORM
+
+Author:      Jim Fellows <james.fellows@noaa.gov>
+
+Created:     Sept. 10th 2020
+License:     MIT
+
+To add new function, add static method to ObserverDBCustomFuncs
+with _udf appended to method name
+------------------------------------------------------------------------------
+"""
+
 import logging
 import arrow
 import inspect
