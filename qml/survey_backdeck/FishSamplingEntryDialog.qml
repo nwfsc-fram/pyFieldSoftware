@@ -816,7 +816,7 @@ Dialog {
                 spacing: 10
                 BackdeckButton {
                     id: btnNotes
-                    text: "Hook Notes"
+                    text: "Fish Notes"
                     Layout.preferredWidth: 120
                     Layout.preferredHeight: 60
                     onClicked: {
