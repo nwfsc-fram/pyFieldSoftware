@@ -43,6 +43,7 @@ class StateMachine(QObject):
     # specimenSelected = pyqtSignal()
 
     gearPerformanceLabelCreated = pyqtSignal(str, str, str, arguments=['drop', 'angler', 'label'])
+    hookLabelCreated = pyqtSignal(str, str, int, arguments=['drop', 'angler', 'count'])
 
     siteOpIdChanged = pyqtSignal()
     dropOpIdChanged = pyqtSignal()
@@ -114,6 +115,16 @@ class StateMachine(QObject):
         logging.info(f"gear performance label: {label}")
         self.gearPerformanceLabelCreated.emit(self._drop, self._angler, label)
 
+    @pyqtSlot(name="createHookLabel")
+    def create_hook_label(self):
+        """
+        Method to create the new "Hooks" label for the stateMachine
+        drop and angler
+        :return:
+        """
+        hook_results = self._app.hooks.selectHooks()
+        logging.info(f'hook results: {hook_results}')
+        self.hookLabelCreated.emit(self._drop, self._angler, len(hook_results))
 
     @pyqtProperty(str, notify=swVersionChanged)
     def swVersion(self):

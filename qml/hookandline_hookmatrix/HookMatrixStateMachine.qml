@@ -51,9 +51,12 @@ DSM.StateMachine {
 
             console.log('drops_state - previous = ' + stateMachine.previousScreen + ', current = ' + stateMachine.screen);
 
+            stateMachine.createGearPerformanceLabel() // newly added
+
             if (stateMachine.previousScreen === "sites") {
                 screens.push(Qt.resolvedUrl("DropsScreen.qml"));
                 drops.selectOperationAttributes(stateMachine.setId)
+
             } else if ((stateMachine.previousScreen === "hooks") || (stateMachine.previousScreen === "gear_performance")) {
 
                 // Update the gear performance label for the given Angler
@@ -62,7 +65,7 @@ DSM.StateMachine {
                 }
 
                 if (stateMachine.previousScreen === "hooks") {
-
+                    stateMachine.createHookLabel();
                 }
                 screens.pop();
             }

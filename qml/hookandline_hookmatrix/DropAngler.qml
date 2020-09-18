@@ -105,8 +105,40 @@ Item {
                 itmDropTab.dropNumber + ', anglerLetter: ' + anglerLetter);
             if (label !== null && label !== "") {
                 txtGearPerformance.text = "Gear\n" + label;
+                txtGearPerformance.color = "gray"
+                txtGearPerformance.font.italic = true
+                imgGearPerformance.opacity = 0.3
             } else {
                 txtGearPerformance.text = "Gear\nPerf."
+                txtGearPerformance.color = "black"
+                txtGearPerformance.font.italic = false
+                imgGearPerformance.opacity = 1
+            }
+        }
+    }
+
+    Connections {
+        target: stateMachine //hmSM
+        onHookLabelCreated: updateHookLabel(drop, angler, count)
+    }
+    function updateHookLabel(drop, angler, count) {
+        if (drop === itmDropTab.dropNumber && angler === anglerLetter) {
+            console.info('drop = ' + drop + ', angler = ' + angler + ' vs. drop = ' +
+                itmDropTab.dropNumber + ', anglerLetter: ' + anglerLetter);
+            if (count !== null && count !== "") {
+                txtHooks.text = "Hooks\n" + count + "/5";
+            } else {
+                txtHooks.text = "Hooks";
+            }
+
+            if (count == 5) {
+                txtHooks.color = "gray"
+                txtHooks.font.italic = true
+                imgHooks.opacity = 0.3
+            } else {
+                txtHooks.color = "black"
+                txtHooks.font.italic = false
+                imgHooks.opacity = 1
             }
         }
     }

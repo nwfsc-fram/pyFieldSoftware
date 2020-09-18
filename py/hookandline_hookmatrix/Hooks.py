@@ -88,7 +88,7 @@ class Hooks(QObject):
 
         return op_id
 
-    @pyqtSlot(name="selectHooks")
+    @pyqtSlot(name="selectHooks", result=QVariant)
     def select_hooks(self):
         """
         Method to select values for the five hooks
@@ -102,11 +102,12 @@ class Hooks(QObject):
                 WHERE c.OPERATION_ID = ?;
         """
         params = [angler_op_id, ]
-        hooks = self._rpc.execute_query(sql=sql, params=params)
-        if hooks:
-            hooks = {x[0]: x[1] for x in hooks}
-            logging.info(f"hooks = {hooks}")
-        self.hooksSelected.emit(hooks)
+        results = self._rpc.execute_query(sql=sql, params=params)
+        if results:
+            results = {x[0]: x[1] for x in results}
+            logging.info(f"hooks = {results}")
+        self.hooksSelected.emit(results)
+        return results
 
     @pyqtSlot(int, str, name="saveHook")
     def save_hook(self, hook_number, species):
