@@ -349,6 +349,59 @@ class Drops(QObject):
 
             logging.error(f"Exception querying operation_attributes: {ex}")
 
+    @staticmethod
+    def abbreviate_gear_perfs(gear_list):
+        """
+        Map gear to abbrev. string
+        :param gear_list: list of gear names
+        :return: concat. string of abbreviations
+        """
+        gfMap = {
+            "No Problems": "NP",
+            "Lost Hooks": "LH",
+            "Lost Gangion": "LG",
+            "Minor Tangle": "MI",
+            "Major Tangle": "MA",
+            "Undeployed": "UN",
+            "Exclude": "EX",
+            "Lost Sinker": "LS"
+        }
+        lbl_str = ''
+        for lbl in gear_list:
+            lbl_str += gfMap[lbl] + ','
+
+        if len(lbl_str) > 6:
+            return lbl_str[0:5] + '...'
+        elif len(lbl_str) > 0 and lbl_str[-1] == ",":
+            return lbl_str[:-1]
+        else:
+            return lbl_str
+
+    @pyqtSlot(QVariant, name="selectAnglerGearPerfs_slot", result=QVariant)
+    def select_angler_gp_labels(self, op_id: int):
+        """
+        Does this need to be a slot?
+        Gets Gear perfs per operation_id, then abbreviates for label
+        :param op_id: int
+        :return: string (e.g. LG, LS...)
+        """
+        perfs = self._rpc.execute_query(
+            sql="""
+                    select
+                            l.value
+                    from    lookups l
+                    join    operation_attributes oa
+                            on l.lookup_id = oa.attribute_type_lu_id
+                    where   l.type = 'Angler Gear Performance'
+                            and oa.operation_id = ?
+                """,
+            params=[op_id, ]
+        )
+        if perfs:
+            perfs = [x[0] for x in perfs]
+        labels = self.abbreviate_gear_perfs(perfs)
+        return labels
+
     @pyqtSlot(int, str, str, name="deleteOperationAttribute")
     def delete_operation_attribute(self, op_id: int, lu_type: str, lu_value: str):
         """

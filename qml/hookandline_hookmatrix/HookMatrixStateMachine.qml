@@ -48,12 +48,10 @@ DSM.StateMachine {
             if (screens.busy) { return; }
             stateMachine.previousScreen = stateMachine.screen
             stateMachine.screen = "drops"
-
             console.log('drops_state - previous = ' + stateMachine.previousScreen + ', current = ' + stateMachine.screen);
-
+            drops.selectOperationAttributes(stateMachine.setId)  // do this regardles of previous screen
             if (stateMachine.previousScreen === "sites") {
                 screens.push(Qt.resolvedUrl("DropsScreen.qml"));
-                drops.selectOperationAttributes(stateMachine.setId)
             } else if ((stateMachine.previousScreen === "hooks") || (stateMachine.previousScreen === "gear_performance")) {
 
                 // Update the gear performance label for the given Angler

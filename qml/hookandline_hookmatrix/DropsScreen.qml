@@ -22,6 +22,22 @@ Item {
         dlgOkay.open();
     }
 
+    function updateGearPerfLabels(anglerObj, anglerOpId) {
+            // loop through anglers per tab and run this to populate Gear Perf. label
+            var perfList = drops.selectAnglerGearPerfs_slot(anglerOpId);  // get perfs array
+            if (perfList) {
+                anglerObj.txtGearPerformance.text = "Gear\n" + perfList;
+                anglerObj.txtGearPerformance.font.italic = true;
+                anglerObj.txtGearPerformance.color = "grey";
+                anglerObj.imgGearPerformance.opacity = 0.3;
+            } else {
+                anglerObj.txtGearPerformance.text = "Gear\nPerf.";
+                anglerObj.txtGearPerformance.font.italic = false;
+                anglerObj.txtGearPerformance.color = "black";
+                anglerObj.imgGearPerformance.opacity = 1;
+            }
+        }
+
     Connections {
         target: drops
         onSelectionResultsObtained: populateDropInfo(results);
@@ -119,12 +135,15 @@ Item {
                                     switch (anglerItem) {
                                         case tab.item.dtDrop.anglerA:
                                             stateMachine.anglerAOpId = anglerResult[value];
+                                            updateGearPerfLabels(tab.item.dtDrop.anglerA, anglerResult[value])
                                             break;
                                         case tab.item.dtDrop.anglerB:
                                             stateMachine.anglerBOpId = anglerResult[value];
+                                            updateGearPerfLabels(tab.item.dtDrop.anglerB, anglerResult[value])
                                             break;
                                         case tab.item.dtDrop.anglerC:
                                             stateMachine.anglerCOpId = anglerResult[value];
+                                            updateGearPerfLabels(tab.item.dtDrop.anglerC, anglerResult[value])
                                             break;
                                     }
                                     break;

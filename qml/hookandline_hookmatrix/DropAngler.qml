@@ -23,6 +23,8 @@ Item {
     property alias btnRetrieval: btnRetrieval;
     property alias btnAtSurface: btnAtSurface;
     property alias rtHooks: rtHooks;
+    property alias txtGearPerformance: txtGearPerformance;
+    property alias imgGearPerformance: imgGearPerformance;
 
     property variant operationId: -1
     property string luType: "Angler Time"
@@ -95,21 +97,21 @@ Item {
         }
     }
 
-    Connections {
-        target: stateMachine //hmSM
-        onGearPerformanceLabelCreated: updateGearPerformanceLabel(drop, angler, label)
-    }
-    function updateGearPerformanceLabel(drop, angler, label) {
-        if (drop === itmDropTab.dropNumber && angler === anglerLetter) {
-            console.info('drop = ' + drop + ', angler = ' + angler + ' vs. drop = ' +
-                itmDropTab.dropNumber + ', anglerLetter: ' + anglerLetter);
-            if (label !== null && label !== "") {
-                txtGearPerformance.text = "Gear\n" + label;
-            } else {
-                txtGearPerformance.text = "Gear\nPerf."
-            }
-        }
-    }
+//    Connections {
+//        target: stateMachine //hmSM
+//        onGearPerformanceLabelCreated: updateGearPerformanceLabel(drop, angler, label)
+//    }
+//    function updateGearPerformanceLabel(drop, angler, label) {
+//        if (drop === itmDropTab.dropNumber && angler === anglerLetter) {
+//            console.info('drop = ' + drop + ', angler = ' + angler + ' vs. drop = ' +
+//                itmDropTab.dropNumber + ', anglerLetter: ' + anglerLetter);
+//            if (label !== null && label !== "") {
+//                txtGearPerformance.text = "Gear\n" + label;
+//            } else {
+//                txtGearPerformance.text = "Gear\nPerf."
+//            }
+//        }
+//    }
 
     Timer { id: timer }
     function startTimer() {
