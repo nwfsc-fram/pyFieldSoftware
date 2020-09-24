@@ -38,6 +38,21 @@ Item {
             }
         }
 
+    function updateHooksLabel(anglerObj, anglerOpId) {
+        // used while looping through anglers on drop tab to update hooks label
+        var catchCount = drops.countAnglerCatches_slot(anglerOpId);  // gets angler catch count via DB (drops.py)
+        anglerObj.txtHooks.text = 'Hooks\n' + catchCount + '/5';
+        if (catchCount === 5) {
+            anglerObj.txtHooks.color = "green";
+            anglerObj.txtHooks.font.italic = true;
+            anglerObj.imgHooks.opacity = 0.3;
+        } else {
+            anglerObj.txtHooks.color = "black";
+            anglerObj.txtHooks.font.italic = false;
+            anglerObj.imgHooks.opacity = 1;
+        }
+    }
+
     Connections {
         target: drops
         onSelectionResultsObtained: populateDropInfo(results);
@@ -135,15 +150,18 @@ Item {
                                     switch (anglerItem) {
                                         case tab.item.dtDrop.anglerA:
                                             stateMachine.anglerAOpId = anglerResult[value];
-                                            updateGearPerfLabels(tab.item.dtDrop.anglerA, anglerResult[value])
+                                            updateGearPerfLabels(tab.item.dtDrop.anglerA, anglerResult[value]);
+                                            updateHooksLabel(tab.item.dtDrop.anglerA, anglerResult[value]);
                                             break;
                                         case tab.item.dtDrop.anglerB:
                                             stateMachine.anglerBOpId = anglerResult[value];
-                                            updateGearPerfLabels(tab.item.dtDrop.anglerB, anglerResult[value])
+                                            updateGearPerfLabels(tab.item.dtDrop.anglerB, anglerResult[value]);
+                                            updateHooksLabel(tab.item.dtDrop.anglerB, anglerResult[value]);
                                             break;
                                         case tab.item.dtDrop.anglerC:
                                             stateMachine.anglerCOpId = anglerResult[value];
-                                            updateGearPerfLabels(tab.item.dtDrop.anglerC, anglerResult[value])
+                                            updateGearPerfLabels(tab.item.dtDrop.anglerC, anglerResult[value]);
+                                            updateHooksLabel(tab.item.dtDrop.anglerC, anglerResult[value]);
                                             break;
                                     }
                                     break;

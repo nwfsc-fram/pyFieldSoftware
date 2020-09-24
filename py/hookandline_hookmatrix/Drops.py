@@ -399,8 +399,20 @@ class Drops(QObject):
         )
         if perfs:
             perfs = [x[0] for x in perfs]
-        labels = self.abbreviate_gear_perfs(perfs)
-        return labels
+        return self.abbreviate_gear_perfs(perfs)
+
+    @pyqtSlot(int, name="countAnglerCatches_slot", result=int)
+    def count_angler_catches(self, op_id: int):
+        """
+        QML calls to get and update Hooks > label
+        on DropsScreen.qml
+        :param op_id: operation_id
+        :return: count of hooks w/ catch (int)
+        """
+        return self._rpc.execute_query(
+            sql='select count(distinct catch_id) from catch where operation_id = ?',
+            params=[op_id, ]
+        )[0][0]
 
     @pyqtSlot(int, str, str, name="deleteOperationAttribute")
     def delete_operation_attribute(self, op_id: int, lu_type: str, lu_value: str):

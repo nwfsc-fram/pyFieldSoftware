@@ -23,6 +23,8 @@ Item {
     property alias btnRetrieval: btnRetrieval;
     property alias btnAtSurface: btnAtSurface;
     property alias rtHooks: rtHooks;
+    property alias txtHooks: txtHooks;
+    property alias imgHooks: imgHooks;
     property alias txtGearPerformance: txtGearPerformance;
     property alias imgGearPerformance: imgGearPerformance;
 
