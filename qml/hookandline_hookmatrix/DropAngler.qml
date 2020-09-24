@@ -473,6 +473,7 @@ Item {
                     text: qsTr("Hooks")
                     font.pixelSize: 24
                     anchors.verticalCenter: parent.verticalCenter
+                    textFormat: Text.RichText
                 }
                 Image {
                     id: imgHooks

@@ -27,30 +27,40 @@ Item {
             var perfList = drops.selectAnglerGearPerfs_slot(anglerOpId);  // get perfs array
             if (perfList) {
                 anglerObj.txtGearPerformance.text = "Gear\n" + perfList;
-                anglerObj.txtGearPerformance.font.italic = true;
-                anglerObj.txtGearPerformance.color = "grey";
-                anglerObj.imgGearPerformance.opacity = 0.3;
+//                anglerObj.txtGearPerformance.font.italic = true;
+//                anglerObj.txtGearPerformance.color = "grey";
+//                anglerObj.imgGearPerformance.opacity = 0.3;
             } else {
                 anglerObj.txtGearPerformance.text = "Gear\nPerf.";
-                anglerObj.txtGearPerformance.font.italic = false;
-                anglerObj.txtGearPerformance.color = "black";
-                anglerObj.imgGearPerformance.opacity = 1;
+//                anglerObj.txtGearPerformance.font.italic = false;
+//                anglerObj.txtGearPerformance.color = "black";
+//                anglerObj.imgGearPerformance.opacity = 1;
             }
         }
 
     function updateHooksLabel(anglerObj, anglerOpId) {
-        // used while looping through anglers on drop tab to update hooks label
-        var catchCount = drops.countAnglerCatches_slot(anglerOpId);  // gets angler catch count via DB (drops.py)
-        anglerObj.txtHooks.text = 'Hooks\n' + catchCount + '/5';
-        if (catchCount === 5) {
-            anglerObj.txtHooks.color = "green";
-            anglerObj.txtHooks.font.italic = true;
-            anglerObj.imgHooks.opacity = 0.3;
-        } else {
-            anglerObj.txtHooks.color = "black";
-            anglerObj.txtHooks.font.italic = false;
-            anglerObj.imgHooks.opacity = 1;
+        // loop through anglers per tab and update hooks label
+        var catchArray = drops.selectAnglerCatches_slot(anglerOpId);  // e.g. [{"5": "Bocaccio"}, ...]
+        var gearList = [
+            "Bait Back",
+            "No Bait",
+            "No Hook",
+            "Multiple Hook",
+            "Undeployed"
+        ];
+        var hooksLabel = "Hooks<br>";
+        for (var i =0; i < catchArray.length; i++) {
+            var hookNum = Object.keys(catchArray[i])[0];  // e.g. "5"
+            var hookItem = catchArray[i][hookNum];  // e.g. "Bocaccio"
+            if (gearList.indexOf(hookItem) > -1) {
+                hooksLabel += "<font color=\"#000000\">0,</font>";  // black hook number
+            } else if (hookItem === "NOTHING SELECTED"){
+                hooksLabel += "<font color=\"#000000\">_,</font>";  // black underscore
+            } else {
+                hooksLabel += "<font color=\"#008000\">" + hookNum + ",</font>";  // green hook number
+            }
         }
+        anglerObj.txtHooks.text = hooksLabel.replace(/,([^,]*)$/, '$1');  // regex to remove last comma
     }
 
     Connections {

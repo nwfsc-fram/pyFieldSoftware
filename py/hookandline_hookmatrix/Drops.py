@@ -414,6 +414,46 @@ class Drops(QObject):
             params=[op_id, ]
         )[0][0]
 
+    @pyqtSlot(int, name="selectAnglerCatches_slot", result=QVariant)
+    def select_angler_catches(self, op_id: int):
+        """
+        get catches for each hook for angler-specific op_id
+        :param op_id: int
+        :return: dict of hooks (str) and catches (str)
+        """
+        catches = self._rpc.execute_query(
+            sql="""
+                with hooks as (
+                    select '1' as HOOK
+                    union all
+                    select '2'
+                    union all
+                    select '3'
+                    union all
+                    select '4'
+                    union all
+                    select '5'
+                )
+                
+                select
+                            h.HOOK
+                            ,coalesce(cc.display_name, 'NOTHING SELECTED') as CATCH
+                from        hooks h
+                left join   catch c
+                            on h.hook = c.receptacle_seq
+                            and c.operation_id = ?
+                left join   catch_content_lu cc
+                            on c.hm_catch_content_id = cc.catch_content_id
+                left join   lookups l
+                            on c.receptacle_type_id = l.lookup_id
+                            and l.value = 'Hook'
+                order by    h.hook desc
+            """,
+            params=[op_id,]
+        )
+        return [{row[0]: row[1]} for row in catches]  # hook num as key, catch as val, return list to keep order
+
+
     @pyqtSlot(int, str, str, name="deleteOperationAttribute")
     def delete_operation_attribute(self, op_id: int, lu_type: str, lu_value: str):
         """
