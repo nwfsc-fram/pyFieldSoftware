@@ -7,6 +7,53 @@ Item {
     property int buttonHeight: 80;
     property int buttonWidth: 2 * buttonHeight;
 
+    function mapGpButtons() {
+       // use to create map within other functions
+        return {
+            "No Problems": btnNoProblems,
+            "Lost Hooks": btnLostHooks,
+            "Lost Gangion":  btnLostGangion,
+            "Lost Sinker": btnLostSinker,
+            "Minor Tangle": btnMinorTangle,
+            "Major Tangle": btnMajorTangle,
+            "Undeployed": btnUndeployed,
+            "Exclude": btnExclude
+        }
+    }
+
+    function updateButtonRelations(clickedBtnStr) {
+        // central place for logic regarding how buttons interact with each other
+        var btnGpMap = mapGpButtons();  // use func to map due to scope of btns
+        for (var gpStr in btnGpMap) {  // loop through each button once per func call
+            var btnObj = btnGpMap[gpStr]
+
+            if (clickedBtnStr === "Exclude" || clickedBtnStr === "Undeployed" || clickedBtnStr === "No Problems" ) {
+                if(gpStr !== clickedBtnStr) {  // deselect and delete everything except clickedBtnStr
+                    btnObj.checked = false;
+                    gearPerformance.deleteGearPerformance(gpStr);
+                }
+            } else { // start by deselecting exc, und, no probs if anything else is checked
+                if (gpStr === "Exclude" || gpStr === "Undeployed" || gpStr === "No Problems" ) {
+                    btnObj.checked = false;
+                    gearPerformance.deleteGearPerformance(gpStr);
+                }
+                if (clickedBtnStr === "Lost Gangion" && btnGpMap[clickedBtnStr].checked == true) {
+                    // sinker lost w gangion
+                    if (gpStr === "Lost Sinker") {
+                        btnObj.checked = true;
+                        gearPerformance.addGearPerformance(gpStr)
+                    }
+                }
+                if (clickedBtnStr === "Lost Sinker" && btnGpMap[clickedBtnStr].checked == false) {
+                    // no lost sinker, no lost gangion
+                    if (gpStr === "Lost Gangion") {
+                        btnObj.checked = false;
+                        gearPerformance.deleteGearPerformance(gpStr)
+                    }
+                }
+            }
+        }
+    }
     Connections {
         target: gearPerformance
         onGearPerformanceSelected: populateGearPerformanceInfo(results);
@@ -95,10 +142,10 @@ Item {
             checkable: true
             checked: false
             onClicked: {
-                btnNoProblems.checked = false;
-
-                if (checked)
+                updateButtonRelations(btnLostHooks.text)
+                if (checked) {
                     gearPerformance.addGearPerformance("Lost Hooks");
+                }
                 else
                     gearPerformance.deleteGearPerformance("Lost Hooks");
 
@@ -112,11 +159,9 @@ Item {
             checkable: true
             checked: false
             onClicked: {
-                btnNoProblems.checked = false;
+                updateButtonRelations(btnLostGangion.text)
                 if (checked) {
                     gearPerformance.addGearPerformance("Lost Gangion");
-                    gearPerformance.addGearPerformance("Lost Sinker");
-                    btnLostSinker.checked = true;
                 }
                 else
                     gearPerformance.deleteGearPerformance("Lost Gangion");
@@ -131,14 +176,12 @@ Item {
             checkable: true
             checked: false
             onClicked: {
-                btnNoProblems.checked = false;
+                updateButtonRelations(btnLostSinker.text)
 
                 if (checked)
                     gearPerformance.addGearPerformance("Lost Sinker");
                 else {
                     gearPerformance.deleteGearPerformance("Lost Sinker");
-                    gearPerformance.deleteGearPerformance("Lost Gangion");
-                    btnLostGangion.checked = false;
                 }
             }
         } // btnLostSinker
@@ -150,7 +193,7 @@ Item {
             checkable: true
             checked: false
             onClicked: {
-                btnNoProblems.checked = false;
+                updateButtonRelations(btnMinorTangle.text)
                 if (checked)
                     gearPerformance.addGearPerformance("Minor Tangle");
                 else
@@ -165,7 +208,7 @@ Item {
             checkable: true
             checked: false
             onClicked: {
-                btnNoProblems.checked = false;
+                updateButtonRelations(btnMajorTangle.text)
                 if (checked)
                     gearPerformance.addGearPerformance("Major Tangle");
                 else
@@ -180,9 +223,10 @@ Item {
             checkable: true
             checked: false
             onClicked: {
-                btnNoProblems.checked = false;
-                if (checked)
+                updateButtonRelations(btnUndeployed.text)
+                if (checked) {
                     gearPerformance.addGearPerformance("Undeployed");
+                }
                 else
                     gearPerformance.deleteGearPerformance("Undeployed");
             }
@@ -203,9 +247,10 @@ Item {
             checkable: true
             checked: false
             onClicked: {
-                btnNoProblems.checked = false;
-                if (checked)
+                updateButtonRelations(btnExclude.text)
+                if (checked) {
                     gearPerformance.addGearPerformance("Exclude");
+                }
                 else
                     gearPerformance.deleteGearPerformance("Exclude");
 
