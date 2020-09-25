@@ -74,7 +74,7 @@ includefiles = [
 excludes = []
 packages = ['os', 'apsw', 'asyncio', 'peewee', 'playhouse', 'cProfile', 'timeit', 'numpy',
             'fractions', 'dateutil', 'winsound', 'serial', 'arrow', 'matplotlib', 
-			'seaborn', 'pandas', 'tkinter', 'geographiclib']
+			'seaborn', 'pandas', 'tkinter', 'geographiclib', 'logging']
 path = []
 
 # Dependencies are automatically detected, but it might need fine tuning.
