@@ -377,7 +377,7 @@ class Drops(QObject):
         else:
             return lbl_str
 
-    @pyqtSlot(QVariant, name="selectAnglerGearPerfs_slot", result=QVariant)
+    @pyqtSlot(QVariant, name="selectAnglerGpLabels", result=QVariant)
     def select_angler_gp_labels(self, op_id: int):
         """
         Does this need to be a slot?
@@ -414,7 +414,7 @@ class Drops(QObject):
             params=[op_id, ]
         )[0][0]
 
-    @pyqtSlot(int, name="selectAnglerCatches_slot", result=QVariant)
+    @pyqtSlot(int, name="selectAnglerCatches", result=QVariant)
     def select_angler_catches(self, op_id: int):
         """
         get catches for each hook for angler-specific op_id
@@ -437,7 +437,7 @@ class Drops(QObject):
                 
                 select
                             h.HOOK
-                            ,coalesce(cc.display_name, 'NOTHING SELECTED') as CATCH
+                            ,cc.display_name as CATCH
                 from        hooks h
                 left join   catch c
                             on h.hook = c.receptacle_seq

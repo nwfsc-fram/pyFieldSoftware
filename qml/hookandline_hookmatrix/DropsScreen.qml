@@ -22,9 +22,9 @@ Item {
         dlgOkay.open();
     }
 
-    function updateGearPerfLabels(anglerObj, anglerOpId) {
+    function updateGearPerfLabel(anglerObj, anglerOpId) {
             // loop through anglers per tab and run this to populate Gear Perf. label
-            var perfList = drops.selectAnglerGearPerfs_slot(anglerOpId);  // get perfs array
+            var perfList = drops.selectAnglerGpLabels(anglerOpId);  // get perfs array
             if (perfList) {
                 anglerObj.txtGearPerformance.text = "Gear\n" + perfList;
 //                anglerObj.txtGearPerformance.font.italic = true;
@@ -40,7 +40,7 @@ Item {
 
     function updateHooksLabel(anglerObj, anglerOpId) {
         // loop through anglers per tab and update hooks label
-        var catchArray = drops.selectAnglerCatches_slot(anglerOpId);  // e.g. [{"5": "Bocaccio"}, ...]
+        var catchArray = drops.selectAnglerCatches(anglerOpId);  // e.g. [{"5": "Bocaccio"}, ...]
         var gearList = [
             "Bait Back",
             "No Bait",
@@ -49,18 +49,23 @@ Item {
             "Undeployed"
         ];
         var hooksLabel = "Hooks<br>";
-        for (var i =0; i < catchArray.length; i++) {
-            var hookNum = Object.keys(catchArray[i])[0];  // e.g. "5"
-            var hookItem = catchArray[i][hookNum];  // e.g. "Bocaccio"
-            if (gearList.indexOf(hookItem) > -1) {
-                hooksLabel += "<font color=\"#000000\">0,</font>";  // black hook number
-            } else if (hookItem === "NOTHING SELECTED"){
-                hooksLabel += "<font color=\"#000000\">_,</font>";  // black underscore
-            } else {
-                hooksLabel += "<font color=\"#008000\">" + hookNum + ",</font>";  // green hook number
-            }
+//        var gearPerf = drops.selectAnglerGpLabels(anglerOpId)
+//        if (gearPerf === "UN") {  // set to UN if GP === UN
+//            anglerObj.txtHooks.text = hooksLabel + gearPerf
+//        } else {
+                for (var i =0; i < catchArray.length; i++) {
+                var hookNum = Object.keys(catchArray[i])[0];  // e.g. "5"
+                var hookItem = catchArray[i][hookNum];  // e.g. "Bocaccio"
+                if (gearList.indexOf(hookItem) > -1) {
+                    hooksLabel += "<font color=\"#000000\">" + hookNum + ",</font>";  // black hook number
+                } else if (hookItem == null){
+                    hooksLabel += "<font color=\"#000000\">_,</font>";  // black underscore
+                } else {
+                    hooksLabel += "<font color=\"#008000\">" + hookNum + ",</font>";  // green hook number
+                }
+//            }
+            anglerObj.txtHooks.text = hooksLabel.replace(/,([^,]*)$/, '$1');  // regex to remove last comma
         }
-        anglerObj.txtHooks.text = hooksLabel.replace(/,([^,]*)$/, '$1');  // regex to remove last comma
     }
 
     Connections {
@@ -160,17 +165,17 @@ Item {
                                     switch (anglerItem) {
                                         case tab.item.dtDrop.anglerA:
                                             stateMachine.anglerAOpId = anglerResult[value];
-                                            updateGearPerfLabels(tab.item.dtDrop.anglerA, anglerResult[value]);
+                                            updateGearPerfLabel(tab.item.dtDrop.anglerA, anglerResult[value]);
                                             updateHooksLabel(tab.item.dtDrop.anglerA, anglerResult[value]);
                                             break;
                                         case tab.item.dtDrop.anglerB:
                                             stateMachine.anglerBOpId = anglerResult[value];
-                                            updateGearPerfLabels(tab.item.dtDrop.anglerB, anglerResult[value]);
+                                            updateGearPerfLabel(tab.item.dtDrop.anglerB, anglerResult[value]);
                                             updateHooksLabel(tab.item.dtDrop.anglerB, anglerResult[value]);
                                             break;
                                         case tab.item.dtDrop.anglerC:
                                             stateMachine.anglerCOpId = anglerResult[value];
-                                            updateGearPerfLabels(tab.item.dtDrop.anglerC, anglerResult[value]);
+                                            updateGearPerfLabel(tab.item.dtDrop.anglerC, anglerResult[value]);
                                             updateHooksLabel(tab.item.dtDrop.anglerC, anglerResult[value]);
                                             break;
                                     }
