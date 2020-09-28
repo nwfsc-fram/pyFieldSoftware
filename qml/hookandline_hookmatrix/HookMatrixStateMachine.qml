@@ -48,30 +48,15 @@ DSM.StateMachine {
             if (screens.busy) { return; }
             stateMachine.previousScreen = stateMachine.screen
             stateMachine.screen = "drops"
-
             console.log('drops_state - previous = ' + stateMachine.previousScreen + ', current = ' + stateMachine.screen);
-
-            stateMachine.createGearPerformanceLabel() // newly added
-
             if (stateMachine.previousScreen === "sites") {
                 screens.push(Qt.resolvedUrl("DropsScreen.qml"));
-                drops.selectOperationAttributes(stateMachine.setId)
-
             } else if ((stateMachine.previousScreen === "hooks") || (stateMachine.previousScreen === "gear_performance")) {
-
-                // Update the gear performance label for the given Angler
-                if (stateMachine.previousScreen === "gear_performance") {
-                    stateMachine.createGearPerformanceLabel();
-                }
-
-                if (stateMachine.previousScreen === "hooks") {
-                    stateMachine.createHookLabel();
-                }
                 screens.pop();
             }
             stateMachine.angler = null;
             stateMachine.hook = null;
-
+            drops.selectOperationAttributes(stateMachine.setId)  // triggers DropsScreen.populateDropInfo via slots/sigs
         }
         DSM.SignalTransition {
             targetState: sites_state

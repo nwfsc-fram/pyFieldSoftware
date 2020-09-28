@@ -349,6 +349,111 @@ class Drops(QObject):
 
             logging.error(f"Exception querying operation_attributes: {ex}")
 
+    @staticmethod
+    def abbreviate_gear_perfs(gear_list):
+        """
+        Map gear to abbrev. string
+        :param gear_list: list of gear names
+        :return: concat. string of abbreviations
+        """
+        gfMap = {
+            "No Problems": "NP",
+            "Lost Hooks": "LH",
+            "Lost Gangion": "LG",
+            "Minor Tangle": "MI",
+            "Major Tangle": "MA",
+            "Undeployed": "UN",
+            "Exclude": "EX",
+            "Lost Sinker": "LS"
+        }
+        lbl_str = ''
+        for lbl in gear_list:
+            lbl_str += gfMap[lbl] + ','
+
+        if len(lbl_str) > 6:
+            return lbl_str[0:5] + '...'
+        elif len(lbl_str) > 0 and lbl_str[-1] == ",":
+            return lbl_str[:-1]
+        else:
+            return lbl_str
+
+    @pyqtSlot(QVariant, name="selectAnglerGpLabels", result=QVariant)
+    def select_angler_gp_labels(self, op_id: int):
+        """
+        Does this need to be a slot?
+        Gets Gear perfs per operation_id, then abbreviates for label
+        :param op_id: int
+        :return: string (e.g. LG, LS...)
+        """
+        perfs = self._rpc.execute_query(
+            sql="""
+                    select
+                            l.value
+                    from    lookups l
+                    join    operation_attributes oa
+                            on l.lookup_id = oa.attribute_type_lu_id
+                    where   l.type = 'Angler Gear Performance'
+                            and oa.operation_id = ?
+                """,
+            params=[op_id, ]
+        )
+        if perfs:
+            perfs = [x[0] for x in perfs]
+        return self.abbreviate_gear_perfs(perfs)
+
+    @pyqtSlot(int, name="countAnglerCatches_slot", result=int)
+    def count_angler_catches(self, op_id: int):
+        """
+        QML calls to get and update Hooks > label
+        on DropsScreen.qml
+        :param op_id: operation_id
+        :return: count of hooks w/ catch (int)
+        """
+        return self._rpc.execute_query(
+            sql='select count(distinct catch_id) from catch where operation_id = ?',
+            params=[op_id, ]
+        )[0][0]
+
+    @pyqtSlot(int, name="selectAnglerCatches", result=QVariant)
+    def select_angler_catches(self, op_id: int):
+        """
+        get catches for each hook for angler-specific op_id
+        :param op_id: int
+        :return: dict of hooks (str) and catches (str)
+        """
+        catches = self._rpc.execute_query(
+            sql="""
+                with hooks as (
+                    select '1' as HOOK
+                    union all
+                    select '2'
+                    union all
+                    select '3'
+                    union all
+                    select '4'
+                    union all
+                    select '5'
+                )
+                
+                select
+                            h.HOOK
+                            ,cc.display_name as CATCH
+                from        hooks h
+                left join   catch c
+                            on h.hook = c.receptacle_seq
+                            and c.operation_id = ?
+                left join   catch_content_lu cc
+                            on c.hm_catch_content_id = cc.catch_content_id
+                left join   lookups l
+                            on c.receptacle_type_id = l.lookup_id
+                            and l.value = 'Hook'
+                order by    h.hook desc
+            """,
+            params=[op_id,]
+        )
+        return [{row[0]: row[1]} for row in catches]  # hook num as key, catch as val, return list to keep order
+
+
     @pyqtSlot(int, str, str, name="deleteOperationAttribute")
     def delete_operation_attribute(self, op_id: int, lu_type: str, lu_value: str):
         """

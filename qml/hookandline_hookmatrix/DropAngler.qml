@@ -23,6 +23,10 @@ Item {
     property alias btnRetrieval: btnRetrieval;
     property alias btnAtSurface: btnAtSurface;
     property alias rtHooks: rtHooks;
+    property alias txtHooks: txtHooks;
+    property alias imgHooks: imgHooks;
+    property alias txtGearPerformance: txtGearPerformance;
+    property alias imgGearPerformance: imgGearPerformance;
 
     property variant operationId: -1
     property string luType: "Angler Time"
@@ -95,53 +99,21 @@ Item {
         }
     }
 
-    Connections {
-        target: stateMachine //hmSM
-        onGearPerformanceLabelCreated: updateGearPerformanceLabel(drop, angler, label)
-    }
-    function updateGearPerformanceLabel(drop, angler, label) {
-        if (drop === itmDropTab.dropNumber && angler === anglerLetter) {
-            console.info('drop = ' + drop + ', angler = ' + angler + ' vs. drop = ' +
-                itmDropTab.dropNumber + ', anglerLetter: ' + anglerLetter);
-            if (label !== null && label !== "") {
-                txtGearPerformance.text = "Gear\n" + label;
-                txtGearPerformance.color = "gray"
-                txtGearPerformance.font.italic = true
-                imgGearPerformance.opacity = 0.3
-            } else {
-                txtGearPerformance.text = "Gear\nPerf."
-                txtGearPerformance.color = "black"
-                txtGearPerformance.font.italic = false
-                imgGearPerformance.opacity = 1
-            }
-        }
-    }
-
-    Connections {
-        target: stateMachine //hmSM
-        onHookLabelCreated: updateHookLabel(drop, angler, count)
-    }
-    function updateHookLabel(drop, angler, count) {
-        if (drop === itmDropTab.dropNumber && angler === anglerLetter) {
-            console.info('drop = ' + drop + ', angler = ' + angler + ' vs. drop = ' +
-                itmDropTab.dropNumber + ', anglerLetter: ' + anglerLetter);
-            if (count !== null && count !== "") {
-                txtHooks.text = "Hooks\n" + count + "/5";
-            } else {
-                txtHooks.text = "Hooks";
-            }
-
-            if (count == 5) {
-                txtHooks.color = "gray"
-                txtHooks.font.italic = true
-                imgHooks.opacity = 0.3
-            } else {
-                txtHooks.color = "black"
-                txtHooks.font.italic = false
-                imgHooks.opacity = 1
-            }
-        }
-    }
+//    Connections {
+//        target: stateMachine //hmSM
+//        onGearPerformanceLabelCreated: updateGearPerformanceLabel(drop, angler, label)
+//    }
+//    function updateGearPerformanceLabel(drop, angler, label) {
+//        if (drop === itmDropTab.dropNumber && angler === anglerLetter) {
+//            console.info('drop = ' + drop + ', angler = ' + angler + ' vs. drop = ' +
+//                itmDropTab.dropNumber + ', anglerLetter: ' + anglerLetter);
+//            if (label !== null && label !== "") {
+//                txtGearPerformance.text = "Gear\n" + label;
+//            } else {
+//                txtGearPerformance.text = "Gear\nPerf."
+//            }
+//        }
+//    }
 
     Timer { id: timer }
     function startTimer() {
@@ -501,6 +473,7 @@ Item {
                     text: qsTr("Hooks")
                     font.pixelSize: 24
                     anchors.verticalCenter: parent.verticalCenter
+                    textFormat: Text.RichText
                 }
                 Image {
                     id: imgHooks

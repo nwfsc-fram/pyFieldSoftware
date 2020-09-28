@@ -42,9 +42,6 @@ class StateMachine(QObject):
     hookSelected = pyqtSignal()
     # specimenSelected = pyqtSignal()
 
-    gearPerformanceLabelCreated = pyqtSignal(str, str, str, arguments=['drop', 'angler', 'label'])
-    hookLabelCreated = pyqtSignal(str, str, int, arguments=['drop', 'angler', 'count'])
-
     siteOpIdChanged = pyqtSignal()
     dropOpIdChanged = pyqtSignal()
     anglerAOpIdChanged = pyqtSignal()
@@ -87,44 +84,6 @@ class StateMachine(QObject):
         self._hook_specimen_id = None
 
         self._drop_time_state = "enter"
-
-
-    @pyqtSlot(name="createGearPerformanceLabel")
-    def create_gear_performance_label(self):
-        """
-        Method to create the new gear performance label for the stateMachine
-        drop and angler
-        :return:
-        """
-        gear_perf_results = self._app.gear_performance.selectGearPerformance()
-        logging.info('gear performance: {gearPerfResults}')
-        gfMap = {
-            "No Problems": "NP", "Lost Hooks": "LH", "Lost Gangion": "LG", "Minor Tangle": "MI",
-            "Major Tangle": "MA", "Undeployed": "UN", "Exclude": "EX", "Lost Sinker": "LS"
-        }
-        label = ""
-
-        for x in gear_perf_results:
-            label += gfMap[x] + ","
-
-        if len(label) > 6:
-            label = label[0:5] + '...'
-        elif len(label) > 0 and label[-1] == ",":
-            label = label[:-1]
-
-        logging.info(f"gear performance label: {label}")
-        self.gearPerformanceLabelCreated.emit(self._drop, self._angler, label)
-
-    @pyqtSlot(name="createHookLabel")
-    def create_hook_label(self):
-        """
-        Method to create the new "Hooks" label for the stateMachine
-        drop and angler
-        :return:
-        """
-        hook_results = self._app.hooks.selectHooks()
-        logging.info(f'hook results: {hook_results}')
-        self.hookLabelCreated.emit(self._drop, self._angler, len(hook_results))
 
     @pyqtProperty(str, notify=swVersionChanged)
     def swVersion(self):
