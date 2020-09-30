@@ -24,6 +24,7 @@ Dialog {
     property string actionType: "delete"
     property string accepted_action: ""
 
+    property alias lblAction: lblAction
     property alias btnCancel: btnCancel
     property alias btnOkay: btnOkay
 //    standardButtons: StandardButton.Ok | StandardButton.Cancel

@@ -26,14 +26,21 @@ Item {
         var btnGpMap = mapGpButtons();  // use func to map due to scope of btns
         for (var gpStr in btnGpMap) {  // loop through each button once per func call
             var btnObj = btnGpMap[gpStr]
-
-            if (clickedBtnStr === "Exclude" || clickedBtnStr === "Undeployed" || clickedBtnStr === "No Problems" ) {
+            if (clickedBtnStr === "No Problems" ) {
                 if(gpStr !== clickedBtnStr) {  // deselect and delete everything except clickedBtnStr
                     btnObj.checked = false;
                     gearPerformance.deleteGearPerformance(gpStr);
                 }
-            } else { // start by deselecting exc, und, no probs if anything else is checked
-                if (gpStr === "Exclude" || gpStr === "Undeployed" || gpStr === "No Problems" ) {
+            } else if (clickedBtnStr === "Undeployed") {  // always select exclude w undeployed
+                if(gpStr === "Exclude" || gpStr === clickedBtnStr) {
+                    btnObj.checked = true;
+                    gearPerformance.addGearPerformance(gpStr);
+                } else {
+                    btnObj.checked = false;
+                    gearPerformance.deleteGearPerformance(gpStr);
+                }
+            } else { // start by deselecting und, no probs if anything else is checked
+                if (gpStr === "Undeployed" || gpStr === "No Problems" ) {
                     btnObj.checked = false;
                     gearPerformance.deleteGearPerformance(gpStr);
                 }
@@ -226,6 +233,7 @@ Item {
                 updateButtonRelations(btnUndeployed.text)
                 if (checked) {
                     gearPerformance.addGearPerformance("Undeployed");
+                    dlgUndeployed.open();
                 }
                 else
                     gearPerformance.deleteGearPerformance("Undeployed");
@@ -260,7 +268,15 @@ Item {
 //	-- Lost Hook(s) -- Lost Gangion  -- Lost Sinker  -- Minor Tangle  -- Major Tangle  -- Undeployed
 
     } // clPerformances
-
+    OkayCancelDialog {
+        id: dlgUndeployed
+        message: '"Undeployed" gear perf. selected.'
+        lblAction.text: 'Set all Angler ' + stateMachine.angler + ' hooks to "Undeployed"?'
+        btnOkay.text: "Yes"
+        btnCancel.text: "No"
+        onAccepted: { gearPerformance.setHooksToUndeployed() }
+        onRejected: {}
+    }
     Footer {
         id: framFooter
         height: 50
