@@ -109,3 +109,58 @@ class GearPerformance(QObject):
         self.gearPerformanceSelected.emit(results)
 
         return results
+
+    @pyqtSlot(name="setHooksToUndeployed")
+    def set_hooks_to_undeployed(self):
+        """
+        Method for when "undeployed" selected
+        if hook does not exist, insert, else update (upsert sql didnt work :().
+        Set all to Undeployed
+        :return: None
+        """
+        op_id = self.get_angler_op_id()
+        for hook in range(1, 6):
+            catches = self._rpc.execute_query(
+                sql="""
+                select
+                            catch_id
+                from        catch c
+                join        lookups l
+                            on c.receptacle_type_id = l.lookup_id
+                where       c.operation_id = ?
+                            and l.type = 'Receptacle Type'
+                            and l.value = 'Hook'
+                            and c.receptacle_seq = ?
+                """,
+                params=[op_id, hook]
+            )
+
+            if catches:
+                self._rpc.execute_query(
+                    sql="""
+                    update catch
+                    set 
+                            hm_catch_content_id = (select catch_content_id from catch_content_lu where display_name = 'Undeployed')
+                    where   catch_id = ?
+                    """,
+                    params=[catches[0][0], ]
+                )
+            else:
+                self._rpc.execute_query(
+                    sql="""
+                    insert into catch (
+                        operation_id
+                        ,hm_catch_content_id
+                        ,receptacle_type_id
+                        ,receptacle_seq
+                    )
+                    values (
+                        ?
+                        ,(select catch_content_id from catch_content_lu where display_name = 'Undeployed')
+                        ,(select lookup_id from lookups where value = 'Hook' and type = 'Receptacle Type')
+                        ,?
+                    )
+                    """,
+                    params=[op_id, hook]
+                )
+        logging.info("Angler hooks set to 'Undeployed'");
