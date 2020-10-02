@@ -266,7 +266,34 @@ Item {
         } // btnNoProblems
 //        	-- No Problems (default value - use this if no performance issues identified)
 //	-- Lost Hook(s) -- Lost Gangion  -- Lost Sinker  -- Minor Tangle  -- Major Tangle  -- Undeployed
-
+            Rectangle {
+                id: rtHooks
+                antialiasing: true
+                height: 40
+                radius: 4
+                implicitWidth:  txtHooks.implicitWidth + imgHooks.implicitWidth
+                color: "transparent"
+                enabled: false
+                Text {
+                    id: txtHooks
+                    text: qsTr("Hooks")
+                    font.pixelSize: 24
+                    anchors.verticalCenter: parent.verticalCenter
+                    textFormat: Text.RichText
+                }
+                Image {
+                    id: imgHooks
+                    anchors.left: txtHooks.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    source: Qt.resolvedUrl("/resources/images/navigation_next_item_dark.png")
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        smHookMatrix.to_hooks_state();
+                    }
+                }
+            } // rtHooks
     } // clPerformances
     OkayCancelDialog {
         id: dlgUndeployed
