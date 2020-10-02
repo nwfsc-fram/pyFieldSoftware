@@ -8,6 +8,7 @@ from PyQt5.QtCore import QVariant, pyqtSlot, pyqtSignal, QObject
 class GearPerformance(QObject):
 
     gearPerformanceSelected = pyqtSignal(QVariant, arguments=["results", ])
+    hooksSetToUndeployed = pyqtSignal()
 
     def __init__(self, app=None, db=None):
         super().__init__()
@@ -163,4 +164,5 @@ class GearPerformance(QObject):
                     """,
                     params=[op_id, hook]
                 )
-        logging.info("Angler hooks set to 'Undeployed'");
+        logging.info("Angler hooks set to 'Undeployed'")
+        self.hooksSetToUndeployed.emit()  # triggers connection to GearPerformanceScreen.updateHooksLabel() qml func

@@ -1,5 +1,6 @@
 # Standard Python Libraries
 import logging
+import re
 from collections import OrderedDict
 
 # Third Party Libraries
@@ -377,8 +378,8 @@ class Drops(QObject):
         else:
             return lbl_str
 
-    @pyqtSlot(QVariant, name="selectAnglerGpLabels", result=QVariant)
-    def select_angler_gp_labels(self, op_id: int):
+    @pyqtSlot(int, name="getAnglerGpLabels", result=str)
+    def get_angler_gp_labels(self, op_id: int):
         """
         Does this need to be a slot?
         Gets Gear perfs per operation_id, then abbreviates for label
@@ -398,21 +399,78 @@ class Drops(QObject):
             params=[op_id, ]
         )
         if perfs:
-            perfs = [x[0] for x in perfs]
-        return self.abbreviate_gear_perfs(perfs)
+            return 'Gear\n' + self.abbreviate_gear_perfs([x[0] for x in perfs])
+        else:
+            return 'Gear\nPerf.'
 
-    @pyqtSlot(int, name="countAnglerCatches_slot", result=int)
-    def count_angler_catches(self, op_id: int):
+    def select_angler_hooks(self, op_id: int):
         """
-        QML calls to get and update Hooks > label
-        on DropsScreen.qml
-        :param op_id: operation_id
-        :return: count of hooks w/ catch (int)
+        Select hooks per op_id aka angler from DB.
+        Left join to CTE ensures result will always have 5 rows,
+        unpopulated hooks shown as null
+        :param op_id: operation id
+        :return: dict[], one per db row. E.g. [{hookNum: "1", hookContent: "Boccacio", contentType: "Fish Hooked"}...]
         """
-        return self._rpc.execute_query(
-            sql='select count(distinct catch_id) from catch where operation_id = ?',
+        hooks = self._rpc.execute_query(
+            sql="""
+                with hooks as (
+                    select '1' as HOOK
+                    union all
+                    select '2'
+                    union all
+                    select '3'
+                    union all
+                    select '4'
+                    union all
+                    select '5'
+                )
+
+                select
+                            h.HOOK
+                            ,cc.display_name as HOOK_CONTENT
+                            ,case 
+                                when cc.content_type_lu_id = 129 then 'Fish Hooked'
+                                when cc.content_type_lu_id = 130 then 'Other'
+                                else null
+                            end as CONTENT_TYPE
+
+                from        hooks h
+                left join   catch c
+                            on h.hook = c.receptacle_seq
+                            and c.operation_id = ?
+                left join   catch_content_lu cc
+                            on c.hm_catch_content_id = cc.catch_content_id
+                left join   lookups l
+                            on c.receptacle_type_id = l.lookup_id
+                            and l.value = 'Hook'
+                order by    h.hook desc
+            """,
             params=[op_id, ]
-        )[0][0]
+        )
+        return [{'hookNum': row[0], 'hookContent': row[1], 'contentType': row[2]} for row in hooks]
+
+    @pyqtSlot(int, name="getAnglerHooksLabel", result=str)
+    def get_angler_hooks_label(self, op_id: int):
+        hooks = self.select_angler_hooks(op_id)
+        hooks_lbl = 'Hooks<br>'
+        if all(h['hookContent'] == 'Undeployed' for h in hooks):
+            return hooks_lbl + 'UN'
+        else:
+            for hook in hooks:
+                content = hook['contentType']
+                hook_num = hook['hookNum']
+
+                # label uses rich text to color diff chars differently
+                if content == 'Fish Hooked':
+                    hooks_lbl += f"<font color=\"#008000\">{hook_num},</font>"  # green
+                elif content == 'Other':
+                    hooks_lbl += f"<font color=\"#000000\">{hook_num},</font>"  # black
+                elif not content:
+                    hooks_lbl += f"<font color=\"#000000\">_,</font>"  # black
+                else:
+                    logging.error(f"Unexpected value {content} for hook {hook_num}, opId {op_id}")
+
+            return ''.join(hooks_lbl.rsplit(",", 1))  # splits on last comma and joins with empty
 
     @pyqtSlot(int, name="selectAnglerCatches", result=QVariant)
     def select_angler_catches(self, op_id: int):

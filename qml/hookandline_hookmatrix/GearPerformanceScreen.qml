@@ -7,9 +7,27 @@ Item {
     property int buttonHeight: 80;
     property int buttonWidth: 2 * buttonHeight;
 
-    function mapGpButtons() {
-       // use to create map within other functions
-        return {
+    Connections {
+            target: gearPerformance
+            onHooksSetToUndeployed: updateHooksLabel();
+        } // after setting, update hooks label accordingly
+    function updateHooksLabel() {
+        switch (stateMachine.angler) {
+            case "A":
+                txtHooksGp.text = drops.getAnglerHooksLabel(stateMachine.anglerAOpId);
+                break;
+            case "B":
+                txtHooksGp.text = drops.getAnglerHooksLabel(stateMachine.anglerBOpId);
+                break;
+            case "C":
+                txtHooksGp.text = drops.getAnglerHooksLabel(stateMachine.anglerCOpId);
+                break;
+        }
+    }
+
+    function updateButtonRelations(clickedBtnStr) {
+        // central place for logic regarding how buttons interact with each other
+        var btnGpMap = {
             "No Problems": btnNoProblems,
             "Lost Hooks": btnLostHooks,
             "Lost Gangion":  btnLostGangion,
@@ -18,12 +36,7 @@ Item {
             "Major Tangle": btnMajorTangle,
             "Undeployed": btnUndeployed,
             "Exclude": btnExclude
-        }
-    }
-
-    function updateButtonRelations(clickedBtnStr) {
-        // central place for logic regarding how buttons interact with each other
-        var btnGpMap = mapGpButtons();  // use func to map due to scope of btns
+        };
         for (var gpStr in btnGpMap) {  // loop through each button once per func call
             var btnObj = btnGpMap[gpStr]
             if (clickedBtnStr === "No Problems" ) {
@@ -97,6 +110,7 @@ Item {
             }
             if (stop_processing) break;
         }
+        updateHooksLabel();
     }
 
     Header {
@@ -118,18 +132,11 @@ Item {
             checkable: true
             checked: false
             onClicked: {
-                btnLostHooks.checked = false;
-                btnLostGangion.checked = false;
-                btnLostSinker.checked = false;
-                btnMinorTangle.checked = false;
-                btnMajorTangle.checked = false;
-                btnUndeployed.checked = false;
-                btnExclude.checked = false;
-
+                updateButtonRelations(btnNoProblems.text)
                 if (checked)
-                    gearPerformance.addGearPerformance("No Problems");
+                    gearPerformance.addGearPerformance(btnNoProblems.text);
                 else
-                    gearPerformance.deleteGearPerformance("No Problems");
+                    gearPerformance.deleteGearPerformance(btnNoProblems.text);
             }
         } // btnNoProblems
 //        	-- No Problems (default value - use this if no performance issues identified)
@@ -266,7 +273,34 @@ Item {
         } // btnNoProblems
 //        	-- No Problems (default value - use this if no performance issues identified)
 //	-- Lost Hook(s) -- Lost Gangion  -- Lost Sinker  -- Minor Tangle  -- Major Tangle  -- Undeployed
-
+            Rectangle { // TODO: add this QML obj as a separate file that can be reused here and in drops
+                id: rtHooksGp
+                antialiasing: true
+                height: 40
+                radius: 4
+                implicitWidth:  txtHooksGp.implicitWidth + imgHooksGp.implicitWidth
+                color: "transparent"
+                enabled: true
+                Text {
+                    id: txtHooksGp
+                    text: qsTr("Hooks")
+                    font.pixelSize: 24
+                    anchors.verticalCenter: parent.verticalCenter
+                    textFormat: Text.RichText
+                }
+                Image {
+                    id: imgHooksGp
+                    anchors.left: txtHooksGp.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    source: Qt.resolvedUrl("/resources/images/navigation_next_item_dark.png")
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        smHookMatrix.to_hooks_state();
+                    }
+                }
+            } // rtHooks
     } // clPerformances
     OkayCancelDialog {
         id: dlgUndeployed
