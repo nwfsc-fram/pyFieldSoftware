@@ -136,7 +136,7 @@ class ObserverData(QObject):
 
         self._vessels = list()
 
-        vess_q = Vessels.select()
+        vess_q = Vessels.select().where(Vessels.vessel_status.not_in(['S', 'I', 'R']))  # Not sunk, inactive, retired
         for vessel in vess_q:
             vessel_number = vessel.coast_guard_number
             if not vessel_number or len(vessel_number) < 1:
