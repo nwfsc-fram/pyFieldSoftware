@@ -273,7 +273,7 @@ Item {
                 radius: 4
                 implicitWidth:  txtHooks.implicitWidth + imgHooks.implicitWidth
                 color: "transparent"
-                enabled: false
+                enabled: true
                 Text {
                     id: txtHooks
                     text: qsTr("Hooks")
