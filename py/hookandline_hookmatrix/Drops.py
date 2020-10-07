@@ -50,6 +50,7 @@ class Drops(QObject):
     operationAttributeDeleted = pyqtSignal()
     new_drop_added = pyqtSignal(QVariant, name="newDropAdded", arguments=["dropJson", ])
     exception_encountered = pyqtSignal(str, str, name="exceptionEncountered", arguments=["message", "action"])
+    anglerGpLabelsSelected = pyqtSignal(str, str, str, arguments=["drop", "angler", "label"])
 
     def __init__(self, app=None, db=None):
         super().__init__()
@@ -419,3 +420,96 @@ class Drops(QObject):
             logging.error(f"Error getting the play sound time: {ex}")
 
         return "04:45"
+
+    @staticmethod
+    def abbreviate_gear_perfs(gear_list):
+        """
+        Map gear to abbrev. string
+        :param gear_list: list of gear names
+        :return: concat. string of abbreviations
+        """
+        if not gear_list:
+            return "Gear\nPerf."
+
+        gfMap = {
+            "No Problems": "NP",
+            "Lost Hooks": "LH",
+            "Lost Gangion": "LG",
+            "Minor Tangle": "MI",
+            "Major Tangle": "MA",
+            "Undeployed": "UN",
+            "Exclude": "EX",
+            "Lost Sinker": "LS"
+        }
+        lbl_str = ''
+        for lbl in gear_list:
+            lbl_str += gfMap[lbl] + ','
+
+        if len(lbl_str) > 6:
+            return "Gear\n" + lbl_str[0:5] + '...'
+        elif len(lbl_str) > 0 and lbl_str[-1] == ",":
+            return "Gear\n" + lbl_str[:-1]
+        else:
+            return "Gear\n" + lbl_str
+
+    @pyqtSlot(int, str, name="selectAnglerGpLabels", result=QVariant)
+    def select_angler_gp_labels(self, drop_op_id: int, angler: str):
+        """
+        Gets Gear perfs per operation_id / angler, then abbreviates for label
+        :param drop_op_id: int; operations table id
+        :param angler: str (e.g. "A")
+        :return: emits drop#, angler letter, and Gear Perf label to DropAngler.qml updateGearPerformanceLabel
+        """
+        # query gets drop and angler info, and group_concats gear perfs
+        perfs = self._rpc.execute_query(
+            sql="""
+            with drops as (
+                select
+                        operation_id as drop_id
+                        ,operation_number as drop_number
+                FROM    operations o
+                JOIN    lookups l
+                        on o.operation_type_lu_id = l.lookup_id
+                WHERE   l.value = 'Drop'
+                        and operation_id = ?
+            )
+
+            ,anglers as (
+                select
+                        operation_id as angler_id
+                        ,parent_operation_id as parent_drop_id
+                        ,operation_number as angler_letter
+                FROM	operations o
+                JOIN	lookups l
+                        on o.operation_type_lu_id = l.lookup_id
+                WHERE	l.value = 'Angler'
+                        and o.operation_number = ?
+            )
+
+            select
+                        d.drop_id
+                        ,d.drop_number
+                        ,a.angler_id
+                        ,a.angler_letter
+                        ,group_concat(l.value) as gear_perfs
+            FROM		drops d
+            JOIN		anglers a
+                        on d.drop_id = a.parent_drop_id
+            left JOIN   operation_attributes oa
+                        on a.angler_id = oa.operation_id
+            left JOIN	lookups l
+                        on oa.attribute_type_lu_id = l.lookup_id
+                        and l.type = 'Angler Gear Performance'
+            group by    d.drop_id
+                        ,d.drop_number
+                        ,a.angler_id
+                        ,a.angler_letter
+                """,
+            params=[drop_op_id, angler, ]
+        )
+        if perfs and perfs[0][4]:  # did query return results, and were there gear perfs?
+            self.anglerGpLabelsSelected.emit(
+                perfs[0][1],  # drop number
+                perfs[0][3],  # angler letter
+                self.abbreviate_gear_perfs(perfs[0][4].split(","))  # split comma sep string and abbreviate
+            )
