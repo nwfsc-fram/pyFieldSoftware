@@ -796,7 +796,7 @@ Item {
                     }
                     property var current_beaufort: appstate.sets.getData('beaufort_value')
                     Repeater {
-                        model: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+                        model: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "99"]
                         ObserverGroupButton {
                             Layout.preferredWidth: 50
                             Layout.preferredHeight: 50
