@@ -165,3 +165,4 @@ class GearPerformance(QObject):
                     params=[op_id, hook]
                 )
         logging.info(f"Angler {self._app.state_machine.angler} hooks set to 'Undeployed'")
+        self.hooksSetToUndeployed.emit()
