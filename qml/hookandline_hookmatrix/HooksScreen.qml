@@ -73,6 +73,7 @@ Item {
         for (key in results) {
             item = hooksMap[key];
             item.text = results[key] ? results[key] : "";
+            highlightFish(item, item.text);
         }
         for (key in hooksMap) {
             hooksMap[key].cursorPosition = 0;
@@ -81,7 +82,31 @@ Item {
         hook5.tfHook.forceActiveFocus();
         stateMachine.hook = "5";
     }
-
+    function highlightFish(h, species) {
+        /*
+        use to highlight fish entries in green & bold
+        h: tfHook object
+        species: species name str
+        TODO: pull gear list from db, or key off of catch_content type id
+        */
+        var gearList = [
+            "Bait Back",
+            "No Bait",
+            "No Hook",
+            "Multiple Hook",
+            "Undeployed"
+        ]
+        for(var i = 0; i < gearList.length; i++) {
+            if (gearList[i] === species) {
+                h.textColor = "black";
+                h.font.bold = false;
+                return;
+            }
+        }
+        h.textColor = "green";
+        h.font.bold = true;
+        return;
+    }
     Connections {
         target: framFooter
         onClickedSpeciesList: switchSpeciesList(speciesList)
@@ -128,6 +153,7 @@ Item {
         if (currentHook === null) return;
 
         hooks.saveHook(currentHook.hookNumber, species);
+        highlightFish(currentHook.tfHook, species);
         switch (currentHook) {
             case hook5:
                 hook5.tfHook.text = species;
