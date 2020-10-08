@@ -18,8 +18,10 @@ Item {
         Label {
             text: "Hook " + hookNumber
             font.pixelSize: 24
+            font.underline: true
+            Layout.alignment: Qt.AlignRight
             horizontalAlignment: Text.AlignHCenter
-            Layout.preferredWidth: 260
+            Layout.preferredWidth: 200
             Layout.preferredHeight: 40
         }
         RowLayout {
