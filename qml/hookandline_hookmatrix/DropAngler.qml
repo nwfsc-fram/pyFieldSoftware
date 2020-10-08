@@ -96,18 +96,26 @@ Item {
     }
 
     Connections {
-        target: stateMachine //hmSM
-        onGearPerformanceLabelCreated: updateGearPerformanceLabel(drop, angler, label)
+        target: drops //hmSM
+        onAnglerGpLabelSelected: updateGearPerformanceLabel(drop, angler, label)
     }
     function updateGearPerformanceLabel(drop, angler, label) {
         if (drop === itmDropTab.dropNumber && angler === anglerLetter) {
             console.info('drop = ' + drop + ', angler = ' + angler + ' vs. drop = ' +
                 itmDropTab.dropNumber + ', anglerLetter: ' + anglerLetter);
-            if (label !== null && label !== "") {
-                txtGearPerformance.text = "Gear\n" + label;
-            } else {
-                txtGearPerformance.text = "Gear\nPerf."
-            }
+            txtGearPerformance.text = label;
+        }
+    }
+
+    Connections {
+        target: drops //hmSM
+        onAnglerHooksLabelSelected: updateHooksLabel(drop, angler, label)
+    }
+    function updateHooksLabel(drop, angler, label) {
+        if (drop === itmDropTab.dropNumber && angler === anglerLetter) {
+            console.info('drop = ' + drop + ', angler = ' + angler + ' vs. drop = ' +
+                itmDropTab.dropNumber + ', anglerLetter: ' + anglerLetter);
+            txtHooks.text = label;
         }
     }
 
@@ -466,7 +474,7 @@ Item {
                 enabled: false
                 Text {
                     id: txtHooks
-                    text: qsTr("Hooks")
+                    text: qsTr("Hooks<br>_,_,_,_,_")
                     font.pixelSize: 24
                     anchors.verticalCenter: parent.verticalCenter
                 }

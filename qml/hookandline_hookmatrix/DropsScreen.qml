@@ -119,12 +119,18 @@ Item {
                                     switch (anglerItem) {
                                         case tab.item.dtDrop.anglerA:
                                             stateMachine.anglerAOpId = anglerResult[value];
+                                            drops.selectAnglerGpLabel(stateMachine.dropOpId, "A")  // updates gp label
+                                            drops.selectAnglerHooksLabel(stateMachine.dropOpId, "A")  // updates hooks label
                                             break;
                                         case tab.item.dtDrop.anglerB:
                                             stateMachine.anglerBOpId = anglerResult[value];
+                                            drops.selectAnglerGpLabel(stateMachine.dropOpId, "B")  // updates gp label
+                                            drops.selectAnglerHooksLabel(stateMachine.dropOpId, "B")  // updates hooks label
                                             break;
                                         case tab.item.dtDrop.anglerC:
                                             stateMachine.anglerCOpId = anglerResult[value];
+                                            drops.selectAnglerGpLabel(stateMachine.dropOpId, "C")  // updates gp label
+                                            drops.selectAnglerHooksLabel(stateMachine.dropOpId, "C")  // updates hooks label
                                             break;
                                     }
                                     break;
