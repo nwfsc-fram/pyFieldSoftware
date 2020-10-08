@@ -50,7 +50,7 @@ class Drops(QObject):
     operationAttributeDeleted = pyqtSignal()
     new_drop_added = pyqtSignal(QVariant, name="newDropAdded", arguments=["dropJson", ])
     exception_encountered = pyqtSignal(str, str, name="exceptionEncountered", arguments=["message", "action"])
-    anglerGpLabelsSelected = pyqtSignal(str, str, str, arguments=["drop", "angler", "label"])
+    anglerGpLabelSelected = pyqtSignal(str, str, str, arguments=["drop", "angler", "label"])
     anglerHooksLabelSelected = pyqtSignal(str, str, str, arguments=["drop", "angler", "label"])
 
     def __init__(self, app=None, db=None):
@@ -453,8 +453,8 @@ class Drops(QObject):
         else:
             return "Gear\n" + lbl_str
 
-    @pyqtSlot(int, str, name="selectAnglerGpLabels", result=QVariant)
-    def select_angler_gp_labels(self, drop_op_id: int, angler: str):
+    @pyqtSlot(int, str, name="selectAnglerGpLabel", result=QVariant)
+    def select_angler_gp_label(self, drop_op_id: int, angler: str):
         """
         Gets Gear perfs per operation_id / angler, then abbreviates for label
         :param drop_op_id: int; operations table id
@@ -509,9 +509,9 @@ class Drops(QObject):
             params=[drop_op_id, angler, ]
         )
         if perfs and perfs[0][4]:  # did query return results, and were there gear perfs?
-            self.anglerGpLabelsSelected.emit(
+            self.anglerGpLabelSelected.emit(
                 perfs[0][1],  # drop number
-                perfs[0][3],  # angler letter
+                angler,  # angler letter
                 self.abbreviate_gear_perfs(perfs[0][4].split(","))  # split comma sep string and abbreviate
             )
 

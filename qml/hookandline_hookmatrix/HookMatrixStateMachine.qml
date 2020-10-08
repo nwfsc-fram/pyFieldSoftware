@@ -53,7 +53,7 @@ DSM.StateMachine {
                 screens.push(Qt.resolvedUrl("DropsScreen.qml"));
                 drops.selectOperationAttributes(stateMachine.setId)  // populate drops screen data
             } else if (stateMachine.previousScreen === "gear_performance") {
-                drops.selectAnglerGpLabels(stateMachine.dropOpId, stateMachine.angler);  // update gear perf label
+                drops.selectAnglerGpLabel(stateMachine.dropOpId, stateMachine.angler);  // update gear perf label
                 screens.pop();  // pop off top of stack
             } else if (stateMachine.previousScreen === "hooks") {
                 drops.selectAnglerHooksLabel(stateMachine.dropOpId, stateMachine.angler);  // update hooks label

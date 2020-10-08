@@ -97,7 +97,7 @@ Item {
 
     Connections {
         target: drops //hmSM
-        onAnglerGpLabelsSelected: updateGearPerformanceLabel(drop, angler, label)
+        onAnglerGpLabelSelected: updateGearPerformanceLabel(drop, angler, label)
     }
     function updateGearPerformanceLabel(drop, angler, label) {
         if (drop === itmDropTab.dropNumber && angler === anglerLetter) {
