@@ -86,12 +86,19 @@ DSM.StateMachine {
             targetState: drops_state
             signal: to_drops_state
         } // to_drops_state
+        DSM.SignalTransition {
+            targetState: hooks_state
+            signal: to_hooks_state
+        } // to_hooks_state
     } // gear_performance_state
     DSM.State {
         id: hooks_state
         onEntered: {
             stateMachine.previousScreen = stateMachine.screen;
-            stateMachine.screen = "hooks"
+            stateMachine.screen = "hooks";
+            if (stateMachine.previousScreen === "gear_performance") {
+                screens.pop();  // keep either gp or hooks one step away from drops
+            }
             screens.push(Qt.resolvedUrl("HooksScreen.qml"));
             hooks.selectHooks();
         }

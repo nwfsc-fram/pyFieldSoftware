@@ -43,6 +43,7 @@ Item {
             }
             if (stop_processing) break;
         }
+        updateHooksLabel();
     }
 
     function updateButtonRelations(clickedBtnStr) {
@@ -94,7 +95,14 @@ Item {
             }
         }
     }
-
+    Connections {
+            target: gearPerformance
+            onHooksSetToUndeployed: updateHooksLabel();
+        } // after setting, update hooks label accordingly
+    function updateHooksLabel() {
+        console.warn("trying to update hooks label")
+         txtHooksGp.text = drops.selectAnglerHooksLabel(stateMachine.dropOpId, stateMachine.angler);
+    }
     Header {
         id: framHeader
         title: "Gear Performance: Drop " + stateMachine.drop + " - Angler " + stateMachine.angler
@@ -254,7 +262,34 @@ Item {
         } // btnNoProblems
 //        	-- No Problems (default value - use this if no performance issues identified)
 //	-- Lost Hook(s) -- Lost Gangion  -- Lost Sinker  -- Minor Tangle  -- Major Tangle  -- Undeployed
-
+            Rectangle { // TODO: add this QML obj as a separate file that can be reused here and in drops
+                id: rtHooksGp
+                antialiasing: true
+                height: 40
+                radius: 4
+                implicitWidth:  txtHooksGp.implicitWidth + imgHooksGp.implicitWidth
+                color: "transparent"
+                enabled: true
+                Text {
+                    id: txtHooksGp
+                    text: qsTr("Hooks")
+                    font.pixelSize: 24
+                    anchors.verticalCenter: parent.verticalCenter
+                    textFormat: Text.RichText
+                }
+                Image {
+                    id: imgHooksGp
+                    anchors.left: txtHooksGp.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    source: Qt.resolvedUrl("/resources/images/navigation_next_item_dark.png")
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        smHookMatrix.to_hooks_state();
+                    }
+                }
+            } // rtHooks
     } // clPerformances
     OkayCancelDialog {
         id: dlgUndeployed
@@ -265,6 +300,7 @@ Item {
         onAccepted: { gearPerformance.setHooksToUndeployed() }
         onRejected: {}
     }
+
     Footer {
         id: framFooter
         height: 50

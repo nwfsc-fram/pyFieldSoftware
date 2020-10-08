@@ -544,7 +544,7 @@ class Drops(QObject):
 
         return hooks_lbl
 
-    @pyqtSlot(int, str, name="selectAnglerHooksLabel", result=QVariant)
+    @pyqtSlot(int, str, name="selectAnglerHooksLabel", result=str)
     def select_angler_hooks_label(self, drop_op_id: int, angler: str):
         """
         Select hooks per op_id aka angler from DB.
@@ -612,3 +612,5 @@ class Drops(QObject):
                 angler,
                 self.format_hooks_label(hooks_list)
             )
+            return self.format_hooks_label(hooks_list)  # return to use str outside of signal
+
