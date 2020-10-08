@@ -107,6 +107,18 @@ Item {
         }
     }
 
+    Connections {
+        target: drops //hmSM
+        onAnglerHooksLabelSelected: updateHooksLabel(drop, angler, label)
+    }
+    function updateHooksLabel(drop, angler, label) {
+        if (drop === itmDropTab.dropNumber && angler === anglerLetter) {
+            console.info('drop = ' + drop + ', angler = ' + angler + ' vs. drop = ' +
+                itmDropTab.dropNumber + ', anglerLetter: ' + anglerLetter);
+            txtHooks.text = label;
+        }
+    }
+
     Timer { id: timer }
     function startTimer() {
 //        var soundElapsedTimeStr = "04:45";
@@ -462,7 +474,7 @@ Item {
                 enabled: false
                 Text {
                     id: txtHooks
-                    text: qsTr("Hooks")
+                    text: qsTr("Hooks<br>_,_,_,_,_")
                     font.pixelSize: 24
                     anchors.verticalCenter: parent.verticalCenter
                 }
