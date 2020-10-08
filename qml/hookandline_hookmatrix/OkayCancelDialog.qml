@@ -26,6 +26,7 @@ Dialog {
 
     property alias btnCancel: btnCancel
     property alias btnOkay: btnOkay
+    property alias lblAction: lblAction
 //    standardButtons: StandardButton.Ok | StandardButton.Cancel
 
     onRejected: {  }

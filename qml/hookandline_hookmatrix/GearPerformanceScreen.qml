@@ -220,10 +220,12 @@ Item {
             checked: false
             onClicked: {
                 updateButtonRelations(btnUndeployed.text)
-                if (checked)
+                if (checked) {
                     gearPerformance.addGearPerformance("Undeployed");
-                else
+                    dlgUndeployed.open();
+                } else {
                     gearPerformance.deleteGearPerformance("Undeployed");
+                }
             }
         } // btnUndeployed
 
@@ -254,7 +256,15 @@ Item {
 //	-- Lost Hook(s) -- Lost Gangion  -- Lost Sinker  -- Minor Tangle  -- Major Tangle  -- Undeployed
 
     } // clPerformances
-
+    OkayCancelDialog {
+        id: dlgUndeployed
+        message: '"Undeployed" gear perf. selected.'
+        lblAction.text: 'Set all Angler ' + stateMachine.angler + ' hooks to "Undeployed"?'
+        btnOkay.text: "Yes"
+        btnCancel.text: "No"
+        onAccepted: { gearPerformance.setHooksToUndeployed() }
+        onRejected: {}
+    }
     Footer {
         id: framFooter
         height: 50
