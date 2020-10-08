@@ -51,6 +51,7 @@ class Drops(QObject):
     new_drop_added = pyqtSignal(QVariant, name="newDropAdded", arguments=["dropJson", ])
     exception_encountered = pyqtSignal(str, str, name="exceptionEncountered", arguments=["message", "action"])
     anglerGpLabelsSelected = pyqtSignal(str, str, str, arguments=["drop", "angler", "label"])
+    anglerHooksLabelSelected = pyqtSignal(str, str, str, arguments=["drop", "angler", "label"])
 
     def __init__(self, app=None, db=None):
         super().__init__()
@@ -512,4 +513,102 @@ class Drops(QObject):
                 perfs[0][1],  # drop number
                 perfs[0][3],  # angler letter
                 self.abbreviate_gear_perfs(perfs[0][4].split(","))  # split comma sep string and abbreviate
+            )
+
+    def format_hooks_label(self, hooks_list):
+        """
+        format hooks text for RichText QML text object
+        :param hooks_list: list of dicts (e.g. [{'hookNum': 1, 'hookContent': 'Yelloweye', 'contentType': 'Fish Hooked'}]
+        :return: string, rich text
+        """
+        hooks_lbl = 'Hooks<br>'
+
+        if not hooks_list:
+            return hooks_lbl + "\n_,_,_,_,_"
+        elif all(h['hookContent'] == 'Undeployed' for h in hooks_list):  # if all undeployed, set label to UN
+            return hooks_lbl + 'UN'
+        else:
+            for hook in hooks_list:
+                content = hook['contentType']
+                hook_num = hook['hookNum']
+
+                # label uses rich text to color diff chars differently
+                if content == 'Fish Hooked':
+                    hooks_lbl += f"<font color=\"#008000\">{hook_num},</font>"  # green
+                elif content == 'Other':
+                    hooks_lbl += f"<font color=\"#000000\">{hook_num},</font>"  # black
+                elif not content:
+                    hooks_lbl += f"<font color=\"#000000\">_,</font>"  # black
+                else:
+                    logging.error(f"Unexpected value {content} for hook {hook_num}")
+
+        return hooks_lbl
+
+    @pyqtSlot(int, str, name="selectAnglerHooksLabel", result=QVariant)
+    def select_angler_hooks_label(self, drop_op_id: int, angler: str):
+        """
+        Select hooks per op_id aka angler from DB.
+        Left join to CTE ensures result will always have 5 rows,
+        unpopulated hooks shown as null
+        :param drop_op_id: operation id specific to drop
+        :param angler: str (e.g. 'A', 'B', or 'C')
+        :return: dict[], one per db row. E.g. [{hookNum: "1", hookContent: "Boccacio", contentType: "Fish Hooked"}...]
+        """
+        hooks = self._rpc.execute_query(
+            sql="""
+             with hooks as (
+                select
+                            o1.operation_number as drop_num
+                            ,o2.operation_number as angler_letter
+                            ,o2.operation_id
+                            ,h.hook_num
+                FROM		operations o1
+                JOIN		operations o2
+                            on o1.operation_id = o2.parent_operation_id
+                JOIN		(
+                                select '1' as hook_num
+                                union all
+                                select '2'
+                                union all
+                                select '3'
+                                union all
+                                select '4'
+                                union all
+                                select '5'
+                            ) h
+                            on 1 = 1
+                WHERE		o1.operation_id = ?
+                            and o2.operation_number = ?
+                )
+
+            select
+                        h.drop_num
+                        ,h.angler_letter
+                        ,h.hook_num
+                        ,cc.display_name
+                        ,case
+                                    when cc.content_type_lu_id = 129 then 'Fish Hooked'
+                                    when cc.content_type_lu_id = 130 then 'Other'
+                                    else null
+                        end as content_type
+            from        hooks h
+            left join	catch c
+                        on h.operation_id = c.operation_id
+                        and h.hook_num = c.receptacle_seq
+            left join   catch_content_lu cc
+                        on c.hm_catch_content_id = cc.catch_content_id
+            left JOIN	lookups l
+                        on c.receptacle_type_id = l.lookup_id
+                        and l.value = 'Hook'
+            order by    h.hook_num desc
+            """,
+            params=[drop_op_id, angler]
+        )
+        # if results, emit drop num, pass along angler letter, and hooks label str
+        if hooks:
+            hooks_list = [{'dropNum': h[0], 'hookNum': h[2], 'hookContent': h[3], 'contentType': h[4]} for h in hooks]
+            self.anglerHooksLabelSelected.emit(
+                hooks_list[0]['dropNum'],
+                angler,
+                self.format_hooks_label(hooks_list)
             )

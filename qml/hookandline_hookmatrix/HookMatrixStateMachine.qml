@@ -56,6 +56,7 @@ DSM.StateMachine {
                 drops.selectAnglerGpLabels(stateMachine.dropOpId, stateMachine.angler);  // update gear perf label
                 screens.pop();  // pop off top of stack
             } else if (stateMachine.previousScreen === "hooks") {
+                drops.selectAnglerHooksLabel(stateMachine.dropOpId, stateMachine.angler);  // update hooks label
                 screens.pop(); // pop off top of stack
             }
             stateMachine.angler = null;
