@@ -542,7 +542,7 @@ class Drops(QObject):
                 else:
                     logging.error(f"Unexpected value {content} for hook {hook_num}")
 
-        return hooks_lbl
+        return ''.join(hooks_lbl.rsplit(",", 1))  # splits on last comma and joins with empty str (remove last comma)
 
     @pyqtSlot(int, str, name="selectAnglerHooksLabel", result=str)
     def select_angler_hooks_label(self, drop_op_id: int, angler: str):
