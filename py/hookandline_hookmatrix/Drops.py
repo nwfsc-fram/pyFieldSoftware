@@ -7,6 +7,7 @@ from PyQt5.QtCore import QVariant, pyqtProperty, pyqtSlot, pyqtSignal, QObject
 import arrow
 from apsw import ConstraintError
 import apsw
+import xmlrpc.client as xrc
 
 # Project Libraries
 from py.common.FramListModel import FramListModel
@@ -106,8 +107,7 @@ class Drops(QObject):
 
         except Exception as ex:
 
-            if "apsw.ConstraintError" in str(ex):
-
+            if "apsw.ConstraintError" in str(ex) or isinstance(ex, xrc.Fault):
                 logging.info(f"Drop operation exists, getting the existing primary key: {ex}")
                 sql = """
                     SELECT OPERATION_ID FROM OPERATIONS 
@@ -147,7 +147,7 @@ class Drops(QObject):
 
             except Exception as ex:
 
-                if "apsw.ConstraintError" in str(ex):
+                if "apsw.ConstraintError" in str(ex) or isinstance(ex, xrc.Fault):
 
                     logging.info(f"Angler operation {x} exists, getting the existing primary key: {ex}")
                     sql = """
