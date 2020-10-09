@@ -74,7 +74,7 @@ class SitesModel(FramListModel):
             yesterday = arrow.now('US/Pacific').shift(days=-1).replace(hour=0, minute=0, second=0, microsecond=0).format('YYYY-MM-DDTHH:mm:ss')
             params = [yesterday, ]
         elif filter == "all":
-            params = [arrow.now('US/Pacific').replace(years=-100).format('YYYY-MM-DDTHH:mm:ss'),]
+            params = [arrow.now('US/Pacific').shift(years=-100).format('YYYY-MM-DDTHH:mm:ss'),]
         logging.info(f"params: {params}")
         results = self._app.rpc.execute_query(sql=sql, params=params)
         header = ["setId", "siteName", "area", "eventTypeLuId", "dateTime", "opId", "processingStatus"]
