@@ -201,7 +201,7 @@ Item {
                 id: btnNotes
                 Layout.preferredWidth: 120
                 Layout.preferredHeight: 60
-                text: qsTr("Notes")
+                text: qsTr("Site Notes")
                 onClicked: {
                     if (tvSpecimens.currentRow != -1) {
                         var item = fishSampling.specimensModel.get(tvSpecimens.currentRow);
