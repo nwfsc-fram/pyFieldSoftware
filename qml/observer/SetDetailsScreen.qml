@@ -782,7 +782,7 @@ Item {
                 Layout.columnSpan: 2
                 FramLabelHighlightCapable {
                     id: labelBeaufortScale
-                    text: qsTr("Beaufort Scale")
+                    text: qsTr("Beaufort Scale\nat Gear Set")
                     Layout.preferredWidth: gridHaulDetails.labelColWidth
                     Layout.fillHeight: true
                     verticalAlignment: Text.AlignVCenter
