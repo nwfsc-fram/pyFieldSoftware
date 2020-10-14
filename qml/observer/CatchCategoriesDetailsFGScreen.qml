@@ -716,7 +716,7 @@ Item {
 
                 RowLayout {
                     id: rowDR
-                    visible: (buttonDispD.checked && appstate.catches.weightMethod === '14') || is_phlb
+                    visible: (buttonDispD.checked && appstate.catches.weightMethod === '14') || (buttonDispD.checked && is_phlb)
                     signal drCleared
 
                     Label {

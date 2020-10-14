@@ -647,7 +647,7 @@ Item {
                 }
                 RowLayout {
                     id: rowDR
-                    visible: (buttonDispD.checked && buttonNoSpecComp.checked) || is_phlb
+                    visible: (buttonDispD.checked && buttonNoSpecComp.checked) || (buttonDispD.checked && is_phlb)
                     signal drCleared
 
                     Label {
