@@ -173,7 +173,6 @@ class ObserverData(QObject):
                 join(VesselContacts, on=(Contacts.contact == VesselContacts.contact)). \
                 where(
                 (Contacts.contact_category == 3) &  # Vessel category
-                (VesselContacts.contact_status != 'NA') &
                 (VesselContacts.vessel == self._captain_vessel_id) &  # Vessel ID
                 ((VesselContacts.contact_type == 1) |  # Skipper
                  (VesselContacts.contact_type == 3)))  # Skipper/ Owner
@@ -181,7 +180,6 @@ class ObserverData(QObject):
             captains_q = Contacts.select(). \
                 join(VesselContacts, on=(Contacts.contact == VesselContacts.contact)). \
                 where(
-                (VesselContacts.contact_status != 'NA') &
                 (Contacts.contact_category == 3) &  # Vessel
                 ((VesselContacts.contact_type == 1) |  # Skipper
                  (VesselContacts.contact_type == 3)))  # Skipper/ Owner
