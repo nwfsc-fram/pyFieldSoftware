@@ -243,7 +243,7 @@ if not running_in_anaconda_environment() and path_sqlite_dll:
 excludes = []
 # These packages are ones that cx-Freeze doesn't auto-detect
 packages = ['os', 'apsw', 'peewee', 'playhouse', 'fractions',
-            'dateutil', 'encodings', 'arrow',
+            'dateutil', 'encodings', 'arrow', 'idna',
             'logging', 'keyring', 'lxml', 'socket',
             'sqlparse', 'typing', 'zeep', 'filecmp', 'asyncio', 'pygame', 'idna']
 path = []
