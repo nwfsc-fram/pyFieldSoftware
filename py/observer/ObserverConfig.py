@@ -40,7 +40,8 @@ The justification for including a build number: it is useful when supporting app
 that each build has a unique version string which could be used to bring up the source tree
 as it stood for that particular build.  
 """
-optecs_version = "2.1.1+3"
+
+optecs_version = "2.1.1+5"
 
 # Number of floating point decimal places to display for weight etc.
 display_decimal_places = 2
