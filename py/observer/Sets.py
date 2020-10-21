@@ -174,6 +174,10 @@ class Sets(QObject):
 
     @pyqtSlot(int, float, name='updateTripHookCounts')
     def update_trip_hook_counts(self, trip_id, avg_hook_count):
+        # The below line is a hacky fix, can't figure out what
+        # is resetting total_hooks_kp to an incorrect value
+        # right before this is run
+        self._current_trip.total_hooks_kp = avg_hook_count
         sets_q = self.get_all_sets_with_gear_segments(trip_id)
         for s in sets_q:
             self._update_set_hook_counts(s, avg_hook_count)

@@ -370,10 +370,13 @@ class ObserverCatches(QObject):
             self._current_catch = dict_to_model(Catches, data_dict)
             # self._current_catch.notes = cur_notes
             self._current_catch.density = None
-            if self._current_catch.sample_count == 0:
+            if self._current_catch.sample_count == 0 or (self._current_catch.sample_count != self._current_catch.sample_count):
                 self._current_catch.sample_count = None
-            if self._current_catch.sample_weight == 0:
+            if self._current_catch.sample_weight == 0 or (self._current_catch.sample_weight != self._current_catch.sample_weight):
                 self._current_catch.sample_weight = None
+            # something is setting catch count to nan, which fails the save
+            if self._current_catch.catch_count != self._current_catch.catch_count:
+                self._current_catch.catch_count = None
             self._current_catch.save()
 
             # Emit signals of interest if associated fields have changed value.
