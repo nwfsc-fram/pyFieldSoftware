@@ -417,6 +417,9 @@ Item {
 
                                     numPad.clearnumpad()
                                     tfCW.text = "";
+                                    tfFish.text = "";
+                                    appstate.catches.setData('sample_weight', null)
+                                    appstate.catches.setData('sample_count', null)
                                     gridDR.update_wm();
                                 }
 
@@ -435,8 +438,13 @@ Item {
                                         switch(modelData) {
                                         case "6":
                                         case "14":
-                                            numPadRect.visible = true;
-                                            btnManualWt.visible = true;
+                                            if (buttonNoSpecComp.checked === true) {
+                                                numPadRect.visible = true;
+                                                btnManualWt.visible = true;
+                                            } else {
+                                                numPadRect.visible = false;
+                                                btnManualWt.visible = false;
+                                            }
                                             break;
                                         default:
                                             numPadRect.visible = false;
@@ -450,8 +458,15 @@ Item {
                                             rowHooksPotsSampled.visible = true;
                                             break;
                                         case "14":
-                                            rowTotalFish.visible = true;
-                                            rowCW.visible = true;
+                                            if (buttonNoSpecComp.checked === true) {
+                                                rowTotalFish.visible = true;
+                                                rowCW.visible = true;
+                                            } else {
+                                                tfCW.text = "";
+                                                tfFish.text = "";
+                                                rowTotalFish.visible = false;
+                                                rowCW.visible = false;
+                                            }
                                             rowHooksPotsSampled.visible = true;
                                             break;
                                         case "13":
@@ -600,6 +615,17 @@ Item {
                                         }
                                     }
 
+                                    // If weight method is 14, turn off the side number pad, total fish, and catch count
+                                    var cur_WM = appstate.catches.weightMethod;
+                                    if (cur_WM == '14') {
+                                        tfCW.text = "";
+                                        tfFish.text = "";
+                                        numPadRect.visible = false;
+                                        btnManualWt.visible = false;
+                                        rowTotalFish.visible = false;
+                                        rowCW.visible = false;
+                                    }
+
                                     // create/ set SpeciesComposition record for current catch
                                     appstate.catches.sampleMethod = appstate.catches.SM_IS_SPECIES_COMP;
                                     rowDR.clear_discard_reason();
@@ -638,6 +664,15 @@ Item {
                                         dlgExistingDataImpediment.message = "Cannot switch to NCS:\n" + existingDataproblem;
                                         dlgExistingDataImpediment.open();
                                         return;
+                                    }
+
+                                    // enable numpad, catch weight, and total fish for WM 14, composition No
+                                    var cur_WM = appstate.catches.weightMethod;
+                                    if (cur_WM == '14') {
+                                        numPadRect.visible = true;
+                                        btnManualWt.visible = true;
+                                        rowTotalFish.visible = true;
+                                        rowCW.visible = true;
                                     }
 
                                     // sampleMethod setter deletes any existing SpeciesComposition record.

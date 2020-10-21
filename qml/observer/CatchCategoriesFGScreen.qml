@@ -579,62 +579,6 @@ Item {
                 }
             }
 
-            // Persist to DB any changes to total fish weight and count made in CountsWeightsScreen
-            // This connection handles Species weights, but not Weight Method 3, which is not at the species level.
-            Connections {
-                target: appstate.catches.species
-
-                // The checks for both sample_weight and sample_count are the same. Use a single function.
-                function handleTotalCatchChangedSignal(
-                        parmName,   // Either "sample_weight" or "sample_count"
-                        parmValue) {
-
-                    var curModel = tvSelectedCatchCat.getSelItem();
-                    if (!curModel) {
-                        log.error("Unexpected error: received a total " + parmName + " changed signal with no selected " +
-                                "catch category.");
-                        return;
-                    }
-                    if (!parmName || parmName === null) {
-                        console.debug("Received null name " + parmName + "; skipping update.");
-                        return;
-                    }
-
-                    if (curModel.catch_weight_method === '13' && parmName === 'sample_count') {
-                        console.debug("WM13, do not set Count " + parmName);
-                        return;
-                    }
-
-                    appstate.catches.setData(parmName, parmValue);
-                }
-
-                onTotalCatchWeightFGChanged: {    // Parameter: weight
-                    // console.debug("CATCH FG WEIGHT CHANGED")
-                    handleTotalCatchChangedSignal("sample_weight", weight);
-                    if (weight) {
-                        handleTotalCatchChangedSignal("sample_weight", weight);
-                    }
-
-                }
-                onTotalCatchCountFGChanged: {     // Parameter: count
-                    // console.debug("CATCH FG COUNT CHANGED")
-                    handleTotalCatchChangedSignal("sample_count", count);
-                    if (count) {
-                        handleTotalCatchChangedSignal("sample_count", count);
-                    }
-
-                }
-                onTotalCatchWeightChanged: {    // Parameter: weight
-                    // console.debug("CATCH WEIGHT CHANGED")
-                    handleTotalCatchChangedSignal("sample_weight", weight);
-                }
-                onTotalCatchCountChanged: {     // Parameter: count
-                    // console.debug("CATCH COUNT CHANGED")
-                    handleTotalCatchChangedSignal("sample_count", count);
-
-                }
-            }
-
             Connections {
                 target: appstate.catches.biospecimens
                 onTotalPHLBWeightChanged: {
