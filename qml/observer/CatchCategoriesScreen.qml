@@ -121,6 +121,12 @@ Item {
         return isWeightMethod3;
     }
 
+    function isWm15() {
+        var isWeightMethod15 = appstate.catches.weightMethod == '15';
+        console.debug("isWm15=" + isWeightMethod15);
+        return isWeightMethod15;
+    }
+
     Keys.forwardTo: [slidingKeyboardCC] // Capture of Enter key
 
     ListView
@@ -565,6 +571,13 @@ Item {
                     console.debug("Connection in tvSelectedCatchCat received catch discard reason change signal.");
                     // Notify Biospecimens tab et al of change.
                     tvSelectedCatchCat.activate_CC_selected();
+                }
+
+                onCatchRatioChanged: {  // mimics click of row, updates WEIGHT after ratio change
+                    if (isWm15()) {
+                        console.info("Ratio changed: trigger recalc of weights on CC screen with ratio " + ratio);
+                        tvSelectedCatchCat.activate_CC_selected();
+                    }
                 }
             }
 
