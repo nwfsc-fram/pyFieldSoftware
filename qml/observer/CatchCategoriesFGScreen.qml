@@ -528,8 +528,8 @@ Item {
 
                 appstate.catches.currentCatch = selectedCC;
                 appstate.catchCatName = selectedCC.catch_category_code;
-                console.debug("Set appstate.catchCatName to '" + appstate.catchCatName + "'.");
-                console.debug("Setting appstate.catches.sampleMethod; was='" + appstate.catches.sampleMethod +
+                console.info("Set appstate.catchCatName to '" + appstate.catchCatName + "'.");
+                console.info("Setting appstate.catches.sampleMethod; was='" + appstate.catches.sampleMethod +
                         "', now='" + selectedCC.sample_method + "'.");
                 appstate.catches.sampleMethod = selectedCC.sample_method;
                 tvSelectedCatchCat.updatedSampleMethod();
@@ -553,7 +553,9 @@ Item {
                 }
 
                 enable_remove_and_edit_buttons(true);
+                console.info('beginning of the line !!!!!!!!!!!!!!!!!!!!!!!!!!!!');
                 tabView.selectedCatchCatChanged(); // Notify.
+                console.info('end of the line !!!!!!!!!!!!!!!!!!!!!!!!!!!!');
                 return true;
             }
 
@@ -576,6 +578,37 @@ Item {
                     console.debug("Connection in tvSelectedCatchCat received catch discard reason change signal.");
                     // Notify Biospecimens tab et al of change.
                     tvSelectedCatchCat.activate_CC_selected();
+                }
+            }
+
+            // Persist to DB any changes to total fish weight made in CountsWeightsScreen
+            // This connection handles Species weights, but not Weight Method 3, which is not at the species level.
+            Connections {
+                target: appstate.catches.species
+
+                function handleTotalCatchChangedSignal(
+                        parmValue) {
+
+                    var curModel = tvSelectedCatchCat.getSelItem();
+                    if (!curModel) {
+                        log.error("Unexpected error: received a total " + parmName + " changed signal with no selected " +
+                                "catch category.");
+                        return;
+                    }
+                    appstate.catches.setData("sample_weight", parmValue);
+                }
+
+                onTotalCatchWeightFGChanged: {    // Parameter: weight
+                    // console.debug("CATCH FG WEIGHT CHANGED")
+                    handleTotalCatchChangedSignal(weight);
+                    if (weight) {
+                        //handleTotalCatchChangedSignal(weight);
+                    }
+
+                }
+                onTotalCatchWeightChanged: {    // Parameter: weight
+                    // console.debug("CATCH WEIGHT CHANGED")
+                    handleTotalCatchChangedSignal(weight);
                 }
             }
 
