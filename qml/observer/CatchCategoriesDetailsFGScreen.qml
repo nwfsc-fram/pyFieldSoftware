@@ -405,6 +405,14 @@ Item {
                                         return;
                                     }
 
+                                    // If weight method was switched to 14, assign spec comp
+                                    if (modelData == "13") {
+                                        buttonYesSpecComp.checked= true;
+                                        appstate.catches.sampleMethod = appstate.catches.SM_IS_SPECIES_COMP;
+                                        rowDR.clear_discard_reason();
+                                        appstate.catches.speciesCompChanged();
+                                    }
+
                                     check_controls();  // Sets WM
 //                                    if (modelData == "8" && appstate.catches.sampleMethod === "1") {
 //                                        console.log("WM 8 cannot have sample method 1, changing to 2.");
@@ -481,7 +489,6 @@ Item {
                                             rowTotalFish.visible = false;
                                             rowCW.visible = false;
                                         }
-
                                     }
                                     catchCatsDetailsFG.check_details_complete();
                                 }
@@ -637,6 +644,7 @@ Item {
 
                         ObserverGroupButton {
                             id: buttonNoSpecComp
+                            visible: (appstate.catches.weightMethod !== '13')
                             text: "No"
                             exclusiveGroup: smGroup
                             Layout.preferredWidth: 100
@@ -926,6 +934,7 @@ Item {
                                 numPad.showDecimal(false);
                                 numPad.directConnectTf(this);
                                 cursorPosition  = text.length;
+                                catchCatsDetailsFG.check_details_complete();
                             }
                         }
 
@@ -941,6 +950,7 @@ Item {
                                   appstate.catches.setData(weight_field, null)
                                 }
                                 appstate.catches.species.totalCatchWeightChanged(value)
+                                catchCatsDetailsFG.check_details_complete();
                             }
                         }
                     }
