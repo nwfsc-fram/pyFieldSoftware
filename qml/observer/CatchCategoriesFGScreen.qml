@@ -528,8 +528,8 @@ Item {
 
                 appstate.catches.currentCatch = selectedCC;
                 appstate.catchCatName = selectedCC.catch_category_code;
-                console.info("Set appstate.catchCatName to '" + appstate.catchCatName + "'.");
-                console.info("Setting appstate.catches.sampleMethod; was='" + appstate.catches.sampleMethod +
+                console.debug("Set appstate.catchCatName to '" + appstate.catchCatName + "'.");
+                console.debug("Setting appstate.catches.sampleMethod; was='" + appstate.catches.sampleMethod +
                         "', now='" + selectedCC.sample_method + "'.");
                 appstate.catches.sampleMethod = selectedCC.sample_method;
                 tvSelectedCatchCat.updatedSampleMethod();
