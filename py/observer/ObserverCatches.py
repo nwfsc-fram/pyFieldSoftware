@@ -1104,6 +1104,7 @@ class ObserverCatches(QObject):
                 - sample method is NSC and discard reason is Dispose and discard reason has not been specified.
                 - sample method is NSC and catch category doesn't have a mapped species
                 - weight method is 15 and catch ratio (aka WM15 ratio) is null or equal to 1.
+                - weight method is 14,species comp is yes and catch weight is null
                 True otherwise.
 
                 A note on the last case of False: if sample method is NSC and the catch category has no matching species,
@@ -1122,6 +1123,8 @@ class ObserverCatches(QObject):
             self._logger.debug('No SM, no CC complete')
             return False
 
+        catch_discard_reason = self.getData('discard_reason')
+
         # If Sample Method is No Species Composition, and Disposition is Discarded,
         # also require a Discard Reason to be specified. Rationale:
         # This is the only place to specify discard reason for NSC because the Counts/Weights tab is disabled.
@@ -1130,7 +1133,6 @@ class ObserverCatches(QObject):
         # then disallow navigation to Biospecimens because there's no knowable species for biospecimens.
         if self.currentSampleMethodIsNoSpeciesComposition:
             catch_disposition = self.getData('catch_disposition')
-            catch_discard_reason = self.getData('discard_reason')
             msg = "NSC CC: catch_disposition='{}', discard_reason='{}'"
             self._logger.info(msg.format(catch_disposition, catch_discard_reason))
             if catch_disposition == 'D' and not catch_discard_reason:  # Catch None or empty string discard reason
@@ -1150,7 +1152,20 @@ class ObserverCatches(QObject):
                 self._logger.info(f"Disallowing navigation because WM15 ratio={wm15_weighed_ratio}")
                 return False
 
+        if wm == '14' and self.currentSampleMethodIsNoSpeciesComposition and self._is_fixed_gear:
+            sw = self.getData('sample_weight')
+            print('sw is: ', sw)
+            # have to check sw for undefined, None, or nan values
+            if not sw or sw is None or (sw != sw):
+                self._logger.info(f"WM 14 but now sample weight, no CC complete")
+                return False
+
         catch_disposition = self._current_catch.catch_disposition if self._current_catch else None
+
+        # Catch None or empty string discard reason
+        if self._is_fixed_gear and wm == '14' and catch_disposition == 'D' and not catch_discard_reason:
+            self._logger.debug('No DR picked, no CC complete')
+            return False
 
         if self._is_fixed_gear and catch_disposition == self.CATCH_DISCARD_REASON_UNKNOWN:
             return False
