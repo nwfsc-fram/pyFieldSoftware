@@ -395,7 +395,7 @@ Item {
                                     // Reason: Biospecimens can be allowed with SM=NSC only if the Catch Category
                                     // has a mapped species (there's no default species, and there's no access to
                                     // the Species tab when SM=NSC).
-                                    if (appstate.catches.wmIsEitherVesselEstimateOrVisualExperience &&
+                                    if (appstate.catches.wmNoSpeciesCompRequired &&
                                             modelData != 14 &&
                                             appstate.catches.currentSampleMethodIsNoSpeciesComposition &&
                                             (appstate.catches.currentMatchingSpeciesId === null)) {
@@ -646,7 +646,7 @@ Item {
                             onClicked: {
                                 if (enabled) {
                                     if (appstate.catches.currentMatchingSpeciesId == null) {
-                                        if (appstate.catches.wmIsEitherVesselEstimateOrVisualExperience) {
+                                        if (appstate.catches.wmNoSpeciesCompRequired) {
                                             console.debug("NSC allowed, even with CC with no mapped species, " +
                                                     "because WM is either 7 (vessel est.) or 14 (viz exp).");
                                         } else {

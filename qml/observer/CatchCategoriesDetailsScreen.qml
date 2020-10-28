@@ -34,6 +34,7 @@ Item {
     property var ccScreenId
 
     property bool is_phlb: false
+    property bool is_zmis: false
     property bool detailsComplete: true
 
     property int dec_places: appstate.displayDecimalPlaces  // Number of decimal places to display weight values
@@ -84,6 +85,7 @@ Item {
             console.log("PHLB Mode selected.")
             appstate.catches.sampleMethod = appstate.catches.SM_NO_SPECIES_COMP;
         }
+        is_zmis = curElem.catch_category_code == 'ZMIS'
         check_details_complete();
 
     }
@@ -323,10 +325,16 @@ Item {
                                 Layout.preferredWidth: layoutCCDetails.buttonsize
                                 Layout.preferredHeight: layoutCCDetails.buttonsize
                                 checked: appstate.catches.weightMethod === text
+                                visible: is_wm_visible();
 
-                                // Hide Weight Methods 9 and 19 unless Catch Category is PHLB
-                                visible: is_phlb || (modelData != '9' && modelData != '19')? true: false
-
+                                function is_wm_visible() {
+                                    // function to handle custom visibility of WM buttons
+                                    if (
+                                            (!is_phlb && (modelData === "9" || modelData === "19"))  // 9 & 19 only visible with PHLB
+                                            || (!is_zmis && (modelData === "5"))  // WM5 only visible with ZMIS
+                                        ) return false
+                                    else return true
+                                }
 
                                 onClicked: {
                                     if (!gridWMButtons.allowWMChange) {
@@ -367,11 +375,11 @@ Item {
                                     // Reason: Biospecimens can be allowed with SM=NSC only if the Catch Category
                                     // has a mapped species (there's no default species, and there's no access to
                                     // the Species tab when SM=NSC).
-                                    if (appstate.catches.wmIsEitherVesselEstimateOrVisualExperience &&
-                                            (modelData != 7 && modelData != 14) &&
+                                    if (appstate.catches.wmNoSpeciesCompRequired &&
+                                            (modelData != 5 && modelData != 7 && modelData != 14) &&
                                             appstate.catches.currentSampleMethodIsNoSpeciesComposition &&
                                             (appstate.catches.currentMatchingSpeciesId == null)) {
-                                        console.error("Trying to switch WM from 7 or 14 with SM=NSC for CC w/o mapped species.")
+                                        console.error("Trying to switch WM from 5, 7 or 14 with SM=NSC for CC w/o mapped species.")
                                         dlgNoSwitchFromWM7or14IfNoSpecCompAndNoDefaultSpecies.display();
                                         rptWMButtons.restoreCheckedButton();
                                         return;
@@ -388,14 +396,17 @@ Item {
                                     if (modelData == "8" && appstate.catches.sampleMethod === "1") {
                                         console.log("WM 8 cannot have sample method 1, changing to 2.");
                                         appstate.catches.sampleMethod = "2";
-
                                     }
 
                                     // set readonly properties
                                     catchCatsDetails.setReadonlyFields(modelData);
-
                                     numPad.clearnumpad()
-                                    tfCW.text = "";
+
+                                    if (modelData === "5") {
+                                        tfCW.setTextValue()
+                                    } else {
+                                        tfCW.text = "";
+                                    }
                                     gridDR.update_wm();
                                 }
 
@@ -438,12 +449,30 @@ Item {
                                             rowTotalFish.visible = false;
                                             rowCW.visible = true;
                                             rowPW.visible = false;
+                                            buttonYesSpecComp.visible = true;
+                                            break;
+                                        case "5":
+                                            rowTotalFish.visible = false;
+                                            rowCW.visible = true;
+                                            rowPW.visible = false;
+                                            buttonYesSpecComp.visible = false;
+                                            buttonYesSpecComp.checked = false;
+                                            buttonNoSpecComp.checked = true;
+                                            buttonNoSpecComp.clicked()
+                                            // can't insert if negative (SQLite db contraint)
+                                            var wt = appstate.hauls.getData("observer_total_catch") - appstate.hauls.retainedHaulWeight
+                                            if (wt > 0) {
+                                                appstate.catches.setData('catch_weight', wt)
+                                            } else {
+                                                appstate.catches.setData("catch_weight", null)
+                                            }
                                             break;
                                         case "8":
                                         case "14":
                                             rowTotalFish.visible = true;
                                             rowCW.visible = true;
                                             rowPW.visible = false;
+                                            buttonYesSpecComp.visible = true;
                                             break;
                                         case "15":
                                             rowCW.visible = false;
@@ -451,11 +480,13 @@ Item {
                                             rowTotalFish.visible = false;
                                             numPadRect.visible = true;
                                             btnManualWt = false;
+                                            buttonYesSpecComp.visible = true;
                                             break;
                                         default:
                                             rowTotalFish.visible = false;
                                             rowCW.visible = false;
                                             rowPW.visible = false;
+                                            buttonYesSpecComp.visible = true;
                                         }
 
                                     }
@@ -613,9 +644,9 @@ Item {
                             onClicked: {
                                 if (enabled) {
                                     if (appstate.catches.currentMatchingSpeciesId == null) {
-                                        if (appstate.catches.wmIsEitherVesselEstimateOrVisualExperience) {
+                                        if (appstate.catches.wmNoSpeciesCompRequired) {
                                             console.debug("NSC allowed, even with CC with no mapped species, " +
-                                                    "because WM is either 7 (vessel est.) or 14 (viz exp).");
+                                                    "because WM is either 5 (OTC - Ret., 7 (vessel est.) or 14 (viz exp).");
                                         } else {
                                             sampleMethodButtons.restoreButtonDisplayStateAfterError();
                                             console.info("Catch can't be NoSpecComp: No mappable species.");
@@ -804,8 +835,8 @@ Item {
                         Layout.preferredHeight: 50
                         font.pixelSize: 18
                         text: setTextValue()    // May vary according to Weight Method                        
-                        readOnly: appstate.catches.weightMethod === "8"
-                        placeholderText: appstate.catches.weightMethod === "8" ? "Calculated" : "Enter Weight"
+                        readOnly: appstate.catches.weightMethod === "8" || appstate.catches.weightMethod === "5"
+                        placeholderText: appstate.catches.weightMethod === "8" || appstate.catches.weightMethod === "5" ? "Calculated" : "Enter Weight"
                         Component.onCompleted: {
                             numPad.directConnectTf(tfCW);
                             numPad.textNumPad.cursorPosition = cursorPosition;
@@ -814,11 +845,14 @@ Item {
 
                         function setTextValue() {
                             var cur_WM = appstate.catches.weightMethod;
-
                             if (cur_WM === "8") {
                                 tfCW.text = appstate.catches.species.counts_weights.speciesWeight ?
                                     appstate.catches.species.counts_weights.extrapolatedSpeciesWeight.toFixed(dec_places) : "";
-                            } else {
+                            } else if (cur_WM === "5") {
+                                var wt = appstate.hauls.getData("observer_total_catch") - appstate.hauls.retainedHaulWeight
+                                tfCW.text = wt + " (OTC - RET)"
+                            }
+                            else {
                                 tfCW.text = appstate.catches.species.counts_weights.actualWeight ?
                                     appstate.catches.species.counts_weights.actualWeight.toFixed(dec_places) : "";
                             }

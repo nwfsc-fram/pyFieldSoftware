@@ -733,7 +733,7 @@ class ObserverCatches(QObject):
                     # (Strictly speaking, this corner case could be limited to catch categories without a mapped
                     # species, but WM7s and WM14s aren't likely to want to add spec composition or biospecimens records,
                     # so defaulting to NSC seems reasonable. And the user can change SM explicitly and add records.)
-                    elif self.wmIsEitherVesselEstimateOrVisualExperience:
+                    elif self.wmNoSpeciesCompRequired:
                         sample_method = self.SM_NO_SPECIES_COMP
 
                 except Exception as e:
@@ -805,7 +805,7 @@ class ObserverCatches(QObject):
         # current weight method is either 7 (vessel estimate) or 14 (visual experience).
         # This should have been checked before getting here. Raise exception if not the case.
         if new_sm == self.SM_NO_SPECIES_COMP:
-            if not cc_has_matching_species and not self.wmIsEitherVesselEstimateOrVisualExperience:
+            if not cc_has_matching_species and not self.wmNoSpeciesCompRequired:
                 raise Exception("Catch without matching species cannot have sample method of NSC unless WM7 or WM14.")
 
         self._is_species_comp = new_sm
@@ -929,11 +929,14 @@ class ObserverCatches(QObject):
             return ''
 
     @pyqtProperty(QVariant, notify=unusedSignal)
-    def wmIsEitherVesselEstimateOrVisualExperience(self):
+    def wmNoSpeciesCompRequired(self):
+        """
+        true if WM is allowed Species Comp = NO
+        :return: boolean
+        """
         if not self._current_catch:
             return False
-        ret_val = self._current_catch.catch_weight_method in ['7', '14']
-        return ret_val
+        return self._current_catch.catch_weight_method in ['5', '7', '14']
 
     def _wm_uses_counts_and_weights_tab(self):
         """
