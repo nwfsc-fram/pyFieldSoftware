@@ -288,7 +288,6 @@ Item {
                         rows: 3
                         enabled: true
 
-                        //property ObserverGroupButton wm3button  // set on component load, TODO: cleanup for WM3 removal
                         property ObserverGroupButton wm8button  // set on component load
                         property ObserverGroupButton wm15button  // set on component load
                         ExclusiveGroup { id: wmGroup }
@@ -308,7 +307,6 @@ Item {
                             id: rptWMButtons
 
                             model: [
-                                //"3", // TODO: cleanup for WM3 removal
                                 "5",
                                 "7",
                                 "8",
@@ -349,26 +347,6 @@ Item {
                                         rptWMButtons.restoreCheckedButton();
                                         return;
                                     }
-
-                                    // Don't allow switch from WM3 if WM3-specific catch-level data has been
-                                    // entered in CATCH_ADDITIONAL_BASKETS table.
-//                                    if (appstate.catches.weightMethod == '3' &&  // TODO: cleanup for WM3 removal
-//                                            appstate.catches.catchBaskets.hasWM3BasketData) {
-//                                        console.error("Trying to switch WM from 3 with catch add'l basket data.")
-//                                        dlgNoSwitchFromWM3IfAdditionalBasketData.display();
-//                                        rptWMButtons.restoreCheckedButton();
-//                                        return;
-//                                    }
-
-                                    // Don't allow switch *to* WM3 if sample method is 1 or NSC
-//                                    if (modelData == '3' &&  //TODO: cleanup for WM3 removal
-//                                            (appstate.catches.sampleMethod === '1' ||
-//                                            appstate.catches.currentSampleMethodIsNoSpeciesComposition)) {
-//                                        console.error("Trying to switch WM to 3 with SM=1 or SM=NSC.")
-//                                        dlgNoSwitchToWM3IfSM1OrSMNSC.display();
-//                                        rptWMButtons.restoreCheckedButton();
-//                                        return;
-//                                    }
 
                                     // Switching from WM 7 or 14 to a WM other than these two can not be allowed
                                     // if SM is NSC and the Catch Category does not have a mapped species.
@@ -411,8 +389,6 @@ Item {
                                 }
 
                                 Component.onCompleted: {
-//                                    if (modelData == "3") {  // connect button 3 for Label TODO: cleanup for WM3 removal
-//                                        gridWMButtons.wm3button = this;
                                     if (modelData == "8") {  // connect button 8 for Label
                                         gridWMButtons.wm8button = this;
                                     } else if (modelData == "15") {  // connect button 15 for Label
@@ -546,14 +522,7 @@ Item {
                             open();
                         }
                     }
-//                    FramNoteDialog { //TODO: cleanup for WM3 removal
-//                        id: dlgNoSwitchToWM3IfSM1OrSMNSC;
-//                        function display() {
-//                            message = "Switch to Weight Method 3\n" +
-//                            "not allowed if\nSample Method = 1 or NoSpecComp"
-//                            open();
-//                        }
-//                    }
+
                     FramNoteDialog {
                         id: dlgNoExistingRetWM;
                         function display(wm) {
@@ -561,16 +530,6 @@ Item {
                             open();
                         }
                     }
-//                    FramNoteDialog { //TODO: cleanup for WM3 removal
-//                        id: dlgNoSwitchFromWM3IfAdditionalBasketData
-//                        function display() {
-//                            message = "Switch from Weight Method 3\n" +
-//                            "not allowed if\ncatch-level basket data exists.\n" +
-//                            "To switch, first please remove\nWM3 basket data (see\n" +
-//                            " button on Catch Categories screen).";
-//                            open();
-//                        }
-//                    }
                 }   // End Weight Method
 
                 GridLayout {
@@ -637,9 +596,6 @@ Item {
                             Layout.preferredWidth: 100
                             Layout.preferredHeight: layoutCCDetails.buttonsize
                             checked: appstate.catches.sampleMethod === appstate.catches.SM_NO_SPECIES_COMP;
-
-                            // Sample Method NSC (No Species Comp) not available with WM3.
-//                            visible: !gridWMButtons.wm3button.checked //TODO: cleanup for WM3 removal
 
                             onClicked: {
                                 if (enabled) {
@@ -998,13 +954,6 @@ Item {
                         }
                     }
                 }
-
-//                Label {  // TODO: cleanup for WM3 removal
-//                    id: labelWM3Note
-//                    text: "Weight Method 3:\nFull, partial and tallied (unweighed) catch-level basket data."
-//                    font.pixelSize: 25
-//                    visible: gridWMButtons.wm3button.checked
-//                }
 
                 WeightedPortionRow {
                     id: wpRow
