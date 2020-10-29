@@ -29,7 +29,6 @@ DSM.StateMachine {
     signal to_cc_entry_fg_state
     signal to_cc_details_state
     signal to_cc_details_fg_state
-//    signal to_cc_baskets_state  // TODO: cleanup for WM3 removal
     signal to_species_entry_state
     signal to_species_fg_entry_state
     signal to_cw_entry_state
@@ -92,28 +91,6 @@ DSM.StateMachine {
         }
     }
 
-//    function accessToWM3BasketsScreenIsNeeded() {  // TODO: cleanup for WM3 removal
-//        return (appstate.catches.weightMethod === '3');
-//    }
-
-//    function getBannerRightTextForCatchCatDetails() {  // TODO: cleanup for WM3 removal
-//        // Forward navigation from Catch Categories's subsidiary Details screen
-//        // is typically to "Species" or to "Biospecimens" if sample method is NSC.
-//        // If Weight Method is 3, then its forward navigation is to the Catch Categories WM3 Baskets screen.
-//        if (!accessToWM3BasketsScreenIsNeeded()) {
-//            return getBannerRightTextSpeciesOrBiospecimens();
-//        } else {
-//            return "WM3 Baskets";
-//        }
-//    }
-
-//    function getBannerRightTextForCatchCatBaskets() {  // TODO: cleanup for WM3 removal
-//        // Forward navigation from Catch Categories's subsidiary Baskets screens (shown only if Weight Method == '3')
-//        // is to "Species" (WM3 and SM=NSC is not supported, so no nav to "Biospecimens".
-//        // But do the check just in case WM3+NSC non-support changes.
-//        return getBannerRightTextSpeciesOrBiospecimens();
-//    }
-
     function state_change(state_name) {
         // The reason for this helper function is so you can embed a string property
         // in a list element (e.g. property obsstate: "backup_state") for navigation
@@ -175,9 +152,6 @@ DSM.StateMachine {
             case "cc_details_fg_state":
                 obsSM.to_cc_details_fg_state();
                 break;
-//            case "cc_baskets_state":  // TODO: cleanup for WM3 removal
-//                obsSM.to_cc_baskets_state();
-//                break;
             case "species_entry_state":
                 obsSM.to_species_entry_state();
                 break;
@@ -650,10 +624,6 @@ DSM.StateMachine {
             targetState: cc_details_state
             signal: to_cc_details_state
         }
-//        DSM.SignalTransition {  // TODO: cleanup for WM3 removal
-//            targetState: cc_baskets_state
-//            signal: to_cc_baskets_state
-//        }
         DSM.SignalTransition {
             targetState: sets_state
             signal: to_sets_state
@@ -824,41 +794,6 @@ DSM.StateMachine {
             }
         }
     }
-
-//    ObserverSMState {  // TODO: cleanup for WM3 removal
-//        id: cc_baskets_state
-//        onEntered: {
-//            console.info(">>>>----> Entered CC BASKETS (WM3) state");
-//            currentStateName = "cc_baskets_state";
-//            framFooter.state = "none"
-//            bannerLeftText = "Catch Categories";    // Considered returning to Details, but CC main seems better.
-//            bannerRightText = getBannerRightTextForCatchCatBaskets();
-//            leftButtonStateName = "tabs_screen";
-//            rightButtonStateName = "tabs_screen";
-//            titleText = "WM3 Baskets: " + btCatchCategory;
-//        }
-//        DSM.SignalTransition {
-//            targetState: cc_entry_state
-//            signal: to_previous_state
-//        }
-//        DSM.SignalTransition {
-//            // weird case where we go back to cc_entry_state first
-//            // and jump forward to Species is handled in observerHeader.forwardClicked
-//            targetState: cc_entry_state
-//            signal: to_next_state
-//        }
-//        // This signal handler is not at present needed because WM3 in combination with SM=NSC is not supported.
-//        // I.e., the forward navigation for cc_baskets is always to Species.
-//        Connections {
-//            target: appstate.catches
-//            onSampleMethodChanged: {
-//                if(cc_baskets_state.active) {
-//                    console.debug("Got signal that Sample Method changed on Catch Categories Details.");
-//                    bannerRightText = getBannerRightTextForCatchCatBaskets();
-//                }
-//            }
-//        }
-//    }
 
     ObserverSMState {
         id: species_entry_state
