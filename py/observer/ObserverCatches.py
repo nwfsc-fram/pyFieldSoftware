@@ -48,6 +48,8 @@ class ObserverCatches(QObject):
     handlingMethodChanged = pyqtSignal(QVariant, name='handlingMethodChanged')
     unusedSignal = pyqtSignal(name='unusedSignal')  # Make QML warning go away
     otcFGWeightChanged = pyqtSignal(QVariant, QVariant, name='otcFGWeightChanged', arguments=['otc_fg', 'fishing_activity_num'])
+    retainedCatchWeightChanged = pyqtSignal(name='retainedCatchWeightChanged')
+    refreshTvWm5Weights = pyqtSignal(int, QVariant, arguments=["catchId", "newWt"])
 
     PACIFIC_HALIBUT_CATCH_CATEGORY_CODE = 'PHLB'
     CATCH_DISCARD_REASON_UNKNOWN = '?'
@@ -62,6 +64,7 @@ class ObserverCatches(QObject):
 
         self._current_catch = None
         self._current_activity = None
+        self._fishing_activity_id = None
 
         # Species uses some values in ObserverCatches (e.g. weight method); pass self as parm.
         self._species = ObserverSpecies(self)
@@ -112,7 +115,7 @@ class ObserverCatches(QObject):
         :return: list of catch codes (strings)
         """
         self.load_weight_methods()
-
+        self._fishing_activity_id = fishing_activity_id
         catches_query = Catches.select().where(Catches.fishing_activity == fishing_activity_id)
         ncatches = catches_query.count()
         catch_codes = list()
@@ -136,7 +139,9 @@ class ObserverCatches(QObject):
             doomed_catch = Catches.get(Catches.catch == catch_id)
             doomed_catch.delete_instance(recursive=True)
             self._logger.info('Deleted catch_id {}'.format(catch_id))
-
+            if self._current_catch.catch_disposition == 'R':
+                self.retainedCatchWeightChanged.emit()  # trigger update to WM5 records
+                self.refresh_wm5_weights()  # update CC tableview for WM5 vals
             # Delete any SpeciesCompositions records for this catch, non-recursively (see comment above).
             orphan_spec_comps = SpeciesCompositions.select().where(SpeciesCompositions.catch == catch_id)
             if orphan_spec_comps.count() == 0:
@@ -370,11 +375,15 @@ class ObserverCatches(QObject):
             self._current_catch = dict_to_model(Catches, data_dict)
             # self._current_catch.notes = cur_notes
             self._current_catch.density = None
-            if self._current_catch.sample_count == 0:
+            if self._current_catch.sample_count == 0 or (self._current_catch.sample_count != self._current_catch.sample_count):
                 self._current_catch.sample_count = None
-            if self._current_catch.sample_weight == 0:
+            if self._current_catch.sample_weight == 0 or (self._current_catch.sample_weight != self._current_catch.sample_weight):
                 self._current_catch.sample_weight = None
+            # something is setting catch count to nan, which fails the save
+            if self._current_catch.catch_count != self._current_catch.catch_count:
+                self._current_catch.catch_count = None
             self._current_catch.save()
+
 
             # Emit signals of interest if associated fields have changed value.
             catch_id_changed, weight_method_changed = self._check_key_fields_for_change(
@@ -596,6 +605,8 @@ class ObserverCatches(QObject):
             self.discardReasonChanged.emit()  # Used by CatchCategoriesScreen
         elif data_name == 'catch_weight_method':
             self.weightMethodChanged.emit()
+        elif data_name == 'catch_weight' and self._current_catch.catch_disposition == 'R':
+            self.retainedCatchWeightChanged.emit()
 
     def _set_cur_prop(self, prop, value):
         """
@@ -730,7 +741,7 @@ class ObserverCatches(QObject):
                     # (Strictly speaking, this corner case could be limited to catch categories without a mapped
                     # species, but WM7s and WM14s aren't likely to want to add spec composition or biospecimens records,
                     # so defaulting to NSC seems reasonable. And the user can change SM explicitly and add records.)
-                    elif self.wmIsEitherVesselEstimateOrVisualExperience:
+                    elif self.wmNoSpeciesCompRequired:
                         sample_method = self.SM_NO_SPECIES_COMP
 
                 except Exception as e:
@@ -802,7 +813,7 @@ class ObserverCatches(QObject):
         # current weight method is either 7 (vessel estimate) or 14 (visual experience).
         # This should have been checked before getting here. Raise exception if not the case.
         if new_sm == self.SM_NO_SPECIES_COMP:
-            if not cc_has_matching_species and not self.wmIsEitherVesselEstimateOrVisualExperience:
+            if not cc_has_matching_species and not self.wmNoSpeciesCompRequired:
                 raise Exception("Catch without matching species cannot have sample method of NSC unless WM7 or WM14.")
 
         self._is_species_comp = new_sm
@@ -926,11 +937,14 @@ class ObserverCatches(QObject):
             return ''
 
     @pyqtProperty(QVariant, notify=unusedSignal)
-    def wmIsEitherVesselEstimateOrVisualExperience(self):
+    def wmNoSpeciesCompRequired(self):
+        """
+        true if WM is allowed Species Comp = NO
+        :return: boolean
+        """
         if not self._current_catch:
             return False
-        ret_val = self._current_catch.catch_weight_method in ['7', '14']
-        return ret_val
+        return self._current_catch.catch_weight_method in ['5', '7', '14']
 
     def _wm_uses_counts_and_weights_tab(self):
         """
@@ -1101,6 +1115,7 @@ class ObserverCatches(QObject):
                 - sample method is NSC and discard reason is Dispose and discard reason has not been specified.
                 - sample method is NSC and catch category doesn't have a mapped species
                 - weight method is 15 and catch ratio (aka WM15 ratio) is null or equal to 1.
+                - weight method is 14,species comp is yes and catch weight is null
                 True otherwise.
 
                 A note on the last case of False: if sample method is NSC and the catch category has no matching species,
@@ -1119,6 +1134,8 @@ class ObserverCatches(QObject):
             self._logger.debug('No SM, no CC complete')
             return False
 
+        catch_discard_reason = self.getData('discard_reason')
+
         # If Sample Method is No Species Composition, and Disposition is Discarded,
         # also require a Discard Reason to be specified. Rationale:
         # This is the only place to specify discard reason for NSC because the Counts/Weights tab is disabled.
@@ -1127,7 +1144,6 @@ class ObserverCatches(QObject):
         # then disallow navigation to Biospecimens because there's no knowable species for biospecimens.
         if self.currentSampleMethodIsNoSpeciesComposition:
             catch_disposition = self.getData('catch_disposition')
-            catch_discard_reason = self.getData('discard_reason')
             msg = "NSC CC: catch_disposition='{}', discard_reason='{}'"
             self._logger.info(msg.format(catch_disposition, catch_discard_reason))
             if catch_disposition == 'D' and not catch_discard_reason:  # Catch None or empty string discard reason
@@ -1147,7 +1163,20 @@ class ObserverCatches(QObject):
                 self._logger.info(f"Disallowing navigation because WM15 ratio={wm15_weighed_ratio}")
                 return False
 
+        if wm == '14' and self.currentSampleMethodIsNoSpeciesComposition and self._is_fixed_gear:
+            sw = self.getData('sample_weight')
+            print('sw is: ', sw)
+            # have to check sw for undefined, None, or nan values
+            if not sw or sw is None or (sw != sw):
+                self._logger.info(f"WM 14 but now sample weight, no CC complete")
+                return False
+
         catch_disposition = self._current_catch.catch_disposition if self._current_catch else None
+
+        # Catch None or empty string discard reason
+        if self._is_fixed_gear and wm == '14' and catch_disposition == 'D' and not catch_discard_reason:
+            self._logger.debug('No DR picked, no CC complete')
+            return False
 
         if self._is_fixed_gear and catch_disposition == self.CATCH_DISCARD_REASON_UNKNOWN:
             return False
@@ -1164,6 +1193,20 @@ class ObserverCatches(QObject):
         self.setData("catch_weight", total_catch_weight)
         self._logger.info(
             f"WM3 Update catch_weight for Catch ID {self._current_catch.catch} to {total_catch_weight:.2f}.")
+
+    @pyqtSlot(name="refreshWm5Weights")
+    def refresh_wm5_weights(self):
+        """
+        Used to get updated weights and update selected CC table view in CCScreen.qml via signal
+        Bandaid to help wm5 weights update in QML TV when retained weight changes
+        :return: None (Emits to signal)
+        """
+        wm5_catches = Catches.select(Catches.catch, Catches.catch_weight).where(
+            (Catches.fishing_activity == self._fishing_activity_id) &
+            (Catches.catch_weight_method == '5')
+        ).execute()
+        for c in wm5_catches:
+            self.refreshTvWm5Weights.emit(c.catch, c.catch_weight)  # signals to CC screen to update tableview
 
 
 class TestObserverCatches(unittest.TestCase):

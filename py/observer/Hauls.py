@@ -10,6 +10,7 @@
 import random
 from typing import Dict, Iterable
 
+from peewee import fn, JOIN
 from PyQt5.QtCore import pyqtProperty, QVariant, QObject, Qt, pyqtSignal, pyqtSlot
 
 from py.observer.LogbookObserverRetainedModel import ObserverRetainedModel
@@ -33,6 +34,7 @@ class Hauls(QObject):
     maxVesselRetModelLengthChanged = pyqtSignal(int, name='maxVesselRetModelLengthChanged')
     currentBiolistNumChanged = pyqtSignal(name='currentBiolistNumChanged')
     unusedSignal = pyqtSignal(name='unusedSignal')  # quiet warnings
+    otcWeightChanged = pyqtSignal(name='otcWeightChanged')
 
     def __init__(self, db):
         super().__init__()
@@ -334,6 +336,19 @@ class Hauls(QObject):
 
         return '' if return_val is None else return_val
 
+    @pyqtProperty(int, notify=unusedSignal)
+    def retainedHaulWeight(self):
+        """
+        assumes fishing_activity_id is loaded, catch if not???
+        left joins, should always return a number, even if no retained
+        :return: int (sum of retained catch weights for haul)
+        """
+        return FishingActivities.select(fn.COALESCE(fn.sum(Catches.catch_weight), 0))\
+            .join(Catches, JOIN.LEFT_OUTER).where(
+            (Catches.fishing_activity == self._current_haul.fishing_activity) &
+            (Catches.catch_disposition == 'R')
+        ).scalar()
+
     @pyqtSlot(str, QVariant, name='setData')
     def setData(self, data_name, data_val):
         """
@@ -389,6 +404,9 @@ class Hauls(QObject):
 
         logging.debug('Set {} to {}'.format(data_name, data_val))
         self.modelChanged.emit()
+
+        if data_name == 'observer_total_catch':
+            self.otcWeightChanged.emit()
 
     def _lookup_target_strat_id(self, strat: str):
         """

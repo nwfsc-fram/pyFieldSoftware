@@ -611,18 +611,10 @@ Item {
                 onTotalCatchWeightFGChanged: {    // Parameter: weight
                     // console.debug("CATCH FG WEIGHT CHANGED")
                     handleTotalCatchChangedSignal("sample_weight", weight);
-                    if (weight) {
-                        handleTotalCatchChangedSignal("sample_weight", weight);
-                    }
-
                 }
                 onTotalCatchCountFGChanged: {     // Parameter: count
                     // console.debug("CATCH FG COUNT CHANGED")
                     handleTotalCatchChangedSignal("sample_count", count);
-                    if (count) {
-                        handleTotalCatchChangedSignal("sample_count", count);
-                    }
-
                 }
                 onTotalCatchWeightChanged: {    // Parameter: weight
                     // console.debug("CATCH WEIGHT CHANGED")
@@ -631,9 +623,9 @@ Item {
                 onTotalCatchCountChanged: {     // Parameter: count
                     // console.debug("CATCH COUNT CHANGED")
                     handleTotalCatchChangedSignal("sample_count", count);
-
                 }
             }
+
 
             Connections {
                 target: appstate.catches.biospecimens

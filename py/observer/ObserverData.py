@@ -136,7 +136,7 @@ class ObserverData(QObject):
 
         self._vessels = list()
 
-        vess_q = Vessels.select()
+        vess_q = Vessels.select().where(Vessels.vessel_status.not_in(['S', 'I', 'R']))  # Not sunk, inactive, retired
         for vessel in vess_q:
             vessel_number = vessel.coast_guard_number
             if not vessel_number or len(vessel_number) < 1:
@@ -173,6 +173,7 @@ class ObserverData(QObject):
                 join(VesselContacts, on=(Contacts.contact == VesselContacts.contact)). \
                 where(
                 (Contacts.contact_category == 3) &  # Vessel category
+                (VesselContacts.contact_status != 'NA') &
                 (VesselContacts.vessel == self._captain_vessel_id) &  # Vessel ID
                 ((VesselContacts.contact_type == 1) |  # Skipper
                  (VesselContacts.contact_type == 3)))  # Skipper/ Owner
@@ -180,6 +181,7 @@ class ObserverData(QObject):
             captains_q = Contacts.select(). \
                 join(VesselContacts, on=(Contacts.contact == VesselContacts.contact)). \
                 where(
+                (VesselContacts.contact_status != 'NA') &
                 (Contacts.contact_category == 3) &  # Vessel
                 ((VesselContacts.contact_type == 1) |  # Skipper
                  (VesselContacts.contact_type == 3)))  # Skipper/ Owner

@@ -121,6 +121,12 @@ Item {
         return isWeightMethod3;
     }
 
+    function isWm15() {
+        var isWeightMethod15 = appstate.catches.weightMethod == '15';
+        console.debug("isWm15=" + isWeightMethod15);
+        return isWeightMethod15;
+    }
+
     Keys.forwardTo: [slidingKeyboardCC] // Capture of Enter key
 
     ListView
@@ -514,7 +520,6 @@ Item {
                     return false;
                 }
                 var selectedCC = model.get(currentRow);  // Not just currentIndex!
-
                 appstate.catches.currentCatch = selectedCC;
                 appstate.catchCatName = selectedCC.catch_category_code;
                 console.debug("Set appstate.catchCatName to '" + appstate.catchCatName + "'.");
@@ -545,10 +550,14 @@ Item {
                 tabView.selectedCatchCatChanged(); // Notify.
                 return true;
             }
-
-
+//            Connections { // when wm5 wt changes in DB, refresh in tableView / "currentCatch" too
+//                target: appstate
+//                onWm5WeightChanged: tvSelectedCatchCat.refreshWM5Weights(catchId, new_wt)
+//            }
             Connections {
                 target: appstate.catches
+
+                onRefreshTvWm5Weights: tvSelectedCatchCat.refreshWm5Weights(catchId, newWt)
 
                 onSampleMethodChanged : {
                     console.debug("Connection in tvSelectedCatchCat received sample method change to " + sample_method);
@@ -565,6 +574,13 @@ Item {
                     console.debug("Connection in tvSelectedCatchCat received catch discard reason change signal.");
                     // Notify Biospecimens tab et al of change.
                     tvSelectedCatchCat.activate_CC_selected();
+                }
+
+                onCatchRatioChanged: {  // mimics click of row, updates WEIGHT after ratio change
+                    if (isWm15()) {
+                        console.info("Ratio changed: trigger recalc of weights on CC screen with ratio " + ratio);
+                        tvSelectedCatchCat.activate_CC_selected();
+                    }
                 }
             }
 
@@ -670,6 +686,23 @@ Item {
                 if (newRow >= 0) {
                     selectRow(newRow);
                 }
+            }
+
+            function refreshWm5Weights(catchId, newWt) {
+                // needed when retained wt changed, OTC-RET must change too
+                console.info("Refreshing WM5 Catch weight (CatchID: )" + catchId)
+                var lastSelected = getSelRow()
+                for(var i = 0; i < model.count; i++){
+                    if (model.get(i).catch === catchId) {
+                        // find WM5 catch, select, set as currentCatch, and set as new_wt
+                        selectRow(i);
+                        appstate.catches.currentCatch = getSelItem();
+                        appstate.catches.setData("catch_weight", newWt)
+                    }
+                }
+                // reselect original catch
+                selectRow(lastSelected)
+                appstate.catches.currentCatch = getSelItem()
             }
 
             function editItemDetails(item_index) {

@@ -228,7 +228,7 @@ class ObserverFishingLocations(QObject):
             Note: neither SQLite FISHING_LOCATIONS table nor FishingLocationModel's model have been updated.
         """
         slocations = sorted(locations, key=lambda loc: " ".join([
-            ObserverDBUtil.str_to_datetime(loc.location_date).format('DD/MM/YYYY HH:mm'),#'YMMDDHHmm'),
+            ObserverDBUtil.str_to_datetime(loc.location_date).format('MM/DD/YYYY HH:mm'),#'YMMDDHHmm'),
             str.format("{0:0>5}", loc.fishing_location)]))
         # Earliest
         if len(slocations) > 0:
