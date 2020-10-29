@@ -27,7 +27,7 @@ from py.observer.Hauls import Hauls
 from py.observer.Sets import Sets
 from py.observer.ObserverDBUtil import ObserverDBUtil
 
-from py.observer.ObserverDBModels import Settings, FishingActivities, Comment, DoesNotExist, Vessels, Trips
+from py.observer.ObserverDBModels import Settings, FishingActivities, Comment, DoesNotExist, Vessels, Trips, Catches
 from py.observer.ObserverConfig import optecs_version, display_decimal_places
 from py.observer.BackupDBWorker import BackupDBWorker
 
@@ -76,6 +76,7 @@ class ObserverState(QObject):
     catchCatNameChanged = pyqtSignal(str)
     speciesNameChanged = pyqtSignal(str)
     commentsChanged = pyqtSignal(str)
+    wm5WeightChanged = pyqtSignal(int, QVariant, arguments=["catchId", "new_wt"])  # tell CC page to update tableView
 
     # If we are in these appstates, always save comments to Trips.notes
     # (instead of haul level: FishingActivities.notes)
@@ -174,6 +175,9 @@ class ObserverState(QObject):
 
         self.currentTripId = ObserverDBUtil.db_load_setting('trip_number')  # Current Trip ID if set
         self.update_comments()
+
+        self._catches.retainedCatchWeightChanged.connect(self.update_wm5_catch_weights)  # ret. catch changes --> WM5 updates
+        self._hauls.otcWeightChanged.connect(self.update_wm5_catch_weights)  # otc changes --> WM5 updates
 
     @staticmethod
     def getset_setting(parm_name, default_val):
@@ -559,6 +563,29 @@ class ObserverState(QObject):
         size_after = size_before + size_of_new_comment
 
         return max_text_allowed - size_after, size_of_new_comment
+
+    def update_wm5_catch_weights(self):
+        """
+        Go to DB directly and find catches w. WM5.
+        Update catch_weight with OTC-RET., then EMIT to signal QML
+        func lives here so it can interact with both _hauls and _catches signals
+
+        NOTE: catch_weight cant be negative in DB, so if negative set to null / None
+        :return: None
+        """
+        wm5_catches = Catches.select(Catches.catch, Catches.catch_num).where(
+            (Catches.fishing_activity == self._hauls.currentHaulDBId) &
+            (Catches.catch_weight_method == '5')
+        ).execute()
+        new_wt = self._hauls.getData('observer_total_catch') - self._hauls.retainedHaulWeight
+        new_wt = new_wt if new_wt > 0 else None  # wt can't be negative in DB, set to None/Null
+        for c in wm5_catches:  # there shouldn't be more than one, but just in case
+            Catches.update(catch_weight=new_wt).where(
+                (Catches.catch == c.catch)
+            ).execute()
+
+            logging.info(f"CatchNum {c.catch_num} (ID: {c.catch}) WM5 weight updated to {new_wt}")
+            self.wm5WeightChanged.emit(c.catch, new_wt)  # tell CC QML page to update too
 
     @pyqtSlot(str, str, name='addComment')
     def add_comment(self, comment, appstate):
