@@ -749,6 +749,7 @@ DSM.StateMachine {
             rightButtonStateName = "tabs_screen";
             titleText = "Details: " + btCatchCategory;
         }
+        onExited: appstate.catches.refreshWm5Weights()
         DSM.SignalTransition {
             targetState: cc_entry_state
             signal: to_previous_state
@@ -977,6 +978,8 @@ DSM.StateMachine {
             setSpeciesText();
             observerSM.enteringCW();
         }
+
+        onExited: appstate.catches.refreshWm5Weights();
 
         Connections {
             target: appstate

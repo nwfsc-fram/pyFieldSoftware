@@ -34,6 +34,7 @@ class Hauls(QObject):
     maxVesselRetModelLengthChanged = pyqtSignal(int, name='maxVesselRetModelLengthChanged')
     currentBiolistNumChanged = pyqtSignal(name='currentBiolistNumChanged')
     unusedSignal = pyqtSignal(name='unusedSignal')  # quiet warnings
+    otcWeightChanged = pyqtSignal(name='otcWeightChanged')
 
     def __init__(self, db):
         super().__init__()
@@ -403,6 +404,9 @@ class Hauls(QObject):
 
         logging.debug('Set {} to {}'.format(data_name, data_val))
         self.modelChanged.emit()
+
+        if data_name == 'observer_total_catch':
+            self.otcWeightChanged.emit()
 
     def _lookup_target_strat_id(self, strat: str):
         """
