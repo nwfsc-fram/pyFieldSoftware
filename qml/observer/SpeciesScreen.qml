@@ -567,24 +567,23 @@ Item {
                }
             }
             TableViewColumn {
-                role: "extrapolated_species_weight"
-                title: "Extr. Wt"
-                width: 110
-                visible: appstate.catches.weightMethod === "15" ||
-                         appstate.catches.weightMethod === "8"
+                // Display the total count including tally count for WM8
+                // To display only count of weighed fish: role: "species_number"
+                role: "weighed_and_tallied_count"
+                title: "Count"
+                width: 70
+            }
+            TableViewColumn {
+                role: "avg_weight"
+                title: "Avg Wt"
+                width: 100
+                visible: true
                 delegate: Text {
                    text: styleData.value ? styleData.value.toFixed(2) : ""
                    font.pixelSize: 20
                    verticalAlignment: Text.AlignVCenter
                    horizontalAlignment: Text.AlignHCenter
                }
-            }
-            TableViewColumn {
-                // Display the total count including tally count for WM8
-                // To display only count of weighed fish: role: "species_number"
-                role: "weighed_and_tallied_count"
-                title: "Count"
-                width: 70
             }
             TableViewColumn {
                 role: "bio_count"
@@ -599,10 +598,11 @@ Item {
                }
             }
             TableViewColumn {
-                role: "avg_weight"
-                title: "Avg Wt"
-                width: 100
-                visible: true
+                role: "extrapolated_species_weight"
+                title: "Extr. Wt"
+                width: 110
+                visible: appstate.catches.weightMethod === "15" ||
+                         appstate.catches.weightMethod === "8"
                 delegate: Text {
                    text: styleData.value ? styleData.value.toFixed(2) : ""
                    font.pixelSize: 20
@@ -610,8 +610,6 @@ Item {
                    horizontalAlignment: Text.AlignHCenter
                }
             }
-
-
             function activate_recalc_all() {
                 // intended only for use with WM15 (perf reasons)
                 console.warn("Recalculating weights for all " + rowCount + " rows.");
