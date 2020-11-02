@@ -583,18 +583,6 @@ Item {
                }
             }
             TableViewColumn {
-                role: "bio_count"
-                title: "# Bio"
-                width: 70
-                visible: true
-                delegate: Text {
-                   text: styleData.value ? styleData.value: ""
-                   font.pixelSize: 20
-                   verticalAlignment: Text.AlignVCenter
-                   horizontalAlignment: Text.AlignHCenter
-               }
-            }
-            TableViewColumn {
                 role: "avg_weight"
                 title: "Avg Wt"
                 width: 100
@@ -606,7 +594,18 @@ Item {
                    horizontalAlignment: Text.AlignHCenter
                }
             }
-
+            TableViewColumn {
+                role: "bio_count"
+                title: "# Bio"
+                width: 70
+                visible: true
+                delegate: Text {
+                   text: styleData.value ? styleData.value: ""
+                   font.pixelSize: 20
+                   verticalAlignment: Text.AlignVCenter
+                   horizontalAlignment: Text.AlignHCenter
+               }
+            }
 
             function activate_recalc_all() {
                 // intended only for use with WM15 (perf reasons)
