@@ -10,6 +10,7 @@
 
 import json
 import logging
+from peewee import fn
 from operator import itemgetter
 from typing import Dict, List
 import unittest
@@ -304,8 +305,10 @@ class CatchCategory(QObject):
         """
         active_catch_categories = []
 
-        catch_category_q = CatchCategories.select().where(CatchCategories.active >> None). \
-            order_by(CatchCategories.catch_category_code)
+        catch_category_q = CatchCategories.select().where(
+            (CatchCategories.active >> None) &
+            (~fn.Lower(CatchCategories.catch_category_name).contains('- target'))  # FIELD-1219
+        ). order_by(CatchCategories.catch_category_code)
 
         for cc in catch_category_q:
             active_catch_categories.append(model_to_dict(cc))
