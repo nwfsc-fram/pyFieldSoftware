@@ -546,6 +546,11 @@ Item {
                 }
             }
             TableViewColumn {
+                role: "species_comp_item"
+                title: "#"
+                width: 42
+            }
+            TableViewColumn {
                 role: "common_name"
                 title: "Name"
                 width: 160
