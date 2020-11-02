@@ -720,12 +720,15 @@ Item {
             function editItemBaskets(item_index) {  // For WM3 catch-level basket data
                 var ccBasketsPage = stackView.push(Qt.resolvedUrl("CatchCategoriesBasketsScreen.qml"));
             }
-
+            TableViewColumn {
+                role: "catch_num"
+                title: "#"
+                width: 42
+            }
             TableViewColumn {
                 role: "catch_disposition"
                 title: "R/D"
                 width: 55
-
             }
             TableViewColumn {
                 role: "catch_category_code"
