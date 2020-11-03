@@ -475,6 +475,7 @@ Item {
             width: login.width - tvAvailableCC.width - columnAvailableCC.width - 90
             height: tvAvailableCC.height + tfCatchCategory.height
             selectionMode: SelectionMode.SingleSelection
+            sortable: true
 
             model: appstate.catches.CatchesModel
             // Sorting column (catch(_id)) isn't visible, but use this attribute to determine how model is sorted.
@@ -653,16 +654,17 @@ Item {
                 console.debug("Row " + tvSelectedCatchCat.currentRow + " highlighted.");
             }
 
-            function getSelRow() {
-                return currentRow;
-            }
-
-            function getSelItem() {
-                // Get currently selected item
-                var selected_row = getSelRow();
-                if (selected_row < 0)
-                    return null;
-                return model.get(selected_row);
+            onSorted: {
+                if (currentRow > -1) {
+                    // make highlighted row follow model sort
+                    var catchNum = tvSelectedCatchCat.getSelItem().catch_num
+                    tvSelectedCatchCat.selection.clear()
+                    model.sort(col)  // col var emitted from sorted signal in ObserverTableView
+                    currentRow = tvSelectedCatchCat.model.get_item_index('catch_num', catchNum)
+                    tvSelectedCatchCat.selection.select(currentRow)
+                } else { // nothing selected, just sort
+                    model.sort(col)
+                }
             }
 
             function getNewestRowIdx() {
@@ -720,6 +722,7 @@ Item {
             function editItemBaskets(item_index) {  // For WM3 catch-level basket data
                 var ccBasketsPage = stackView.push(Qt.resolvedUrl("CatchCategoriesBasketsScreen.qml"));
             }
+
             TableViewColumn {
                 role: "catch_num"
                 title: "#"
