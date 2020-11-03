@@ -182,7 +182,7 @@ Item {
             id: rowLogbook
             Label {
                 id: labelLogbookName
-                text: qsTr("Vessel Logbook\nName")
+                text: qsTr("Vessel Logbook\nNumber")
 //                    Layout.fillWidth: true
                 Layout.preferredWidth: gridEndTrip.labelColWidth
                 Layout.fillHeight: true
