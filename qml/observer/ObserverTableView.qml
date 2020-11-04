@@ -7,9 +7,22 @@ import "../common"
 // bug https://bugreports.qt.io/browse/QTBUG-49360 show width binding loop
 TableView {
     property int item_height: 50
+    property bool sortable: false  // allow basic table sorting to be turned on
+    signal sorted(string col)  // emit col name when table sorted (e.g. sorted("catch_num"))
+
     horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
     verticalScrollBarPolicy: Qt.ScrollBarAlwaysOff
 
+    function getSelRow() {
+        return currentRow;
+    }
+    function getSelItem() {
+        // Get currently selected item
+        var selected_row = getSelRow();
+        if (selected_row < 0)
+            return null;
+        return model.get(selected_row);
+    }
     style: TableViewStyle {
 
         itemDelegate: Item {
@@ -78,6 +91,16 @@ TableView {
                     GradientStop { position: 1.0; color: "#eee" }
                 }
             }
+            Connections {
+                target: styleData
+                onPressedChanged: {
+                    // why does this run 4 times when header clicked? TODO: replace with MouseArea --> onClicked?
+                    if (sortable) {
+                        sorted(getColumn(styleData.column).role)
+                    }
+                }
+            }
         }
     }
 }
+
