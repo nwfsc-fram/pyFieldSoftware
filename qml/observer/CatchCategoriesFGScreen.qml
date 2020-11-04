@@ -697,12 +697,15 @@ Item {
                 // TODO - disabled for FG
                 var ccBasketsPage = stackView.push(Qt.resolvedUrl("CatchCategoriesBasketsScreen.qml"));
             }
-
+            TableViewColumn {
+                role: "catch_num"
+                title: "#"
+                width: 42
+            }
             TableViewColumn {
                 role: "catch_disposition"
                 title: "R/D"
                 width: 55
-
             }
             TableViewColumn {
                 role: "catch_category_code"
