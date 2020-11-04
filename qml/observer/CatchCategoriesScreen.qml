@@ -378,14 +378,13 @@ Item {
 
                 // Highlight new entry in Selected Catch Categories.
                 if (tvSelectedCatchCat.model.count >= 1) {
-                    tvSelectedCatchCat.selectNewest();
+                    tvSelectedCatchCat.selectRow(0);
                     console.debug("Selected newest entry in Selected Catch Category.");
                 }
 
                 // automatically jump to CC details
                 obsSM.state_change("cc_details_state");
-                var newestEntry = tvSelectedCatchCat.getNewestRowIdx();
-                tvSelectedCatchCat.editItemDetails(newestEntry);
+                tvSelectedCatchCat.editItemDetails(0);
             }
 
             function removeCatchCat() {
