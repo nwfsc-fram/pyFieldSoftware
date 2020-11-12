@@ -578,6 +578,9 @@ class ObserverState(QObject):
         NOTE: catch_weight cant be negative in DB, so if negative set to null / None
         :return: None
         """
+        if self.isFixedGear:  # wm5 doesn't exist w. FG
+            return
+
         wm5_catches = Catches.select(Catches.catch, Catches.catch_num).where(
             (Catches.fishing_activity == self._hauls.currentHaulDBId) &
             (Catches.catch_weight_method == '5')
