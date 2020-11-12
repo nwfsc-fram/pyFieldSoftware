@@ -314,6 +314,15 @@ Item {
         }
     }
 
+    Connections {
+        target: db_sync
+        onSuggestBackup: goToBackup()
+    }
+    function goToBackup() {
+        obsSM.state_change("backup_state");
+        stackView.push(Qt.resolvedUrl("BackupScreen.qml"))
+    }
+
     function goToTripErrors() {
         obsSM.state_change("trip_errors_state");
         stackView.push(Qt.resolvedUrl("TripErrorReportsScreen.qml"))

@@ -46,6 +46,7 @@ class ObserverDBSyncController(QObject):
     readyToPush = pyqtSignal(name='readyToPush')
     dbSyncTimeChanged = pyqtSignal(name='dbSyncTimeChanged')
     userInfoChanged = pyqtSignal(name='userInfoChanged')
+    suggestBackup = pyqtSignal(name='suggestBackup')
 
     desc = {DBSyncStatusEnum.TRIP_IN_PROGRESS: 'Trip in Progress',
             DBSyncStatusEnum.SYNC_READY: 'Ready to Sync',

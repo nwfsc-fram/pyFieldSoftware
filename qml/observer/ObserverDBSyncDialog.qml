@@ -95,7 +95,8 @@ Dialog {
             lblStatus.font.pixelSize = 25;
             lblBackupReminder.visible = false;
         } else {
-            btnCancelOK.text = "OK"
+            btnCancelOK.text = download_only ? "Ok" : "OK, Let's back it up"
+            btnCancelOK.backupSuggested = download_only ? false : true
             lblStatus.color = "green";
             lblStatus.font.bold = true;
             lblStatus.font.pixelSize = 25;
@@ -242,8 +243,15 @@ Dialog {
             id: btnCancelOK
             Layout.alignment: Qt.AlignCenter
             text: "Cancel"
+            property bool backupSuggested: false
             onClicked: {
+                if (backupSuggested) {
+                    db_sync.suggestBackup()
+                }
+                text: "Cancel"  // reset to defaults
+                backupSuggested = false  // might not be needed, but just in case
                 dlg.close()
+
             }
         }
 
