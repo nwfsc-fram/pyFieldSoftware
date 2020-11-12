@@ -208,14 +208,32 @@ Item {
             Column {
                 id: detailsColCC
                 spacing: 20
-                Label {
-                    Layout.alignment: Qt.AlignLeft
-                    id: labelRequiredFields
-                    text: "Please complete all fields."
-                    color: "red"
-                    font.bold: true
-                    font.pixelSize: 25
-                    visible: !detailsComplete
+                RowLayout {
+                    id: rowBanner
+                    spacing: 57
+                    ObserverSunlightButton {
+                        id: buttonCancel
+                        Layout.alignment: Qt.AlignLeft
+                        text: "  Cancel " + appstate.catches.currentCatchCatCode + "  "
+                        txtColor: "red"
+                        visible: !appstate.catches.biospecimens.dataExists && !appstate.catches.species.counts_weights.dataExists
+                        onClicked: {  // simulate back click followed by CC delete
+                            obsSM.state_change('cc_entry_state')
+                            framHeader.backward_enabled = true;
+                            framHeader.backClicked(obsSM.leftButtonStateName, textLeftBanner.text);
+                            appstate.catches.ccCancelled()  // signals back to CC entry to delete
+                        }
+                    }
+                    Label {
+                        Layout.alignment: Qt.AlignLeft
+                        id: labelRequiredFields
+                        Layout.preferredWidth: layoutCCFGDetails.itemwidth
+                        text: "Please complete all fields."
+                        color: "red"
+                        font.bold: true
+                        font.pixelSize: 25
+                        visible: !detailsComplete
+                    }
                 }
                 RowLayout {
                     Label {

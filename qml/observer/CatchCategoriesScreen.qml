@@ -387,6 +387,10 @@ Item {
                 tvSelectedCatchCat.editItemDetails(0);
             }
 
+            Connections { // signal from CC details to cancel / delete
+                target: appstate.catches
+                onCcCancelled: columnAvailableCC.removeCatchCat()
+            }
             function removeCatchCat() {
 
                 var selected_row = tvSelectedCatchCat.getSelRow();
