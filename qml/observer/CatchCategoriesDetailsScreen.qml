@@ -390,6 +390,7 @@ Item {
                                     if (
                                             (!is_phlb && (modelData === "9" || modelData === "19"))  // 9 & 19 only visible with PHLB
                                             || (!is_zmis && (modelData === "5"))  // WM5 only visible with ZMIS
+                                            || (is_phlb && (modelData !== "9" && modelData !== "19"))  // hide everything else except 9 & 19 if PHLB
                                         ) return false
                                     else return true
                                 }
