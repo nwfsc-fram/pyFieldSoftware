@@ -54,7 +54,16 @@ Item {
             }
         }
     }
-
+    // FIELD-2060, copied from FG (FIELD-1891)
+    function showBioNeededWarning(warning) {
+        console.warn(warning);
+        dlgBioWarning.message = warning;
+        dlgBioWarning.open();
+    }
+    TrawlOkayDialog {
+        id: dlgBioWarning
+        title: "Sample required/requested"
+    }
     Timer {
         id: timer
     }

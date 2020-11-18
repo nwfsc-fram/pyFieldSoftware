@@ -50,6 +50,48 @@ Item {
         framHeader.backwardEnable(true);
     }
 
+    Connections {
+        target: framHeader
+        onBackClicked: {
+            // FIELD-2060, copied from FG (FIELD-1891)
+            // TODO: Consolidate all protocol warning logic to central location (framHeader???)
+            if (appstate.catches.sampleMethod === appstate.catches.SM_NO_SPECIES_COMP) {
+                const prompt = get_prompt_if_bio_needed()
+                if (prompt) {
+                    ccScreenId.showBioNeededWarning(prompt)
+                }
+            }
+        }
+        function get_prompt_if_bio_needed() {
+            // logic adapted from CountsWeightsScreen.qml check
+            var biolist_num = appstate.hauls.currentBiolistNum;
+            var biolist_name = appstate.catches.species.currentBiolist;
+            var species_biolist_num = biolist_name ? parseInt(biolist_name.charAt(biolist_name.length - 1)) : null;
+            var matching_bios = species_biolist_num && (species_biolist_num === biolist_num);
+
+            if (appstate.catches.species.currentProtocols === '-') {
+                return "";
+            } else if (appstate.catches.biospecimens.currentWM !== '14') {
+                console.log('Not wm 14, not prompting for bios');
+                return "";
+            }
+            else if (gridDR.current_discard_id === '12' || gridDR.current_discard_id === 15) {
+                console.log('DR is dropoff/pred, not warning about Biospecimens.');
+                return "";
+            }
+            else if (species_biolist_num && !matching_bios) {
+                console.log("Species Biolist: " + biolist_name + " doesn't match " +
+                             biolist_num +", not requiring biospecimens.")
+                return "";
+            } else {
+                var bs_model = appstate.catches.biospecimens.BiospecimenItemsModel;
+                if (!bs_model || bs_model.count === 0 ) {
+                    return "NOTE: Sample required/requested for this species : \n" +
+                            appstate.catches.species.currentProtocols + "\nGo to BIOSPECIMENS tab, if required."
+                }
+            }
+        }
+    }
     function check_details_complete() {
         // Allow movement to Species or Biospecimens
         var newDetailsComplete = appstate.catches.requiredCCDetailsAreSpecified;
@@ -795,6 +837,16 @@ Item {
 
             } // End First Column
             ColumnLayout {
+                RowLayout {
+                    FramLabel {  // FIELD-2060, added in label
+                        text: "Protocol: " + appstate.catches.species.currentProtocols
+                        + (appstate.catches.species.currentBiolist ? "(" + appstate.catches.species.currentBiolist + ")" : "")
+                        + "; Biolist: " + appstate.hauls.currentBiolistNum
+                        font.pixelSize: 18
+                        font.italic: true
+                        Layout.preferredHeight: 35
+                    }
+                }
                 RowLayout {
                     id: rowCW
                     visible: false
