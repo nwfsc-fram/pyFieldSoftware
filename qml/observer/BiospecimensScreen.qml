@@ -583,12 +583,17 @@ ColumnLayout {
                         slw_screen.check_pending_protocols();
                         if (tabsBiospecimens.remainingProtocolsCount() > 0) {
                             dlgMissingProtocols.showNeeded();
-                        } else {
+                        } else if ((appstate.catches.isPHLB) || (appstate.catches.biospecimens.getData('specimen_length') < 100)) {
                             save_biospecimen_entry();
                             slw_screen.updateSex();  // clear selection
                             if (ObserverSettings.enableAudio) {
                                 soundPlayer.play_sound("saveRecord", false)
                             }
+                        }
+                        // If length is 100 or over, don't follow through with save until
+                        // after warning
+                        else {
+                            bioListText.forceActiveFocus()
                         }
                     }
                 }

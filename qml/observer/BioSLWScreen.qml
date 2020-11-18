@@ -388,12 +388,27 @@ ColumnLayout {
                     font.pixelSize: 18
                     style: TextFieldStyle {
                         background: Rectangle {
-                                    border.width: tfLength.activeFocus ? 3 : 1
+                            border.width: tfLength.activeFocus ? 3 : 1
                         }
                     }
+
+                    property var smallLenAccepted: true
+
                     onTextChanged: {
-                        if(tfLength.text.length > 0)
+                        // if reaches over 999, trigger warning popup
+                        if ((!appstate.catches.isPHLB) && (tfLength.text > 999)) {
+                            console.info("Lengths over 999 not allowed.");
+                            dlgBioLenCheck.open();
+                        }
+                        else if((appstate.catches.isPHLB) && (tfLength.text > 249)) {
+                            console.info("Lengths over 249 not allowed for PHLB.");
+                            dlgBioLenPHLBCheck.open();
+                        }
+                        else if(tfLength.text.length > 0)
                             numpadSLW.save_specimen_length(tfLength.text)
+                        if ((!appstate.catches.isPHLB) && (tfLength.text > 99)) {
+                            smallLenAccepted = false;
+                        }
                     }
 
                     onActiveFocusChanged: {
@@ -402,6 +417,16 @@ ColumnLayout {
                             slw.updateNumpadStateToLength();
                         }
                     }
+
+                    // Check for values between 100 and 1000, trigger warning popup
+                    onEditingFinished: {
+                        if ((!appstate.catches.isPHLB) && (tfLength.text)) {
+                            if ((tfLength.text > 100) && (tfLength.text < 1000) && (smallLenAccepted === false)){
+                                dlgBioLenWarning.open();
+                            }
+                        }
+                    }
+
                 }
             }
         }
@@ -569,4 +594,48 @@ ColumnLayout {
 
         }
     }
+
+    // Warning preventing length measurement of 1000cm or more. This value will crash the DB sync
+    FramNoteDialog {
+        id: dlgBioLenCheck
+        title: "Warning"
+        message: "Lengths cannot exceed 999cm\n(if valid comment with the length\nand fix after upload.)"
+        bkgcolor: "#FA8072"
+        font_size: 18
+        onAccepted: {
+            numpadSLW.clearnumpad();
+            tfLength.forceActiveFocus()
+        }
+    }
+
+    // Warning preventing length measurement of 250cm or more for PHLB.
+    FramNoteDialog {
+        id: dlgBioLenPHLBCheck
+        title: "Warning"
+        message: "Halibut lengths lengths cannot exceed \n249cm. Please correct the entry. If\nvalid enter a comment with the length\nand take a photo of the specimen with\nthe length measurement visible."
+        bkgcolor: "#FA8072"
+        font_size: 18
+        onAccepted: {
+            numpadSLW.clearnumpad();
+            tfLength.forceActiveFocus()
+        }
+    }
+
+    // Warning check for values 100cm or over, this is an unexpected length
+    ProtocolWarningDialog {
+        id: dlgBioLenWarning
+        title: "Warning"
+        message: "Expected length to be less then 100cm\n Is this correct?"
+        onAccepted: {
+            tfLength.forceActiveFocus()
+        }
+        onRejected: {
+            save_biospecimen_entry();
+            slw_screen.updateSex();  // clear selection
+            if (ObserverSettings.enableAudio) {
+               soundPlayer.play_sound("saveRecord", false)
+            }
+        }
+    }
+
 }
