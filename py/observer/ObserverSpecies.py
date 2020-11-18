@@ -20,7 +20,7 @@ from py.observer.CountsWeights import CountsWeights
 from py.observer.ObserverConfig import display_decimal_places
 from py.observer.ObserverDBModels import Catches, FishingActivities, ProtocolGroups, Settings, \
     Species, SpeciesCompositions, SpeciesCompositionItems, SpeciesCorrelation, SpeciesSamplingPlanLu, \
-    SpeciesCatchCategories, Lookups, GeartypeStratumGroupMtx, BioSpecimens, StratumLu
+    SpeciesCatchCategories, Lookups, GeartypeStratumGroupMtx, BioSpecimens, StratumLu, SpeciesCompositionBaskets
 from py.observer.ObserverDBUtil import ObserverDBUtil
 from py.observer.ObserverLookups import RockfishCodes
 
@@ -636,6 +636,18 @@ class ObserverSpecies(QObject):
         self._logger.debug(f'Model update {idx} Got bio count changed: {bio_count}')
         self._species_comp_items_model.setProperty(idx, 'bio_count', bio_count)
 
+    @pyqtProperty(int, notify=unusedSignal)
+    def totalFishCounted(self):
+        """
+        Gets physically counted number of fish from DB
+        :return: INT (sum of counts within baskets)
+        """
+        return SpeciesCompositionBaskets.select(
+            fn.sum(SpeciesCompositionBaskets.fish_number_itq)
+        ).where(
+            SpeciesCompositionBaskets.species_comp_item == self._current_speciescomp_item
+        ).scalar()
+
     def _handle_trawl_tally_fish_count_changed(self, ct):
         if self.isFixedGear:  # we only use this table count on the c/w screen for FG
             return
@@ -647,9 +659,9 @@ class ObserverSpecies(QObject):
         # Update model
         idx = self._get_cur_species_comp_item_idx()
         self._species_comp_items_model.setProperty(idx, 'species_number', ct)
+        self._species_comp_items_model.setProperty(idx, 'total_fish_counted', self.totalFishCounted)  # field-2040
 
         # Update avg_weight view model for CURRENT_SPECIES_ITEM
-
         spec_wt = self._current_speciescomp_item.species_weight
         spec_num = self._current_speciescomp_item.species_number
         self._species_comp_items_model.setProperty(idx, 'species_weight', spec_wt)
@@ -688,6 +700,8 @@ class ObserverSpecies(QObject):
             # Update model
             idx = self._get_cur_species_comp_item_idx()
             self._species_comp_items_model.setProperty(idx, 'species_number', db_ct_val)
+            self._species_comp_items_model.setProperty(idx, 'total_fish_counted', self.totalFishCounted)  # field-2040
+
             # Parameter 'ct' includes tally of unweighed fish as well as weighed.
             # For SpeciesScreen column, use extrapolated 'ct' for the fish count, even for WM8.
             # Having the extended count (of weighed and of tallied) in the Count column of the Species
