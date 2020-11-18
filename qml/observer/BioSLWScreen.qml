@@ -177,6 +177,10 @@ ColumnLayout {
         }
     }
 
+    function trigger_len_warning() {
+        dlgBioLenWarning.open();
+    }
+
     function clear_values() {
         tfLength.text = "";
         tfWeight.text = "";
@@ -392,8 +396,6 @@ ColumnLayout {
                         }
                     }
 
-                    property var smallLenAccepted: true
-
                     onTextChanged: {
                         // if reaches over 999, trigger warning popup
                         if ((!appstate.catches.isPHLB) && (tfLength.text > 999)) {
@@ -406,24 +408,12 @@ ColumnLayout {
                         }
                         else if(tfLength.text.length > 0)
                             numpadSLW.save_specimen_length(tfLength.text)
-                        if ((!appstate.catches.isPHLB) && (tfLength.text > 99)) {
-                            smallLenAccepted = false;
-                        }
                     }
 
                     onActiveFocusChanged: {
                         if(focus) {
                             numpadSLW.directConnectTf(tfLength);
                             slw.updateNumpadStateToLength();
-                        }
-                    }
-
-                    // Check for values between 100 and 1000, trigger warning popup
-                    onEditingFinished: {
-                        if ((!appstate.catches.isPHLB) && (tfLength.text)) {
-                            if ((tfLength.text > 100) && (tfLength.text < 1000) && (smallLenAccepted === false)){
-                                dlgBioLenWarning.open();
-                            }
                         }
                     }
 

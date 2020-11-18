@@ -41,7 +41,7 @@ that each build has a unique version string which could be used to bring up the 
 as it stood for that particular build.  
 """
 
-optecs_version = "2.1.2+19"
+optecs_version = "2.1.2+20"
 
 # Number of floating point decimal places to display for weight etc.
 display_decimal_places = 2

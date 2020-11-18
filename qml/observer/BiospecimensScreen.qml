@@ -593,7 +593,7 @@ ColumnLayout {
                         // If length is 100 or over, don't follow through with save until
                         // after warning
                         else {
-                            bioListText.forceActiveFocus()
+                            slw_screen.trigger_len_warning();
                         }
                     }
                 }
