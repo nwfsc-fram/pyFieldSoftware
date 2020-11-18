@@ -10,10 +10,11 @@
 
 from PyQt5.QtCore import pyqtProperty, QVariant, QObject, pyqtSignal, pyqtSlot
 
+from peewee import fn
 from playhouse.shortcuts import model_to_dict
 from py.common.FramListModel import FramListModel
 from py.common.FramUtil import FramUtil
-from py.observer.ObserverDBModels import SpeciesCompositionItems, BioSpecimens, BioSpecimenItems
+from py.observer.ObserverDBModels import SpeciesCompositionItems, BioSpecimens, BioSpecimenItems, SpeciesCompositionBaskets
 
 import logging
 
@@ -33,6 +34,7 @@ class ObserverSpeciesCompModel(FramListModel):
         props.append('weighed_and_tallied_count')
         props.append('avg_weight')
         props.append('bio_count')
+        props.append('total_fish_counted')  # FIELD-2040, unextrapolated fish count
         return props
 
     def add_species_item(self, db_model):
@@ -81,6 +83,14 @@ class ObserverSpeciesCompModel(FramListModel):
 
         # Populate "extra" keys if needed
         species_dict['common_name'] = db_model.species.common_name
+
+        # TODO: reuse logic in ObserverSpecies.totalFishCounted property
+        # FIELD-2040: display actual count (sum of fish_number_itq)
+        species_dict['total_fish_counted'] = SpeciesCompositionBaskets.select(
+            fn.sum(SpeciesCompositionBaskets.fish_number_itq)
+        ).where(
+            SpeciesCompositionBaskets.species_comp_item == db_model.species_comp_item
+        ).scalar()
 
         # Create temp column for weighed_and_tallied_count
         weighed_count = db_model.species_number if db_model.species_number else 0

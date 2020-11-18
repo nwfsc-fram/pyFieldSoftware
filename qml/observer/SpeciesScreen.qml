@@ -483,6 +483,7 @@ Item {
             width: main.width - tvAvailableSpecies.width - columnAvailableSpecies.width - 90
             height: tvAvailableSpecies.height + tfSpeciesFilter.height
             headerVisible: true
+            headerPixelSize: 17
             sortable: true
             property bool isSorting: false
 
@@ -559,12 +560,12 @@ Item {
             }
             TableViewColumn {
                 role: "discard_reason"
-                title: "D.R."
+                title: "DR"
                 width: 50
-            }            
+            }
             TableViewColumn {
                 role: "species_weight"
-                title: "Sample Wt"
+                title: "Samp Wt"
                 width: 120
                 delegate: Text {
                    text: styleData.value ? styleData.value.toFixed(2) : ""
@@ -577,7 +578,7 @@ Item {
                 // Display the total count including tally count for WM8
                 // To display only count of weighed fish: role: "species_number"
                 role: "weighed_and_tallied_count"
-                title: "Count"
+                title: "Extr Ct"
                 width: 70
             }
             TableViewColumn {
@@ -606,7 +607,7 @@ Item {
             }
             TableViewColumn {
                 role: "extrapolated_species_weight"
-                title: "Extr. Wt"
+                title: "Extr Wt"
                 width: 110
                 visible: appstate.catches.weightMethod === "15" ||
                          appstate.catches.weightMethod === "8"
@@ -616,6 +617,12 @@ Item {
                    verticalAlignment: Text.AlignVCenter
                    horizontalAlignment: Text.AlignHCenter
                }
+            }
+            TableViewColumn {
+                // FIELD-2040: raw count, not extrapolated
+                role: "total_fish_counted"
+                title: "Ct"
+                width: 70
             }
             function activate_recalc_all() {
                 // intended only for use with WM15 (perf reasons)

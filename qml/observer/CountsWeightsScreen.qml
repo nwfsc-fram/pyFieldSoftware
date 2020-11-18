@@ -15,7 +15,7 @@ Item {
     // Properties, Functions and Pop-up Dialogs
     ////
     property bool stateCW: false // set by signals, true if in CW state
-
+    property bool is_mix: appstate.catches.species.currentSpeciesItemName === 'MIX'
     property int dec_places: appstate.displayDecimalPlaces  // Number of decimal places to display weight values
 
     Connections {
@@ -237,7 +237,7 @@ Item {
 
             Row {
                 id: rowDR
-                visible: !appstate.catches.species.isRetained
+                visible: !appstate.catches.species.isRetained && !is_mix  // FIELD-2028
                 signal drCleared
                 function clear_discard_reason() {
                     gridDR.current_discard_id = null;
@@ -469,7 +469,7 @@ Item {
 
                             // If nothing is selected, do nothing
                             if (tvBaskets.currentRow == -1 ||
-                                    (!gridDR.is_dr_set() && !appstate.catches.species.isRetained))
+                                    (!gridDR.is_dr_set() && !appstate.catches.species.isRetained && !is_mix))  // FIELD-2028
                                 return;
 
                             // If zero, do nothing
@@ -594,7 +594,7 @@ Item {
 
                         onNumpadinput: {
                             //console.debug("Stored numpad result is '" + numPad.textNumPad.text + "'.");
-                            if (!gridDR.is_dr_set() && !appstate.catches.species.isRetained) {
+                            if (!gridDR.is_dr_set() && !appstate.catches.species.isRetained && !is_mix) {  // FIELD-2028
                                 dlgSelectDRWarning.open();
                                 clearnumpad();
                                 return;

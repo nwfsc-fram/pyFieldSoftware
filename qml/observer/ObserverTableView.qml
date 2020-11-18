@@ -8,6 +8,7 @@ import "../common"
 TableView {
     property int item_height: 50
     property bool sortable: false  // allow basic table sorting to be turned on
+    property int headerPixelSize: 20
     signal sorted(string col)  // emit col name when table sorted (e.g. sorted("catch_num"))
 
     horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
@@ -77,7 +78,7 @@ TableView {
                 elide: Text.ElideRight
                 color: textColor
                 renderType: Text.NativeRendering
-                font.pixelSize: 20
+                font.pixelSize: headerPixelSize
             }
             Rectangle {
                 anchors.right: parent.right
