@@ -605,13 +605,45 @@ Item {
                         }
                         function numpadEnteredCount(basket_id, value) {
                             console.debug("numPad Entered Count")
-                            if (value !== null && value !== '') {
-                                modeSC.editBasketCount(basket_id, value);
-                                // warnIfAvgWeightShowsAsZero();
-                            } else {  // re-null value
-                                modeSC.editBasketCount(basket_id, null);
+                            dlgCounts.validate(basket_id, value)
+                        }
+                        ProtocolWarningDialog {
+                            // dlg wrapper for count value validations
+                            id: dlgCounts
+                            btnAckText: "Yes, count is correct"
+                            btnOKText: "No, return to entry"
+                            property int _count
+                            property int _basket
+
+                            function save() {
+                            // reusable save func
+                                if (_basket) {
+                                    modeSC.editBasketCount(_basket, _count)
+//                                    warnIfAvgWeightShowsAsZero();  // not needed in FG...
+                                    modeSC.reset()
+                                } else {
+                                    console.debug("Basket id not set, unable to save count")
+                                }
                             }
-                            modeSC.reset();
+                            function validate(basket_id, value) {
+                            // place to customize validations for yes/no dialogs
+                                _count = value
+                                _basket = basket_id
+                                // validations go here: open() and return for custom validations
+                                if (_count > 250) {  // FIELD-1224
+                                    dlgCounts.message = "Warning! Count is greater than expected.\nIs this count correct?"
+                                    dlgCounts.open()
+                                    return
+                                } else {
+                                    dlgCounts.save()
+                                }
+                            }
+                            onAccepted: { // select numpad txt field and set to 0
+                                numPad.clearAndSelect()
+                            }
+                            onRejected: { // save basket count, reset
+                                dlgCounts.save()
+                            }
                         }
 
                         function decimalPortionOfWeightIsOK(weight_string) {
