@@ -51,6 +51,7 @@ class ObserverCatches(QObject):
     retainedCatchWeightChanged = pyqtSignal(name='retainedCatchWeightChanged')
     refreshTvWm5Weights = pyqtSignal(int, QVariant, arguments=["catchId", "newWt"])
     ccCancelled = pyqtSignal()  # middleman for CC and CC details, can I signal directly between QMLs?
+    reactivateCC = pyqtSignal(QVariant, arguments=['catchId'])  # FIELD-2039, use to reselect CC with revert to CW
 
     PACIFIC_HALIBUT_CATCH_CATEGORY_CODE = 'PHLB'
     CATCH_DISCARD_REASON_UNKNOWN = '?'

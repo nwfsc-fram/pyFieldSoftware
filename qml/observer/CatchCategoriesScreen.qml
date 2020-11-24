@@ -572,6 +572,12 @@ Item {
 
                 onRefreshTvWm5Weights: tvSelectedCatchCat.refreshWm5Weights(catchId, newWt)
 
+                onReactivateCC: {  // triggered by framHeader nav back to CC entry
+                    console.info("Reactivating catch id " + catchId)
+                    tvSelectedCatchCat.selectRowByCatchId(catchId)
+                    tvSelectedCatchCat.activate_CC_selected();
+                }
+
                 onSampleMethodChanged : {
                     console.debug("Connection in tvSelectedCatchCat received sample method change to " + sample_method);
                     tvSelectedCatchCat.updatedSampleMethod();
@@ -683,6 +689,11 @@ Item {
                 var newestRowIdx = (tvSelectedCatchCat.sortIndicatorOrder == Qt.AscendingOrder) ?
                         tvSelectedCatchCat.model.count - 1 : 0;
                 return newestRowIdx;
+            }
+
+            function selectRowByCatchId(catchId) {
+                var idx = tvSelectedCatchCat.model.get_item_index('catch', catchId)
+                tvSelectedCatchCat.selectRow(idx)
             }
 
             function selectRow(row) {

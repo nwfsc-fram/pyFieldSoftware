@@ -23,6 +23,20 @@ Item {
         onEnteringCW: {
             modeSC.reset();
         }
+        onExitingCW: {  // FIELD-2039: warn if all baskets are no count (and not mix)
+            if (!is_mix) {
+                // check if we have all No Count baskets, warn if true
+                if (tvBaskets.model.count > 0) {
+                    var total_count = 0
+                    for (var i = 0; i < tvBaskets.model.items.length; i++) {
+                        total_count += tvBaskets.model.items[i].fish_number_itq
+                    }
+                    if (!total_count) {
+                        framHeader.dlgCWNoCountCheck.open()
+                    }
+                }
+            }
+        }
     }
 
     function basketWeightIsTooHigh(weight) {

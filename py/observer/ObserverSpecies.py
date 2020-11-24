@@ -170,6 +170,7 @@ class ObserverSpecies(QObject):
     totalCatchWeightFGChanged = pyqtSignal(QVariant, arguments=['weight'], name='totalCatchWeightFGChanged')
     totalCatchCountChanged = pyqtSignal(QVariant, arguments=['count'], name='totalCatchCountChanged')
     totalCatchCountFGChanged = pyqtSignal(QVariant, arguments=['count'], name='totalCatchCountFGChanged')
+    reactivateSpecies = pyqtSignal(QVariant, arguments=['speciesCompItemId'])  #FIELD-2039
 
     species_list_types = (
         'Full',  # Full list from SPECIES table of observer.db

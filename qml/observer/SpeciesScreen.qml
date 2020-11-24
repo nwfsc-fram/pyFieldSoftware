@@ -520,6 +520,11 @@ Item {
                     console.debug("SpeciesScreen got signal of change of discard reason - activating selected species.");
                     tvSelectedSpecies.activate_selected_species();
                 }
+                onReactivateSpecies: {
+                    console.debug("Reactivating species comp item with " + speciesCompItemId)
+                    tvSelectedSpecies.selectBySpeciesCompItemId(speciesCompItemId)
+                    tvSelectedSpecies.activate_selected_species()
+                }
             }
 
             Connections {
@@ -691,6 +696,17 @@ Item {
                 appstate.speciesName = "";
 
                 enable_remove_button(false);
+            }
+
+            function selectBySpeciesCompItemId(scItemId) {
+                if (tvSelectedSpecies.model.count > 0) {
+                    var idx = -1
+                    tvSelectedSpecies.selection.clear()
+                    idx = tvSelectedSpecies.model.get_item_index('species_comp_item', scItemId)
+                    console.info("Selecting spp item with " + scItemId + " returned idx = " + idx)
+                    tvSelectedSpecies.currentRow = idx;
+                    tvSelectedSpecies.selection.select(idx);
+                }
             }
 
             onSorted: {
