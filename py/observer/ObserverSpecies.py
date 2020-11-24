@@ -170,6 +170,7 @@ class ObserverSpecies(QObject):
     totalCatchWeightFGChanged = pyqtSignal(QVariant, arguments=['weight'], name='totalCatchWeightFGChanged')
     totalCatchCountChanged = pyqtSignal(QVariant, arguments=['count'], name='totalCatchCountChanged')
     totalCatchCountFGChanged = pyqtSignal(QVariant, arguments=['count'], name='totalCatchCountFGChanged')
+    reactivateSpecies = pyqtSignal(QVariant, arguments=['speciesCompItemId'])  #FIELD-2039
 
     species_list_types = (
         'Full',  # Full list from SPECIES table of observer.db
@@ -280,7 +281,8 @@ class ObserverSpecies(QObject):
         self.barcode_protocols = {'WS', 'FC', 'FR', 'O', 'SS', 'SC', 'TS'}
 
         # Helper class with Weight Method 3
-        self._weight_method_3_helper = WeightMethod3Helper(self._logger, observer_catches)
+        self._observer_catches = observer_catches
+        self._weight_method_3_helper = WeightMethod3Helper(self._logger, self._observer_catches)
 
     @pyqtSlot(name='reloadSpeciesDatabase')
     def reload_species_database(self):
@@ -1176,15 +1178,33 @@ class ObserverSpecies(QObject):
         if species_common_name is None or self._current_species_comp_id is None:
             self._logger.error('Species Common Name / Current Species Comp ID is None')
             return
+
+        # FIELD-2015: Auto add mix with WM21
+        if self._observer_catches.weightMethod == "21" and self._current_species_comp_id:
+            mixCount = SpeciesCompositionItems.select(
+                fn.Count()
+            ).where(
+                SpeciesCompositionItems.species == 99999
+                & SpeciesCompositionItems.species_composition == self._current_species_comp_id
+            ).scalar()
+            # check if mix is already present
+            if mixCount == 0:
+                self.add_species_comp_item(99999)
+
         try:
             fish_match = Species.get((fn.Lower(Species.common_name) == species_common_name.lower()) |
                                      (Species.pacfin_code == pacfin_code))
             user_id = ObserverDBUtil.get_current_user_id()
             current_date = ObserverDBUtil.get_arrow_datestr()
-            SpeciesCompositionItems.create(species=fish_match.species,
-                                           species_composition=self._current_species_comp_id,
-                                           created_by=user_id,
-                                           created_date=current_date)
+
+            # auto create species match
+            SpeciesCompositionItems.create(
+                species=fish_match.species,
+                species_composition=self._current_species_comp_id,
+                created_by=user_id,
+                created_date=current_date
+            )
+
             self._build_species_comp_items_model()
         except Species.DoesNotExist:
             self._logger.warning('No matching common name for {}, cannot auto-add.'.format(species_common_name))

@@ -40,6 +40,7 @@ DSM.StateMachine {
     signal to_next_state  // Define per state
 
     signal enteringCW // custom signal for special cases
+    signal exitingCW // signal when leaving CWs; check for no count baskets
     signal enteringCWTally // custom signal for special cases
     signal enteringBio // custom signal for special cases
 
@@ -914,7 +915,10 @@ DSM.StateMachine {
             observerSM.enteringCW();
         }
 
-        onExited: appstate.catches.refreshWm5Weights();
+        onExited: {
+            appstate.catches.refreshWm5Weights();
+            exitingCW()
+        }
 
         Connections {
             target: appstate
