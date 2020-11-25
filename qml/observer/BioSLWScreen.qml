@@ -181,6 +181,10 @@ ColumnLayout {
         dlgBioLenWarning.open();
     }
 
+    function trigger_sm_len_warning() {
+        dlgSmBioLenWarning.open();
+    }
+
     function clear_values() {
         tfLength.text = "";
         tfWeight.text = "";
@@ -616,6 +620,23 @@ ColumnLayout {
         id: dlgBioLenWarning
         title: "Warning"
         message: "Expected length to be less then 100cm\n Is this correct?"
+        onAccepted: {
+            tfLength.forceActiveFocus()
+        }
+        onRejected: {
+            save_biospecimen_entry();
+            slw_screen.updateSex();  // clear selection
+            if (ObserverSettings.enableAudio) {
+               soundPlayer.play_sound("saveRecord", false)
+            }
+        }
+    }
+
+    // Warning check for values under 10cm
+    ProtocolWarningDialog {
+        id: dlgSmBioLenWarning
+        title: "Warning"
+        message: "The length entered is out of the\nexpected range, is this value\ncorrect? Lengths under 10 cm\nare rare on non-shrimp trips"
         onAccepted: {
             tfLength.forceActiveFocus()
         }
