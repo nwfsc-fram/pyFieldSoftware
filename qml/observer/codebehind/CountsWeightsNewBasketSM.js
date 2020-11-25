@@ -33,7 +33,8 @@ var NEW_BASKET_EVENT = {
     DELETE_CONFIRMED: {value: 1, name: "DeleteConfirmed"},
     OK: {value: 2, name: "OKPressed"},
     MANUAL_WEIGHT: {value: 3, name: "ManualWeightButton"},
-    NO_COUNT: {value: 4, name: "NoCountButton"}
+    NO_COUNT: {value: 4, name: "NoCountButton"},
+    MATRIX_WEIGHT: {value: 5, name: "MatrixWeightButton"}
 };
 
 function resetNewBasketState() {
@@ -62,18 +63,18 @@ function isEnteringNewBasketWeight() {
 }
 
 function handleNewBasketEvent(basketEvent, isEditingExistingBasket) {
-    console.log("Basket Event " + basketEvent.name + "State on entry =" +
+    console.info("Basket Event " + basketEvent.name + "State on entry =" +
         curNewBasketState.name + ", isEditingExistingBasket=" + isEditingExistingBasket);
 
     if (isEditingExistingBasket) {
-        console.log("handleNewBasketEvent: no action taken - existing basket is being edited.");
+        console.info("handleNewBasketEvent: no action taken - existing basket is being edited.");
         return;
     }
 
     saveTabEnableState();   // A one-shot, on first entry.
 
     if (basketEvent === NEW_BASKET_EVENT.DIGIT) {
-        console.debug("Current numPad text = '" + numPad.textNumPad.text + "'.");
+        console.info("Current numPad text = '" + numPad.textNumPad.text + "'.");
         if (curNewBasketState === NEW_BASKET_STATE.RFNBW) {
             enableNavigation(false);
             // Hide editing existing basket until new basket completed.
@@ -163,6 +164,13 @@ function handleNewBasketEvent(basketEvent, isEditingExistingBasket) {
             return;
         }
         console.error("Unexpected unhandled basket transition.")
+    }
+    if (basketEvent === NEW_BASKET_EVENT.MATRIX_WEIGHT) {
+        if (curNewBasketState === NEW_BASKET_STATE.RFNBC) {
+            console.info("READY FOR MATRIX WEIGHT!!!")
+        } else {
+            console.info("NOT READY FOR MATRIX WEIGHT :(")
+        }
     }
 }
 

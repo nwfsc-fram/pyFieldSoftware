@@ -83,6 +83,7 @@
         <file>../qml/observer/ObserverKeyboardDialog.qml</file>
         <file>../qml/observer/ObserverLogin.qml</file>
         <file>../qml/observer/ObserverNumPad.qml</file>
+        <file>../qml/observer/ObserverWeightMatrix.qml</file>
         <file>../qml/observer/ObserverNumPadDialog.qml</file>
         <file>../qml/observer/ObserverProgramPickerDialog.qml</file>
         <file>../qml/observer/ObserverSettings.qml</file>
