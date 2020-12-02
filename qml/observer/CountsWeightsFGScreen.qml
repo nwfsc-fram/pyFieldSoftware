@@ -509,7 +509,6 @@ Item {
                                 NBSM.handleNewBasketEvent(NBSM.NEW_BASKET_EVENT.MANUAL_WEIGHT, btnEditBasket.checked);
                             }
                         }
-
                     }
                     ObserverGroupButton {
                         id: btnManualCount
@@ -545,6 +544,46 @@ Item {
                                 btnEditBasket.visible = true
                             }
 
+                        }
+                    }
+                    // FIELD-1698: allow matrix increment toggle
+                    ExclusiveGroup {
+                        id: egMatrixToggle
+                    }
+                    ColumnLayout {
+                        // buttons allow user to change matrix increments
+                        id: clMatrixToggle
+                        visible: btnMatrixWeight.checked  // only when matrix is active
+                        ObserverGroupButton {
+                            id: btnTenthsMatrix
+                            text: "0.1"
+                            font_size: 13
+                            exclusiveGroup: egMatrixToggle
+                            Layout.preferredWidth: idEntry.default_width / 8
+                            Layout.preferredHeight: buttonLogin.height / 2
+                            onCheckedChanged: {
+                                if (checked) { // changing vals should change matrix dynamically
+                                    wtMatrix.step = parseFloat(btnTenthsMatrix.text)
+                                    wtMatrix.lowerRange = parseFloat(btnTenthsMatrix.text)
+                                    wtMatrix.upperRange = 6  // arbitrary, (6*.1) divides by 4 equally
+                                }
+                            }
+                        }
+                        ObserverGroupButton {
+                            id: btnQuartersMatrix
+                            text: "0.25"
+                            checked: true  // default to 0.25
+                            font_size: 12
+                            exclusiveGroup: egMatrixToggle
+                            Layout.preferredWidth: idEntry.default_width / 8
+                            Layout.preferredHeight: buttonLogin.height / 2
+                            onCheckedChanged: {
+                                if(checked) { // changing vals should change matrix dynamically
+                                    wtMatrix.step = parseFloat(btnQuartersMatrix.text)
+                                    wtMatrix.lowerRange = parseFloat(btnQuartersMatrix.text)
+                                    wtMatrix.upperRange = 21
+                                }
+                            }
                         }
                     }
                 }

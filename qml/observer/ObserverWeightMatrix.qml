@@ -11,6 +11,9 @@ import "."
 
 Item {
     id: wtMatrix
+    property alias step: wtMatrix.step
+    property alias lowerRange: wtMatrix.lowerRange
+    property alias upperRange: wtMatrix.upperRange
     property real lowerRange: 0.25  // adjust these if range adjustment needed
     property real upperRange: 21
     property real step: 0.25
@@ -25,15 +28,12 @@ Item {
         }
         return arr
     }
-
     ScrollView   {
         id: sv
         width: (ScreenUnits.numPadButtonSize * 4) + (gridMatrix.columnSpacing * 4) + 20
         height: (ScreenUnits.numPadButtonSize * 5) + (gridMatrix.rowSpacing * 5)
-        clip: true
         GridLayout {
             id: gridMatrix
-//            anchors.fill: parent
             columnSpacing: 6
             rowSpacing: 6
             columns: 4
