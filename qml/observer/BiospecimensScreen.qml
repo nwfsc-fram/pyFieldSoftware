@@ -583,6 +583,13 @@ ColumnLayout {
                         slw_screen.check_pending_protocols();
                         if (tabsBiospecimens.remainingProtocolsCount() > 0) {
                             dlgMissingProtocols.showNeeded();
+                        // check for length less then 10 for non-shrimp trips (not gear type 12 or 13)
+                        } else if ((appstate.catches.biospecimens.getData('specimen_length') < 10) &&
+                                   !((appstate.hauls.getData('gear_type') == '12') ||
+                                     (appstate.hauls.getData('gear_type') == '13') ||
+                                     (appstate.sets.getData('gear_type') == '12') ||
+                                     (appstate.sets.getData('gear_type') == '13'))) {
+                            slw_screen.trigger_sm_len_warning();
                         } else if ((appstate.catches.isPHLB) || (appstate.catches.biospecimens.getData('specimen_length') < 100)) {
                             save_biospecimen_entry();
                             slw_screen.updateSex();  // clear selection
