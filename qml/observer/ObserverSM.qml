@@ -64,7 +64,6 @@ DSM.StateMachine {
     // At end of trip, show buttons once
     property bool pendingEndTrip: false
 
-
     Component.onCompleted: {
         console.log('Observer SM Loaded')
     }
@@ -74,8 +73,11 @@ DSM.StateMachine {
                            appstate.hauls.currentHaulId : "Set #" +
                            appstate.sets.currentSetId;
     }
-
-
+    function updateTripBt() {
+        // helper func to refresh trip banner text on home page
+        observerSM.btTripNum = (appstate.trips.tripId !== "") ? "Temp. Trip #" + appstate.trips.tripId : ""
+        observerSM.btVesselName = appstate.trips.currentVesselName
+    }
     function getBannerRightTextSpeciesOrBiospecimens() {
         // Forward navigation from Catch Categories's subsidiary Details or Baskets screens
         // is typically to "Species", but to "Biospecimens" if sample method is NSC.
