@@ -155,6 +155,8 @@ Item {
             } else if (action_name == "delete_trip") {
                 var trip_id = appstate.TripsModel.get(listTrips.currentRow).trip;
                 appstate.trips.deleteTrip(trip_id)
+                appstate.trips.reloadTrips(); // FIELD-2077: hack to remove deleted trip info stuck in memory
+                obsSM.updateTripBt(); // reset trip banner text
                 obsSM.to_previous_state();
                 stackView.pop();
             }
