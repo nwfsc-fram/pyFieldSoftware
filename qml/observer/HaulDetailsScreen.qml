@@ -265,8 +265,16 @@ Item {
                                 rowOTCMethod.current_wm = modelData;
                                 appstate.hauls.setData('otc_weight_method', modelData);
                                 checkRequiredFieldsAreSpecified();
+                                if (modelData === "6") {
+                                    dlgWM6Comment.open()
+                                }
                             }
                         }
+                    }
+                    FramNoteDialog {
+                        id: dlgWM6Comment
+                        message: "Note: Comment is required\nfor OTC WM 6."
+                        font_size: 18
                     }
                 }
             }

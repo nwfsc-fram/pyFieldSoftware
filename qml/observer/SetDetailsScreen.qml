@@ -197,8 +197,9 @@ Item {
                     }
                     FramNoteDialog {
                         id: dlgWM6Comment
-                        message: "Note: Comment is required\nfor OTC WM 6."
+                        message: "Note: Comment is required for OTC WM 6\ndocumenting the scenario and visual/vessel\nestimates for Retained Catch"
                         font_size: 18
+                        width: 400
                     }
                 }
             }
