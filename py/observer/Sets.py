@@ -427,6 +427,7 @@ class Sets(QObject):
         data_name = data_name.lower()
         if data_name == 'observer_total_catch':
             self._current_set.observer_total_catch = float(data_val) if data_val else 0.0
+            self.otcFGWeightChanged.emit(data_val)
         elif data_name == 'otc_weight_method':
             self._current_set.otc_weight_method = int(data_val) if data_val else 0
         elif data_name == 'fit':
