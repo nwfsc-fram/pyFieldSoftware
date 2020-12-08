@@ -41,7 +41,7 @@ that each build has a unique version string which could be used to bring up the 
 as it stood for that particular build.  
 """
 
-optecs_version = "2.1.2+33"
+optecs_version = "2.1.2+35"
 
 # Number of floating point decimal places to display for weight etc.
 display_decimal_places = 2
@@ -55,4 +55,4 @@ max_text_size_trips_note_field = 4000
 max_text_size_unhandled_exception_comment = 400
 max_text_size_observer_comments = max_text_size_trips_note_field - max_text_size_unhandled_exception_comment
 
-use_encrypted_database = True
+use_encrypted_database = False
