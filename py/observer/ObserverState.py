@@ -607,9 +607,9 @@ class ObserverState(QObject):
         self._logger.info(f'Adding comment "{comment}" to current trip {self.currentTripId}')
         # TODO Add to trips, not Comment
         if self.isFixedGear:
-            haul_db_id = self.hauls.currentHaulDBId if self.hauls else None
-        else:
             haul_db_id = self.sets.currentSetDBId if self.sets else None
+        else:
+            haul_db_id = self.hauls.currentHaulDBId if self.hauls else None
 
         newcomment = Comment.create(username=self.currentObserver,
                                     comment_date=ObserverDBUtil.get_arrow_datestr(),
