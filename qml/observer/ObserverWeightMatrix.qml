@@ -9,6 +9,8 @@ import QtQuick.Extras 1.4
 import "../common"
 import "."
 
+// TODO: Use ObserverMatrix instead of this in CountsWeights matrix
+
 Item {
     id: wtMatrix
     // set default values

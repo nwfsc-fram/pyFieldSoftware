@@ -279,6 +279,7 @@ class ObserverSpecies(QObject):
         self.otag_protocols = {'OT', 'T'}  # Observer Tag. 'T' is deprecated - use 'OT' instead.
         self.tag_protocols = self.etag_protocols.union(self.otag_protocols)
         self.barcode_protocols = {'WS', 'FC', 'FR', 'O', 'SS', 'SC', 'TS'}
+        self.length_only_protocols = {'FL', 'CL', 'AL', 'TL', 'VL', 'CW', 'W'}  # removed "-" from list
 
         # Helper class with Weight Method 3
         self._observer_catches = observer_catches
@@ -1406,6 +1407,18 @@ class ObserverSpecies(QObject):
     def requiredProtocolsBarcodes(self):
         return list(self.barcode_protocols & self.current_protocol_set) \
             if self.barcode_protocols and self.current_protocol_set else None
+
+    @pyqtProperty(bool, notify=currentProtocolsChanged)
+    def isLengthOnlyProtocols(self):
+        """
+        if protocol that requires something other than length exists, return false, else true
+        :return: boolean
+        """
+        if self.current_protocol_set:
+            return len(self.length_only_protocols | self.current_protocol_set) <= len(self.length_only_protocols)
+        else:
+            return False
+
 
     # Biospecies Items boolean flags automatically set via lookup_protocols_by_species_name
     @pyqtProperty(bool, notify=currentProtocolsChanged)
