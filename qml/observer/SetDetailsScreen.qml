@@ -72,6 +72,11 @@ Item {
         // console.debug("initUI");
         slidingKeyboard.showbottomkeyboard(false);
         keyboardMandatory.showbottomkeyboard(false);
+
+        // set fishing_activity_id in catches, but when we get to sets, so it always reflects the actual current faid
+        console.info("Setting appstate.catches.currentFishingActivityId to " + appstate.sets.current_fishing_activity_id)
+        appstate.catches.currentFishingActivityId = appstate.sets.current_fishing_activity_id
+
         var cal_weight = appstate.sets.getData('cal_weight');
         if (cal_weight) {
             switch (cal_weight) {
@@ -91,6 +96,7 @@ Item {
     Component.onCompleted: {
         initUI();
         checkRequiredFieldsAreSpecified();
+        appstate.catches.recalcOTCFG()  // recalc when loading screen
     }
 
     Component.onDestruction: {
@@ -126,7 +132,7 @@ Item {
                     Layout.preferredWidth: gridHaulDetails.labelColWidth
                     Layout.fillHeight: true
                     verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: 25                    
+                    font.pixelSize: 25
                 }
                 TextField {
                     id: tfCalcOTC
@@ -135,14 +141,31 @@ Item {
                     verticalAlignment: Text.AlignVCenter
                     font.pixelSize: 22
                     placeholderText: rowOTCMethod.current_wm == "6" ? "Blank (WM6)" : labelCalcOTC.text
-                    text: appstate.sets.getData('observer_total_catch') ? appstate.sets.getData('observer_total_catch').toFixed(2) : ""
+                    text: handleOtcTxt(appstate.sets.getData('observer_total_catch'))
                     readOnly: true
 
+                    // handle different types of otcs emitted here
+                    function handleOtcTxt(otc) {
+                        // customize how blank strings, 0s are shown here
+                        var otcTxt = ""
+                        if(otc === 0) {
+                            otcTxt = "0.0"
+                        } else if (!otc) {
+                            otcTxt = ""
+                        } else {
+                            otcTxt = otc.toFixed(2)
+                        }
+                        tfCalcOTC.text = otcTxt
+                    }
+                    // emitted with setData(otc) or hooks count changed
                     Connections {
                         target: appstate.sets
-                        onOtcFGWeightChanged: {
-                            tfCalcOTC.text = otc ? otc.toFixed(2) : ""
-                        }
+                        onOtcFGWeightChanged: tfCalcOTC.handleOtcTxt(otc)
+                    }
+                    // emitted when otc is recalculated
+                    Connections {
+                        target: appstate.catches
+                        onOtcFGWeightChanged: tfCalcOTC.handleOtcTxt(otc_fg)
                     }
                 }
                 FramLabelHighlightCapable {
@@ -153,7 +176,7 @@ Item {
 
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignRight
-                    font.pixelSize: 25                   
+                    font.pixelSize: 25
                 }
                 RowLayout {
                     id: rowOTCMethod
@@ -192,13 +215,15 @@ Item {
                                 } else {
                                     console.info("User selected OTC WM " + modelData);
                                 }
+                                appstate.catches.recalcOTCFG()  // otc is WM-dependent
                             }
                         }
                     }
                     FramNoteDialog {
                         id: dlgWM6Comment
-                        message: "Note: Comment is required\nfor OTC WM 6."
+                        message: "Note: Comment is required for OTC WM 6\ndocumenting the scenario and visual/vessel\nestimates for Retained Catch"
                         font_size: 18
+                        width: 400
                     }
                 }
             }

@@ -16,7 +16,7 @@ from PyQt5.QtCore import pyqtProperty, QVariant, QObject, Qt, pyqtSignal, pyqtSl
 from py.observer.LogbookObserverRetainedModel import ObserverRetainedModel
 from py.observer.LogbookVesselRetainedModel import VesselRetainedModel
 from py.observer.HaulSetModel import HaulSetModel
-from py.observer.ObserverDBModels import FishingActivities, CatchCategories, Catches
+from py.observer.ObserverDBModels import FishingActivities, CatchCategories, Catches, Comment
 from py.observer.ObserverDBUtil import ObserverDBUtil
 from py.observer.ObserverDBErrorReportsModels import TripIssues
 from py.observer.ObserverErrorReports import ThreadTER, TripChecksOptecsManager
@@ -586,7 +586,7 @@ class Hauls(QObject):
 
         self.HaulsModel.add_haul(newhaul)
         self.currentHaulId = newhaul.fishing_activity_num
-        self._save_notes_biolist_num()
+        self._create_biolist_comment()
         return int(newhaul.fishing_activity)
 
     @pyqtSlot(QVariant, result=bool, name='deleteHaul')
@@ -619,14 +619,60 @@ class Hauls(QObject):
 
         return result
 
+    # TODO: Create setter like in FG?
     @pyqtProperty(QVariant, notify=currentBiolistNumChanged)
     def currentBiolistNum(self):
         return self._get_biolist_num()
+
+    def _create_biolist_comment(self):
+        """
+        Replaces _save_notes_biolist_num func
+        Adds biolist string to comment table instead of saving directly to fishing_activity.notes.
+        Comment record is picked up for comment parsing later (FIELD-2071)
+        :return: None
+        """
+        if not self._current_haul:
+            self._logger.error('Tried to save biolist num, but current haul not set.')
+            return
+        BIOLIST_NOTE_PREFIX = 'Biolist #'
+        APPSTATE = f"haul_details_state::Haul {self.currentHaulId} Details"  # could make a param, but shouldn't change
+
+        # check if biolist comment already exists
+        existing_comments = Comment.select().where(
+            (Comment.trip == self._current_haul.trip) &
+            (Comment.fishing_activity == self._current_haul.fishing_activity) &
+            (fn.Lower(Comment.comment).contains(BIOLIST_NOTE_PREFIX.lower()))
+        )
+
+        if not existing_comments:
+            Comment.create(
+                username=ObserverDBUtil.get_setting('current_user'),
+                comment_date=ObserverDBUtil.get_arrow_datestr(),
+                comment=f"{BIOLIST_NOTE_PREFIX}{self.currentBiolistNum}",
+                appstateinfo=APPSTATE,
+                trip=self._current_haul.trip,
+                fishing_activity=self._current_haul.fishing_activity
+            )
+            self._logger.debug(f"{BIOLIST_NOTE_PREFIX}{self.currentBiolistNum} comment created.")
+        else:  # not sure if this will ever get used for trawl, but will update if necessary
+            query = Comment.update(
+                username=ObserverDBUtil.get_setting('current_user'),
+                comment_date=ObserverDBUtil.get_arrow_datestr(),
+                comment=f"{BIOLIST_NOTE_PREFIX}{self.currentBiolistNum}",
+                appstateinfo=APPSTATE,
+            ).where(
+                (Comment.fishing_activity == self._current_haul.fishing_activity) &
+                (Comment.trip == self._current_haul.trip) &
+                (Comment.comment.regexp('^' + BIOLIST_NOTE_PREFIX + '\d+$'))  # starts with Biolist #, ends with nums
+            )
+            query.execute()
+            self._logger.debug(f"{BIOLIST_NOTE_PREFIX}{self.currentBiolistNum} comment updated.")
 
     @pyqtSlot(name='updateBiolistNote')
     def _save_notes_biolist_num(self):
         """
         Store BIOLIST num to notes
+        NOTE: most functionality here has been replaced by self._create_biolist_comment
         :return:
         """
         if not self._current_haul:
@@ -639,8 +685,6 @@ class Hauls(QObject):
             self._current_haul.notes = notes
             self._current_haul.save()
             self._logger.debug(f'Saved Notes: {notes}')
-
-
 
     def _get_biolist_num(self):
         """

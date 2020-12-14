@@ -10,12 +10,13 @@ from PyQt5.QtCore import pyqtProperty, QVariant, QObject, Qt, pyqtSignal, pyqtSl
 from py.observer.LogbookObserverRetainedModel import ObserverRetainedModel
 from py.observer.LogbookVesselRetainedModel import VesselRetainedModel
 from py.observer.HaulSetModel import HaulSetModel
-from py.observer.ObserverDBModels import FishingActivities, CatchCategories, Catches, Trips
+from py.observer.ObserverDBModels import FishingActivities, CatchCategories, Catches, Trips, Comment
 from py.observer.ObserverDBUtil import ObserverDBUtil
 from py.observer.ObserverErrorReports import ThreadTER, TripChecksOptecsManager
 from py.observer.ObserverFishingLocations import ObserverFishingLocations
 from py.observer.ObserverCatches import ObserverCatches
 import logging
+from peewee import fn
 
 
 class Sets(QObject):
@@ -427,6 +428,7 @@ class Sets(QObject):
         data_name = data_name.lower()
         if data_name == 'observer_total_catch':
             self._current_set.observer_total_catch = float(data_val) if data_val else 0.0
+            self.otcFGWeightChanged.emit(data_val)
         elif data_name == 'otc_weight_method':
             self._current_set.otc_weight_method = int(data_val) if data_val else 0
         elif data_name == 'fit':
@@ -670,10 +672,8 @@ class Sets(QObject):
                                            created_date=ObserverDBUtil.get_arrow_datestr())
         logging.info(
             'Created FishingActivities (set {}) for trip={}'.format(newset.fishing_activity_num, self._trip_id))
-
         self.SetsModel.add_set(newset)
         self.currentSetId = newset.fishing_activity_num
-        self._save_notes_biolist_num()
         return int(newset.fishing_activity)
 
     @pyqtSlot(QVariant, result=bool, name='deleteSet')
@@ -717,12 +717,57 @@ class Sets(QObject):
         if self._current_set:
             self._current_set.biolist_localonly = bio_num
             self._current_set.save()
-        self._save_notes_biolist_num()
+        self._create_biolist_comment()
+
+    def _create_biolist_comment(self):
+        """
+        Replaces _save_notes_biolist_num func
+        Adds biolist string to comment table instead of saving directly to fishing_activity.notes.
+        Comment record is picked up for comment parsing later (FIELD-2071)
+        :return: None
+        """
+        if not self._current_set:
+            self._logger.error('Tried to save biolist num, but current set not set.')
+            return
+        BIOLIST_NOTE_PREFIX = 'Biolist #'
+        APPSTATE = f"set_details_state::Set {self.currentSetId} Details"  # could make a param, but shouldn't change
+
+        # check if biolist comment already exists
+        existing_comments = Comment.select().where(
+            (Comment.trip == self._current_set.trip) &
+            (Comment.fishing_activity == self._current_set.fishing_activity) &
+            (fn.Lower(Comment.comment).contains(BIOLIST_NOTE_PREFIX.lower()))
+        )
+
+        if not existing_comments:
+            Comment.create(
+                username=ObserverDBUtil.get_setting('current_user'),
+                comment_date=ObserverDBUtil.get_arrow_datestr(),
+                comment=f"{BIOLIST_NOTE_PREFIX}{self.currentBiolistNum}",
+                appstateinfo=APPSTATE,
+                trip=self._current_set.trip,
+                fishing_activity=self._current_set.fishing_activity
+            )
+            self._logger.info(f"{BIOLIST_NOTE_PREFIX}{self.currentBiolistNum} comment created.")
+        else:  # if biolist comment already exists, and user changes it, update it
+            query = Comment.update(
+                username=ObserverDBUtil.get_setting('current_user'),
+                comment_date=ObserverDBUtil.get_arrow_datestr(),
+                comment=f"{BIOLIST_NOTE_PREFIX}{self.currentBiolistNum}",
+                appstateinfo=APPSTATE,
+            ).where(
+                (Comment.fishing_activity == self._current_set.fishing_activity) &
+                (Comment.trip == self._current_set.trip) &
+                (Comment.comment.regexp('^' + BIOLIST_NOTE_PREFIX + '\d+$'))  # starts with Biolist #, ends with nums
+            )
+            query.execute()
+            self._logger.info(f"{BIOLIST_NOTE_PREFIX}{self.currentBiolistNum} comment updated.")
 
     @pyqtSlot(name='updateBiolistNote')
     def _save_notes_biolist_num(self):
         """
         Store BIOLIST num to notes
+        NOTE: most functionality here has been replaced by self._create_biolist_comment
         :return:
         """
         if not self._current_set:

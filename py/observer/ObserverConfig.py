@@ -55,4 +55,4 @@ max_text_size_trips_note_field = 4000
 max_text_size_unhandled_exception_comment = 400
 max_text_size_observer_comments = max_text_size_trips_note_field - max_text_size_unhandled_exception_comment
 
-use_encrypted_database = True
+use_encrypted_database = False

@@ -67,6 +67,7 @@ class ObserverCatches(QObject):
         self._current_catch = None
         self._current_activity = None
         self._fishing_activity_id = None
+        self._current_fishing_activity_id = None  # val set when SetDetailsScreen.qml inits
 
         # Species uses some values in ObserverCatches (e.g. weight method); pass self as parm.
         self._species = ObserverSpecies(self)
@@ -92,6 +93,14 @@ class ObserverCatches(QObject):
         # uses some values in ObserverCatches (e.g. weight method); pass self as parm.
         # TODO: Consider dropping self as parm in favor of signals.
         self._observer_catch_baskets = ObserverCatchBaskets(self)
+
+    @pyqtProperty(QVariant, notify=unusedSignal)
+    def currentFishingActivityId(self):
+        return self._current_fishing_activity_id
+
+    @currentFishingActivityId.setter
+    def currentFishingActivityId(self, faid):
+        self._current_fishing_activity_id = faid
 
     @pyqtProperty(QVariant, notify=speciesCompChanged)
     def species(self):
@@ -1044,28 +1053,41 @@ class ObserverCatches(QObject):
         self._calculate_OTC_FG()
 
     def _calculate_OTC_FG(self):
+        """
+        Essentially a wrapper for the below static method calculate_OTC_FG
+        Not sure why its designed this way
+        :return: None, emit vals on otcFGWeightChanged
+        """
         if not self._is_fixed_gear:
             return
-        current_set = FishingActivities.get(FishingActivities.fishing_activity == self._current_catch.fishing_activity)
-        otc_sample_weight = ObserverCatches.calculate_OTC_FG(self._logger,
-                                         current_set,
-                                         current_set.total_hooks_unrounded)
+        current_set = FishingActivities.get(FishingActivities.fishing_activity == self._current_fishing_activity_id)
+        otc_sample_weight = ObserverCatches.calculate_OTC_FG(
+            self._logger,
+            current_set,
+            current_set.total_hooks_unrounded
+        )
         self._logger.info(f'OTC SAMPLE WEIGHT CALC {otc_sample_weight}')
         # Update Model
-        if otc_sample_weight:
-            self.otcFGWeightChanged.emit(otc_sample_weight, self._current_catch.fishing_activity)
+        # if otc_sample_weight or otc_sample_weight == 0:
+        self.otcFGWeightChanged.emit(otc_sample_weight, self._current_fishing_activity_id)
 
     @staticmethod
     def calculate_OTC_FG(logger, current_set: FishingActivities, total_hooks_unrounded: float):
-        # FIELD-1890: Calculate OTC
-        # For FISHING_ACTIVITIES use OTC_WEIGHT_METHOD, populate OBSERVER_TOTAL_CATCH, OTC_WEIGHT_UM
-        # 6: Should be blank, something weird happened - comment required
-        # 11 (common choice): The sum of all the retained and discarded catch category weights.
-        # 8: Extrapolation: OTC=(Sum of catch category wts./ number of gear units sampled) x number of gear units set
-        otc_wm = current_set.otc_weight_method
+        """
+        FIELD-1890: Calculate OTC
+        WM 6: set otc, um to None and save
+        WM 8: loop through catches, extrapolate (cc wts / gear units * total gear units), and total
+        WM 11: Basic sum of sample weights using currentFishingActivityId
+
+        :param logger: logger class
+        :param current_set: FishingActivity model
+        :param total_hooks_unrounded: value entered on SetDetailsScreen (total hooks)
+        :return: sample weight (value gets emitted on otcFGWeightChanged later)
+        """
+        otc_wm = str(current_set.otc_weight_method).strip()  # str().strip() fixes WM8 if clause getting missed..
         if otc_wm == '6':
-            current_set.observer_total_catch = 0
-            current_set.otc_weight_um = 'LB'
+            current_set.observer_total_catch = None  # set OTC to null with WM6
+            current_set.otc_weight_um = None
             current_set.save()
             return
         otc_sample_weight = 0
@@ -1081,9 +1103,12 @@ class ObserverCatches(QObject):
                 if c_weight and c_sampled and total_hooks_unrounded:
                     otc_sample_weight += (c_weight / c_sampled) * total_hooks_unrounded
         else:
-            # WM 11, others?
-            otc_sample_weight = Catches.select().where(Catches.fishing_activity == current_set).aggregate(
-                fn.Sum(Catches.sample_weight))
+            # WM 11, others?  Set to 0 if no catches or catch weights
+            otc_sample_weight = Catches.select(
+                fn.COALESCE(fn.sum(Catches.sample_weight), 0)
+            ).where(
+                Catches.fishing_activity == current_set
+            ).scalar()
 
         # # PHLB weights, other WM weights
         # phlb_weight = Catches.select().where(Catches.fishing_activity == current_set).aggregate(

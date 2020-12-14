@@ -67,7 +67,7 @@ Item {
             title: "OTC WT"
             width: 100
             delegate: Text {
-                text: styleData ? (styleData.value ? styleData.value.toFixed(2): "") : ""
+                text: styleData ? (styleData.value ? styleData.value.toFixed(2): (styleData.value == 0 ? "0.0": "")) : ""  // show 0 as 0.0
                 font.pixelSize: 20
                 verticalAlignment: Text.AlignVCenter
             }
