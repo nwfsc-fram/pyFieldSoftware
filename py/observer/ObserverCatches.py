@@ -1192,7 +1192,6 @@ class ObserverCatches(QObject):
 
         if wm == '14' and self.currentSampleMethodIsNoSpeciesComposition and self._is_fixed_gear:
             sw = self.getData('sample_weight')
-            print('sw is: ', sw)
             # have to check sw for undefined, None, or nan values
             if not sw or sw is None or (sw != sw):
                 self._logger.info(f"WM 14 but now sample weight, no CC complete")
