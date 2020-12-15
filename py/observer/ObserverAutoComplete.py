@@ -42,7 +42,7 @@ class ObserverAutoComplete(QObject):
         self._suggestion_data = []  # Data to choose from
         self._current_loaded_data = ACDataTypes.none  # Only load data once
         self._db = db
-        self._full_search = False
+        self._full_search = False  # enables more comprehensive substring search...
 
     @pyqtProperty(QVariant)
     def suggestions(self):
@@ -155,9 +155,14 @@ class ObserverAutoComplete(QObject):
             self._suggestion_data = ObserverAutoComplete._abbreviate_suggestions(
                     self._suggestion_data, common_word_abbreviations)
 
-        full_search_types = {ACDataTypes.observers,
-                             ACDataTypes.first_receivers, ACDataTypes.vessels,
-                             ACDataTypes.catch_categories}
+        # dtypes added will have full substring search
+        full_search_types = {
+            ACDataTypes.observers,
+            ACDataTypes.first_receivers,
+            ACDataTypes.vessels,
+            ACDataTypes.catch_categories,
+            ACDataTypes.ports  # FIELD-2086
+        }
         if self._current_loaded_data in full_search_types:
             self._full_search = True  # search beyond a first word match
         else:

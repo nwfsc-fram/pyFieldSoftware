@@ -214,7 +214,7 @@ Item {
 
         RowLayout {
             Label {
-                text: qsTr("Vessel Logbook\nNumber")
+                text: qsTr("Vessel Logbook\nPage #")
 //                    Layout.fillWidth: true
                 Layout.preferredWidth: gridEndTrip.labelColWidth
                 Layout.fillHeight: true
