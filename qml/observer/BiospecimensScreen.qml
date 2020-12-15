@@ -580,27 +580,22 @@ ColumnLayout {
                     highlightColor: "lightgreen"
 
                     onClicked: {
+                        var bsLen = appstate.catches.biospecimens.getData('specimen_length')
                         slw_screen.check_pending_protocols();
                         if (tabsBiospecimens.remainingProtocolsCount() > 0) {
                             dlgMissingProtocols.showNeeded();
                         // check for length less then 10 for non-shrimp trips (not gear type 12 or 13)
-                        } else if ((appstate.catches.biospecimens.getData('specimen_length') < 10) &&
-                                   !((appstate.hauls.getData('gear_type') == '12') ||
-                                     (appstate.hauls.getData('gear_type') == '13') ||
-                                     (appstate.sets.getData('gear_type') == '12') ||
-                                     (appstate.sets.getData('gear_type') == '13'))) {
+                        } else if (bsLen < 10 && !appstate.hauls.isShrimpGear) {
                             slw_screen.trigger_sm_len_warning();
-                        } else if ((appstate.catches.isPHLB) || (appstate.catches.biospecimens.getData('specimen_length') < 100)) {
+                        // If length is 100 or over, ask user first before saving
+                        } else if (bsLen >= 100 && !appstate.catches.isPHLB) {
+                            slw_screen.trigger_len_warning();
+                        } else {
                             save_biospecimen_entry();
                             slw_screen.updateSex();  // clear selection
                             if (ObserverSettings.enableAudio) {
                                 soundPlayer.play_sound("saveRecord", false)
                             }
-                        }
-                        // If length is 100 or over, don't follow through with save until
-                        // after warning
-                        else {
-                            slw_screen.trigger_len_warning();
                         }
                     }
                 }
