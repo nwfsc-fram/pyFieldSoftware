@@ -1242,6 +1242,9 @@ Dialog {
                                 // TODO warning, override OK
                                 dlgMatchingLocations.open();
                                 return;
+                            } else if (parseFloat(tfDepth.text) <= 0) { // FIELD-2079: deny 0 depth vals
+                                dlgBadDepthVal.open()
+                                return
                             } else {
                                 dlg.accept();
                             }
@@ -1289,7 +1292,13 @@ Dialog {
                 }
             }
         }
-
+        FramNoteDialog {
+            // FIELD-2079: used to deny depth values = 0
+            id: dlgBadDepthVal
+            title: "Bad Depth Value"
+            bkgcolor: "#FA8072"
+            message: "Error! Depth values <= 0\nnot allowed, please resolve."
+        }
         Keys.onEscapePressed: dlg.reject()
         Keys.onBackPressed: dlg.reject()
     }

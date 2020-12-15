@@ -372,7 +372,7 @@ RowLayout {
                     var commentCharsAvailableAfterAdd = appstate.getFreeCommentSpaceAfterProposedAdd(text, state);
                     console.debug("Comments chars available after proposed comment add = " + commentCharsAvailableAfterAdd);
                     if (commentCharsAvailableAfterAdd >= 0) {
-                        appstate.addComment(text, state);
+                        appstate.addComment(text, state + "::" + obsSM.titleText);
                     } else {
                         console.warn("Comment addition rejected - out of comment space in Trips.notes (by " +
                                 (-commentCharsAvailableAfterAdd) + ' characters, including context info.');

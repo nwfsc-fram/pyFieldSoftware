@@ -485,6 +485,8 @@ Item {
             width: main.width - tvAvailableSpecies.width - columnAvailableSpecies.width - 90
             height: tvAvailableSpecies.height + tfSpeciesFilter.height
             headerVisible: true
+            sortable: true
+            property bool isSorting: false
 
             model: appstate.catches.species.observerSpeciesSelectedModel
             // Sorting column (catch(_id)) isn't visible, but use this attribute to determine how model is sorted.
@@ -494,7 +496,7 @@ Item {
                 if (rowCount == 0) {
                     tvSelectedSpecies.clear_selection();
                 }
-                else {
+                else if (!isSorting) {
                     // Initialization of "downstream" tab screens (Counts/Weights and Biospecimens)
                     // depends upon the Species screen having selected an entry in the Selected species.
                     // Somewhat arbitrary, but reasonable choice: select the top entry.
@@ -549,6 +551,11 @@ Item {
                 }
             }
             TableViewColumn {
+                role: "species_comp_item"
+                title: "#"
+                width: 42
+            }
+            TableViewColumn {
                 role: "common_name"
                 title: "Name"
                 width: 160
@@ -583,18 +590,6 @@ Item {
                }
             }
             TableViewColumn {
-                role: "bio_count"
-                title: "# Bio"
-                width: 70
-                visible: true
-                delegate: Text {
-                   text: styleData.value ? styleData.value: ""
-                   font.pixelSize: 20
-                   verticalAlignment: Text.AlignVCenter
-                   horizontalAlignment: Text.AlignHCenter
-               }
-            }
-            TableViewColumn {
                 role: "avg_weight"
                 title: "Avg Wt"
                 width: 100
@@ -606,7 +601,18 @@ Item {
                    horizontalAlignment: Text.AlignHCenter
                }
             }
-
+            TableViewColumn {
+                role: "bio_count"
+                title: "# Bio"
+                width: 70
+                visible: true
+                delegate: Text {
+                   text: styleData.value ? styleData.value: ""
+                   font.pixelSize: 20
+                   verticalAlignment: Text.AlignVCenter
+                   horizontalAlignment: Text.AlignHCenter
+               }
+            }
 
             function activate_recalc_all() {
                 // intended only for use with WM15 (perf reasons)
@@ -687,6 +693,23 @@ Item {
                 activate_selected_species();
                 enable_remove_button(true);
             }
+
+            onSorted: {
+                // make highlighted row follow model sort TODO: Consolidate functionality to ObserverTableView
+                tvSelectedSpecies.isSorting = true  // use to silence onRowCountChanged signal
+                if (currentRow > -1) {
+                    var speciesCompItem = getSelItem().species_comp_item
+                    tvSelectedSpecies.selection.clear();
+                    model.sort(col)
+                    currentRow = tvSelectedSpecies.model.get_item_index('species_comp_item', speciesCompItem)
+                    tvSelectedSpecies.selection.select(currentRow)
+                    tvSelectedSpecies.activate_selected_species()
+                } else { // nothing selected, just sort
+                    model.sort(col)
+                }
+                tvSelectedSpecies.isSorting = false
+            }
+
         }
         RowLayout {
             x: tvSelectedSpecies.x

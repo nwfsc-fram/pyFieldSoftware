@@ -137,6 +137,8 @@ class SoundPlayer(QObject):
                   'numpadDecimal': 'resources/sounds/minimal-ui-sounds/tinyclick.wav',
                   'numpadBack': 'resources/sounds/minimal-ui-sounds/click3.wav',
                   'numpadOK': 'resources/sounds/minimal-ui-sounds/beep.mp3',
+                  'matrixWtSel': 'resources/sounds/minimal-ui-sounds/beep.mp3',
+                  'matrixSel': 'resources/sounds/minimal-ui-sounds/beep.mp3',
                   'keyOK': 'resources/sounds/minimal-ui-sounds/beep.mp3',
                   'click': 'resources/sounds/minimal-ui-sounds/click2.wav',
                   'saveRecord': 'resources/sounds/minimal-ui-sounds/funnyclick.wav',

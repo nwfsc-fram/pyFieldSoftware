@@ -383,16 +383,19 @@ Item {
 
                 // Highlight new entry in Selected Catch Categories.
                 if (tvSelectedCatchCat.model.count >= 1) {
-                    tvSelectedCatchCat.selectNewest();
+                    tvSelectedCatchCat.selectRow(0);
                     console.debug("Selected newest entry in Selected Catch Category.");
                 }
 
                 // automatically jump to CC details
                 obsSM.state_change("cc_details_state");
-                var newestEntry = tvSelectedCatchCat.getNewestRowIdx();
-                tvSelectedCatchCat.editItemDetails(newestEntry);
+                tvSelectedCatchCat.editItemDetails(0);
             }
 
+            Connections { // signal from CC details to cancel / delete
+                target: appstate.catches
+                onCcCancelled: columnAvailableCC.removeCatchCat()
+            }
             function removeCatchCat() {
 
                 var selected_row = tvSelectedCatchCat.getSelRow();
@@ -480,6 +483,7 @@ Item {
             width: login.width - tvAvailableCC.width - columnAvailableCC.width - 90
             height: tvAvailableCC.height + tfCatchCategory.height
             selectionMode: SelectionMode.SingleSelection
+            sortable: true
 
             model: appstate.catches.CatchesModel
             // Sorting column (catch(_id)) isn't visible, but use this attribute to determine how model is sorted.
@@ -646,16 +650,17 @@ Item {
                 console.debug("Row " + tvSelectedCatchCat.currentRow + " highlighted.");
             }
 
-            function getSelRow() {
-                return currentRow;
-            }
-
-            function getSelItem() {
-                // Get currently selected item
-                var selected_row = getSelRow();
-                if (selected_row < 0)
-                    return null;
-                return model.get(selected_row);
+            onSorted: {
+                if (currentRow > -1) {
+                    // make highlighted row follow model sort
+                    var catchNum = tvSelectedCatchCat.getSelItem().catch_num
+                    tvSelectedCatchCat.selection.clear()
+                    model.sort(col)  // col var emitted from sorted signal in ObserverTableView
+                    currentRow = tvSelectedCatchCat.model.get_item_index('catch_num', catchNum)
+                    tvSelectedCatchCat.selection.select(currentRow)
+                } else { // nothing selected, just sort
+                    model.sort(col)
+                }
             }
 
             function getNewestRowIdx() {
@@ -697,12 +702,15 @@ Item {
                 // TODO - disabled for FG
                 var ccBasketsPage = stackView.push(Qt.resolvedUrl("CatchCategoriesBasketsScreen.qml"));
             }
-
+            TableViewColumn {
+                role: "catch_num"
+                title: "#"
+                width: 42
+            }
             TableViewColumn {
                 role: "catch_disposition"
                 title: "R/D"
                 width: 55
-
             }
             TableViewColumn {
                 role: "catch_category_code"

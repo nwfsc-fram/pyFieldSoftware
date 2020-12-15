@@ -113,6 +113,9 @@ FramTabView {
                 tabView.currentIndex = 3; // Biospecimens
             }
         }
+        onRevertToCW: {  // FIELD-2039: signal to go back to CW tab
+            tabView.currentIndex = 2
+        }
     }
 
     onCurrentIndexChanged: {
@@ -155,7 +158,7 @@ FramTabView {
     }
     Tab {
         id: tabCW
-        title: "Counts/ Weights"
+        title: "Counts/Weights"
         active: true  // Load tab at runtime
         CountsWeightsScreen {
             Component.onCompleted: {

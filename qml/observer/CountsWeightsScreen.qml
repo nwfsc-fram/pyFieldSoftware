@@ -15,13 +15,27 @@ Item {
     // Properties, Functions and Pop-up Dialogs
     ////
     property bool stateCW: false // set by signals, true if in CW state
-
+    property bool is_mix: appstate.catches.species.currentSpeciesItemName === 'MIX'
     property int dec_places: appstate.displayDecimalPlaces  // Number of decimal places to display weight values
 
     Connections {
         target: obsSM
         onEnteringCW: {
             modeSC.reset();
+        }
+        onExitingCW: {  // FIELD-2039: warn if all baskets are no count (and not mix)
+            if (!is_mix) {
+                // check if we have all No Count baskets, warn if true
+                if (tvBaskets.model.count > 0) {
+                    var total_count = 0
+                    for (var i = 0; i < tvBaskets.model.items.length; i++) {
+                        total_count += tvBaskets.model.items[i].fish_number_itq
+                    }
+                    if (!total_count) {
+                        framHeader.dlgCWNoCountCheck.open()
+                    }
+                }
+            }
         }
     }
 
@@ -237,7 +251,7 @@ Item {
 
             Row {
                 id: rowDR
-                visible: !appstate.catches.species.isRetained
+                visible: !appstate.catches.species.isRetained && !is_mix  // FIELD-2028
                 signal drCleared
                 function clear_discard_reason() {
                     gridDR.current_discard_id = null;
@@ -469,7 +483,7 @@ Item {
 
                             // If nothing is selected, do nothing
                             if (tvBaskets.currentRow == -1 ||
-                                    (!gridDR.is_dr_set() && !appstate.catches.species.isRetained))
+                                    (!gridDR.is_dr_set() && !appstate.catches.species.isRetained && !is_mix))  // FIELD-2028
                                 return;
 
                             // If zero, do nothing
@@ -539,15 +553,48 @@ Item {
                                     value, "'.");
                             }
                         }
+
                         function numpadEnteredCount(basket_id, value) {
                             console.debug("numPad Entered Count")
-                            if (value != null && value != '') {
-                                modeSC.editBasketCount(basket_id, value);
-                                warnIfAvgWeightShowsAsZero();
-                            } else {  // re-null value
-                                modeSC.editBasketCount(basket_id, null);
+                            dlgCounts.validate(basket_id, value)
+                        }
+                        ProtocolWarningDialog {
+                            // dlg wrapper for count value validations
+                            id: dlgCounts
+                            btnAckText: "Yes, count is correct"
+                            btnOKText: "No, return to entry"
+                            property int _count
+                            property int _basket
+
+                            function save() {
+                            // reusable save func
+                                if (_basket) {
+                                    modeSC.editBasketCount(_basket, _count)
+                                    warnIfAvgWeightShowsAsZero();
+                                    modeSC.reset()
+                                } else {
+                                    console.debug("Basket id not set, unable to save count")
+                                }
                             }
-                            modeSC.reset();
+                            function validate(basket_id, value) {
+                            // place to customize validations for yes/no dialogs
+                                _count = value
+                                _basket = basket_id
+                                // validations go here: open() and return for custom validations
+                                if (_count > 250) {  // FIELD-1224
+                                    dlgCounts.message = "Warning! Count is greater than expected.\nIs this count correct?"
+                                    dlgCounts.open()
+                                    return
+                                } else {
+                                    dlgCounts.save()
+                                }
+                            }
+                            onAccepted: { // select numpad txt field and set to 0
+                                numPad.clearAndSelect()
+                            }
+                            onRejected: { // save basket count, reset
+                                dlgCounts.save()
+                            }
                         }
 
                         function decimalPortionOfWeightIsOK(weight_string) {
@@ -594,7 +641,7 @@ Item {
 
                         onNumpadinput: {
                             //console.debug("Stored numpad result is '" + numPad.textNumPad.text + "'.");
-                            if (!gridDR.is_dr_set() && !appstate.catches.species.isRetained) {
+                            if (!gridDR.is_dr_set() && !appstate.catches.species.isRetained && !is_mix) {  // FIELD-2028
                                 dlgSelectDRWarning.open();
                                 clearnumpad();
                                 return;

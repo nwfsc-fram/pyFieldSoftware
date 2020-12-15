@@ -20,7 +20,7 @@ from py.observer.CountsWeights import CountsWeights
 from py.observer.ObserverConfig import display_decimal_places
 from py.observer.ObserverDBModels import Catches, FishingActivities, ProtocolGroups, Settings, \
     Species, SpeciesCompositions, SpeciesCompositionItems, SpeciesCorrelation, SpeciesSamplingPlanLu, \
-    SpeciesCatchCategories, Lookups, GeartypeStratumGroupMtx, BioSpecimens, StratumLu
+    SpeciesCatchCategories, Lookups, GeartypeStratumGroupMtx, BioSpecimens, StratumLu, SpeciesCompositionBaskets
 from py.observer.ObserverDBUtil import ObserverDBUtil
 from py.observer.ObserverLookups import RockfishCodes
 
@@ -170,6 +170,7 @@ class ObserverSpecies(QObject):
     totalCatchWeightFGChanged = pyqtSignal(QVariant, arguments=['weight'], name='totalCatchWeightFGChanged')
     totalCatchCountChanged = pyqtSignal(QVariant, arguments=['count'], name='totalCatchCountChanged')
     totalCatchCountFGChanged = pyqtSignal(QVariant, arguments=['count'], name='totalCatchCountFGChanged')
+    reactivateSpecies = pyqtSignal(QVariant, arguments=['speciesCompItemId'])  #FIELD-2039
 
     species_list_types = (
         'Full',  # Full list from SPECIES table of observer.db
@@ -278,9 +279,11 @@ class ObserverSpecies(QObject):
         self.otag_protocols = {'OT', 'T'}  # Observer Tag. 'T' is deprecated - use 'OT' instead.
         self.tag_protocols = self.etag_protocols.union(self.otag_protocols)
         self.barcode_protocols = {'WS', 'FC', 'FR', 'O', 'SS', 'SC', 'TS'}
+        self.length_only_protocols = {'FL', 'CL', 'AL', 'TL', 'VL', 'CW', 'W'}  # removed "-" from list
 
         # Helper class with Weight Method 3
-        self._weight_method_3_helper = WeightMethod3Helper(self._logger, observer_catches)
+        self._observer_catches = observer_catches
+        self._weight_method_3_helper = WeightMethod3Helper(self._logger, self._observer_catches)
 
     @pyqtSlot(name='reloadSpeciesDatabase')
     def reload_species_database(self):
@@ -636,6 +639,18 @@ class ObserverSpecies(QObject):
         self._logger.debug(f'Model update {idx} Got bio count changed: {bio_count}')
         self._species_comp_items_model.setProperty(idx, 'bio_count', bio_count)
 
+    @pyqtProperty(int, notify=unusedSignal)
+    def totalFishCounted(self):
+        """
+        Gets physically counted number of fish from DB
+        :return: INT (sum of counts within baskets)
+        """
+        return SpeciesCompositionBaskets.select(
+            fn.sum(SpeciesCompositionBaskets.fish_number_itq)
+        ).where(
+            SpeciesCompositionBaskets.species_comp_item == self._current_speciescomp_item
+        ).scalar()
+
     def _handle_trawl_tally_fish_count_changed(self, ct):
         if self.isFixedGear:  # we only use this table count on the c/w screen for FG
             return
@@ -647,9 +662,9 @@ class ObserverSpecies(QObject):
         # Update model
         idx = self._get_cur_species_comp_item_idx()
         self._species_comp_items_model.setProperty(idx, 'species_number', ct)
+        self._species_comp_items_model.setProperty(idx, 'total_fish_counted', self.totalFishCounted)  # field-2040
 
         # Update avg_weight view model for CURRENT_SPECIES_ITEM
-
         spec_wt = self._current_speciescomp_item.species_weight
         spec_num = self._current_speciescomp_item.species_number
         self._species_comp_items_model.setProperty(idx, 'species_weight', spec_wt)
@@ -688,6 +703,8 @@ class ObserverSpecies(QObject):
             # Update model
             idx = self._get_cur_species_comp_item_idx()
             self._species_comp_items_model.setProperty(idx, 'species_number', db_ct_val)
+            self._species_comp_items_model.setProperty(idx, 'total_fish_counted', self.totalFishCounted)  # field-2040
+
             # Parameter 'ct' includes tally of unweighed fish as well as weighed.
             # For SpeciesScreen column, use extrapolated 'ct' for the fish count, even for WM8.
             # Having the extended count (of weighed and of tallied) in the Count column of the Species
@@ -1162,15 +1179,33 @@ class ObserverSpecies(QObject):
         if species_common_name is None or self._current_species_comp_id is None:
             self._logger.error('Species Common Name / Current Species Comp ID is None')
             return
+
+        # FIELD-2015: Auto add mix with WM21
+        if self._observer_catches.weightMethod == "21" and self._current_species_comp_id:
+            mixCount = SpeciesCompositionItems.select(
+                fn.Count()
+            ).where(
+                SpeciesCompositionItems.species == 99999
+                & SpeciesCompositionItems.species_composition == self._current_species_comp_id
+            ).scalar()
+            # check if mix is already present
+            if mixCount == 0:
+                self.add_species_comp_item(99999)
+
         try:
             fish_match = Species.get((fn.Lower(Species.common_name) == species_common_name.lower()) |
                                      (Species.pacfin_code == pacfin_code))
             user_id = ObserverDBUtil.get_current_user_id()
             current_date = ObserverDBUtil.get_arrow_datestr()
-            SpeciesCompositionItems.create(species=fish_match.species,
-                                           species_composition=self._current_species_comp_id,
-                                           created_by=user_id,
-                                           created_date=current_date)
+
+            # auto create species match
+            SpeciesCompositionItems.create(
+                species=fish_match.species,
+                species_composition=self._current_species_comp_id,
+                created_by=user_id,
+                created_date=current_date
+            )
+
             self._build_species_comp_items_model()
         except Species.DoesNotExist:
             self._logger.warning('No matching common name for {}, cannot auto-add.'.format(species_common_name))
@@ -1372,6 +1407,18 @@ class ObserverSpecies(QObject):
     def requiredProtocolsBarcodes(self):
         return list(self.barcode_protocols & self.current_protocol_set) \
             if self.barcode_protocols and self.current_protocol_set else None
+
+    @pyqtProperty(bool, notify=currentProtocolsChanged)
+    def isLengthOnlyProtocols(self):
+        """
+        if protocol that requires something other than length exists, return false, else true
+        :return: boolean
+        """
+        if self.current_protocol_set:
+            return len(self.length_only_protocols | self.current_protocol_set) <= len(self.length_only_protocols)
+        else:
+            return False
+
 
     # Biospecies Items boolean flags automatically set via lookup_protocols_by_species_name
     @pyqtProperty(bool, notify=currentProtocolsChanged)

@@ -18,12 +18,14 @@ var msgNBWIP = "New basket weight:\nEnter digit, decimal pt, or OK";
 var msgNBWIP_DECPT_DONE = "New basket weight:\nEnter digit, or OK";
 var msgRFNBC = "New basket count:\nEnter digit or No Count";
 var msgNBCIP = "New basket count:\nEnter digit, No Count, or OK";
+var msgRFMBW = "New matrix basket:\nSelect weight from matrix"
 
 var NEW_BASKET_STATE = {
     RFNBW: {value: 0, name: "ReadyForNewBasketWeight"},
     NBWIP: {value: 1, name: "NewBasketWeightInProgress"},
     RFNBC: {value: 2, name: "ReadyForNewBasketCount"},
-    NBCIP: {value: 3, name: "NewBasketCountInProgress"}
+    NBCIP: {value: 3, name: "NewBasketCountInProgress"},
+    RFMBW: {value: 4, name: "ReadyForMatrixBasketWeight"}
 };
 var curNewBasketState = NEW_BASKET_STATE.RFNBW;
 
@@ -33,8 +35,14 @@ var NEW_BASKET_EVENT = {
     DELETE_CONFIRMED: {value: 1, name: "DeleteConfirmed"},
     OK: {value: 2, name: "OKPressed"},
     MANUAL_WEIGHT: {value: 3, name: "ManualWeightButton"},
-    NO_COUNT: {value: 4, name: "NoCountButton"}
+    NO_COUNT: {value: 4, name: "NoCountButton"},
+    MATRIX_WEIGHT: {value: 5, name: "MatrixWeight"}  // not currently being used, but added per FIELD-1698
 };
+
+function isEnteringMatrixBasket() {
+    curNewBasketState = NEW_BASKET_STATE.RFMBW
+    updateBasketStatusMessage(msgRFMBW)
+}
 
 function resetNewBasketState() {
     //console.trace();

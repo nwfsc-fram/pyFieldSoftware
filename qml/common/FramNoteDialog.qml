@@ -13,9 +13,10 @@ Dialog {
     property string message: ""
     property alias font_size: lblMessage.font.pixelSize
     property alias wrapMode: lblMessage.wrapMode
+    property string bkgcolor: "#eee"
 
     contentItem: Rectangle {
-        color: "#eee"
+        color: bkgcolor
         anchors.fill: parent       
         ColumnLayout {
             anchors.fill: parent

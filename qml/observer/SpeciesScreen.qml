@@ -483,6 +483,9 @@ Item {
             width: main.width - tvAvailableSpecies.width - columnAvailableSpecies.width - 90
             height: tvAvailableSpecies.height + tfSpeciesFilter.height
             headerVisible: true
+            headerPixelSize: 17
+            sortable: true
+            property bool isSorting: false
 
             model: appstate.catches.species.observerSpeciesSelectedModel
             // Sorting column (catch(_id)) isn't visible, but use this attribute to determine how model is sorted.
@@ -492,7 +495,7 @@ Item {
                 if (rowCount == 0) {
                     tvSelectedSpecies.clear_selection();
                 }
-                else {
+                else if (!isSorting){
                     // Initialization of "downstream" tab screens (Counts/Weights and Biospecimens)
                     // depends upon the Species screen having selected an entry in the Selected species.
                     // Somewhat arbitrary, but reasonable choice: select the top entry.
@@ -516,6 +519,11 @@ Item {
                     // Catch disposition is discarded. Discard reason changed.
                     console.debug("SpeciesScreen got signal of change of discard reason - activating selected species.");
                     tvSelectedSpecies.activate_selected_species();
+                }
+                onReactivateSpecies: {
+                    console.debug("Reactivating species comp item with " + speciesCompItemId)
+                    tvSelectedSpecies.selectBySpeciesCompItemId(speciesCompItemId)
+                    tvSelectedSpecies.activate_selected_species()
                 }
             }
 
@@ -546,32 +554,24 @@ Item {
                 }
             }
             TableViewColumn {
+                role: "species_comp_item"
+                title: "#"
+                width: 42
+            }
+            TableViewColumn {
                 role: "common_name"
                 title: "Name"
                 width: 160
             }
             TableViewColumn {
                 role: "discard_reason"
-                title: "D.R."
+                title: "DR"
                 width: 50
-            }            
-            TableViewColumn {
-                role: "species_weight"
-                title: "Sample Wt"
-                width: 120
-                delegate: Text {
-                   text: styleData.value ? styleData.value.toFixed(2) : ""
-                   font.pixelSize: 20
-                   verticalAlignment: Text.AlignVCenter
-                   horizontalAlignment: Text.AlignHCenter
-               }
             }
             TableViewColumn {
-                role: "extrapolated_species_weight"
-                title: "Extr. Wt"
-                width: 110
-                visible: appstate.catches.weightMethod === "15" ||
-                         appstate.catches.weightMethod === "8"
+                role: "species_weight"
+                title: "Samp Wt"
+                width: 120
                 delegate: Text {
                    text: styleData.value ? styleData.value.toFixed(2) : ""
                    font.pixelSize: 20
@@ -583,8 +583,20 @@ Item {
                 // Display the total count including tally count for WM8
                 // To display only count of weighed fish: role: "species_number"
                 role: "weighed_and_tallied_count"
-                title: "Count"
+                title: "Extr Ct"
                 width: 70
+            }
+            TableViewColumn {
+                role: "avg_weight"
+                title: "Avg Wt"
+                width: 100
+                visible: true
+                delegate: Text {
+                   text: styleData.value ? styleData.value.toFixed(2) : ""
+                   font.pixelSize: 20
+                   verticalAlignment: Text.AlignVCenter
+                   horizontalAlignment: Text.AlignHCenter
+               }
             }
             TableViewColumn {
                 role: "bio_count"
@@ -599,10 +611,11 @@ Item {
                }
             }
             TableViewColumn {
-                role: "avg_weight"
-                title: "Avg Wt"
-                width: 100
-                visible: true
+                role: "extrapolated_species_weight"
+                title: "Extr Wt"
+                width: 110
+                visible: appstate.catches.weightMethod === "15" ||
+                         appstate.catches.weightMethod === "8"
                 delegate: Text {
                    text: styleData.value ? styleData.value.toFixed(2) : ""
                    font.pixelSize: 20
@@ -610,8 +623,12 @@ Item {
                    horizontalAlignment: Text.AlignHCenter
                }
             }
-
-
+            TableViewColumn {
+                // FIELD-2040: raw count, not extrapolated
+                role: "total_fish_counted"
+                title: "Ct"
+                width: 70
+            }
             function activate_recalc_all() {
                 // intended only for use with WM15 (perf reasons)
                 console.warn("Recalculating weights for all " + rowCount + " rows.");
@@ -679,6 +696,33 @@ Item {
                 appstate.speciesName = "";
 
                 enable_remove_button(false);
+            }
+
+            function selectBySpeciesCompItemId(scItemId) {
+                if (tvSelectedSpecies.model.count > 0) {
+                    var idx = -1
+                    tvSelectedSpecies.selection.clear()
+                    idx = tvSelectedSpecies.model.get_item_index('species_comp_item', scItemId)
+                    console.info("Selecting spp item with " + scItemId + " returned idx = " + idx)
+                    tvSelectedSpecies.currentRow = idx;
+                    tvSelectedSpecies.selection.select(idx);
+                }
+            }
+
+            onSorted: {
+                // make highlighted row follow model sort TODO: Consolidate functionality to ObserverTableView
+                tvSelectedSpecies.isSorting = true  // use to silence onRowCountChanged signal
+                if (currentRow > -1) {
+                    var speciesCompItem = getSelItem().species_comp_item
+                    tvSelectedSpecies.selection.clear();
+                    model.sort(col)
+                    currentRow = tvSelectedSpecies.model.get_item_index('species_comp_item', speciesCompItem)
+                    tvSelectedSpecies.selection.select(currentRow)
+                    tvSelectedSpecies.activate_selected_species()
+                } else { // nothing selected, just sort
+                    model.sort(col)
+                }
+                tvSelectedSpecies.isSorting = false
             }
 
             onClicked: {

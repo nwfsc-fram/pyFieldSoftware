@@ -1,7 +1,7 @@
 import QtQuick 2.6
 import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.2
-import QtQuick.Layouts 1.2
+import QtQuick.Layouts 1.3
 import QtQuick.Controls.Private 1.0
 
 import "../common"
@@ -15,7 +15,7 @@ Item {
     // Properties, Functions and Pop-up Dialogs
     ////
     property bool stateCW: false // set by signals, true if in CW state
-
+    property bool is_mix: appstate.catches.species.currentSpeciesItemName === 'MIX'
     property int dec_places: appstate.displayDecimalPlaces  // Number of decimal places to display weight values
 
     Connections {
@@ -155,6 +155,7 @@ Item {
             tvBaskets.selection.clear();
             btnManualWeight.checked = true;
             btnManualCount.enabled = false;  // Disable until editing existing basket.
+            btnMatrixWeight.enabled = true;
             numPad.show_no_weight(true);
             numPad.setSkipButtonMode(false);
             numPad.clearnumpad();
@@ -498,6 +499,7 @@ Item {
                         exclusiveGroup: egMeasurementType
                         onCheckedChanged: {
                             if (checked) {
+                                numPadStack.currentIndex = 0
                                 if (tvBaskets.currentRow != -1) {
                                     numPad.setnumpadvalue(tvBaskets.model.get(tvBaskets.currentRow).basket_weight_itq);
                                     numPad.selectAll();
@@ -507,7 +509,6 @@ Item {
                                 NBSM.handleNewBasketEvent(NBSM.NEW_BASKET_EVENT.MANUAL_WEIGHT, btnEditBasket.checked);
                             }
                         }
-
                     }
                     ObserverGroupButton {
                         id: btnManualCount
@@ -527,180 +528,291 @@ Item {
                             }
                         }
                     }
+                    ObserverGroupButton {  // FIELD-1698: enable matrix weight entry
+                        id: btnMatrixWeight
+                        text: "Matrix\nWeight"
+                        exclusiveGroup: egMeasurementType
+                        visible: screenCW.speciesIsCounted()  // Species 'MIX' is weighed but not counted
+                        enabled: !btnManualCount.checked && !btnEditBasket.checked  // no matrix while editing
+                        onCheckedChanged: {
+                            if (checked) {
+                                numPadStack.currentIndex = 1
+                                btnEditBasket.visible = false
+                                NBSM.isEnteringMatrixBasket()
+                            } else {
+                                modeSC.reset();  // revert back to ready for basket wt state
+                                btnEditBasket.visible = true
+                            }
+
+                        }
+                    }
+                    // FIELD-1698: allow matrix increment toggle
+                    ExclusiveGroup {
+                        id: egMatrixToggle
+                    }
+                    ColumnLayout {
+                        // buttons allow user to change matrix increments
+                        id: clMatrixToggle
+                        visible: btnMatrixWeight.checked  // only when matrix is active
+                        ObserverGroupButton {
+                            id: btnTenthsMatrix
+                            text: "0.1"
+                            font_size: 13
+                            exclusiveGroup: egMatrixToggle
+                            Layout.preferredWidth: idEntry.default_width / 8
+                            Layout.preferredHeight: buttonLogin.height / 2
+                            onCheckedChanged: {
+                                if (checked) { // changing vals should change matrix dynamically
+                                    wtMatrix.setModel(0.1)
+                                }
+                            }
+                        }
+                        ObserverGroupButton {
+                            id: btnQuartersMatrix
+                            text: "0.25"
+                            checked: true  // default to 0.25
+                            font_size: 13
+                            exclusiveGroup: egMatrixToggle
+                            Layout.preferredWidth: idEntry.default_width / 8
+                            Layout.preferredHeight: buttonLogin.height / 2
+                            onCheckedChanged: {
+                                if(checked) { // changing vals should change matrix dynamically
+                                    wtMatrix.setModel(0.25)
+                                }
+                            }
+                        }
+                    }
                 }
                 Row {
-                    FramNumPadMultiply {
-                        id: numPad
-                        x: 175
-                        y: 300
-                        state: "weights"
-                        limitToTwoDecimalPlaces: true   // Don't allow more than two decimal places for weight.
-                        enable_audio: ObserverSettings.enableAudio
-                        onNumpadok: {
+                    StackLayout {
+                        id: numPadStack
+                        FramNumPadMultiply {
+                            id: numPad
+                            x: 175
+                            y: 300
+                            state: "weights"
+                            limitToTwoDecimalPlaces: true   // Don't allow more than two decimal places for weight.
+                            enable_audio: ObserverSettings.enableAudio
+                            onNumpadok: {
 
 
-                            // If nothing is selected, do nothing
-                            if (tvBaskets.currentRow == -1 ||
-                                    (!gridDR.is_dr_set() && !appstate.catches.species.isRetained))
-                                return;
+                                // If nothing is selected, do nothing
+                                if (tvBaskets.currentRow == -1 ||
+                                        (!gridDR.is_dr_set() && !appstate.catches.species.isRetained))
+                                    return;
 
-//                             If zero, OK for FG Weights
-                            if ( stored_result === "0" && btnManualCount.checked) {
-                                console.log("Zero value- ignoring basket OK for FG count");
+    //                             If zero, OK for FG Weights
+                                if ( stored_result === "0" && btnManualCount.checked) {
+                                    console.log("Zero value- ignoring basket OK for FG count");
 
-                                return;
+                                    return;
+                                }
+                                NBSM.handleNewBasketEvent(NBSM.NEW_BASKET_EVENT.OK, btnEditBasket.checked);
+
+                                // If something's selected, set its value accordingly.
+                                var basket_id = modeSC.getBasketIdForCurrentRow();
+
+                                if (basket_id > 0) {
+                                    if (btnManualWeight.checked) {
+    //                                    if (stored_result > 0.0) {  // Zero is OK for FG
+                                            numpadEnteredWeight(basket_id, stored_result);
+    //                                    }
+
+                                    } else {
+                                        numpadEnteredCount(basket_id, stored_result);
+                                    }
+                                }
+
                             }
-                            NBSM.handleNewBasketEvent(NBSM.NEW_BASKET_EVENT.OK, btnEditBasket.checked);
 
-                            // If something's selected, set its value accordingly.
-                            var basket_id = modeSC.getBasketIdForCurrentRow();
-
-                            if (basket_id > 0) {
-                                if (btnManualWeight.checked) {
-//                                    if (stored_result > 0.0) {  // Zero is OK for FG
-                                        numpadEnteredWeight(basket_id, stored_result);
-//                                    }
-
-                                } else {
-                                    numpadEnteredCount(basket_id, stored_result);
+                            onClearnumpad: {
+                                // Added operation for CLR key iff:
+                                // 1. Entering a new basket (not editing an existing)
+                                // 2. Entering a weight (not a count)
+                                // 3. At least one digit has been entered (so a null basket has been entered).
+                                if (NBSM.isEnteringNewBasketWeight() &&
+                                        tvBaskets.currentRow == 0) {
+                                    console.debug("CLR btn while entering weight for new basket: new basket row removed.");
+                                    tvBaskets.removeCurrentBasket();
+                                    modeSC.reset();
                                 }
                             }
 
-                        }
-
-                        onClearnumpad: {
-                            // Added operation for CLR key iff:
-                            // 1. Entering a new basket (not editing an existing)
-                            // 2. Entering a weight (not a count)
-                            // 3. At least one digit has been entered (so a null basket has been entered).
-                            if (NBSM.isEnteringNewBasketWeight() &&
-                                    tvBaskets.currentRow == 0) {
-                                console.debug("CLR btn while entering weight for new basket: new basket row removed.");
-                                tvBaskets.removeCurrentBasket();
-                                modeSC.reset();
+                            function clearAndSelect() {
+                                numPad.clearnumpad();
+                                // Focus on the numPad's output textbox and select the "0" cleared amount.
+                                numPad.selectAll();
                             }
-                        }
 
-                        function clearAndSelect() {
-                            numPad.clearnumpad();
-                            // Focus on the numPad's output textbox and select the "0" cleared amount.
-                            numPad.selectAll();
-                        }
-
-                        function numpadEnteredWeight(basket_id, value) {
-                            if (value > 0.0 && !decimalPortionOfWeightIsOK(value)) {
-                                // FIELD-1423: Require that decimal portion of weight ends in .x0 or .x5
-                                console.debug("Decimal digits of weight " + value +
-                                        " don't end in .x0 or .x5.");
-                                dlgBasketWeightBadDecimalDigits.invalidWeight = value;
-                                dlgBasketWeightBadDecimalDigits.open();
-                            } else {
-                                // Typical - no error, no confirmation needed
-                                if (value === 0)
-                                    value = null;
-                                modeSC.addBasketWeight(basket_id, value);
-                                console.debug("Weight is OK without need for confirmation: '",
-                                    value, "'.");
+                            function numpadEnteredWeight(basket_id, value) {
+                                if (value > 0.0 && !decimalPortionOfWeightIsOK(value)) {
+                                    // FIELD-1423: Require that decimal portion of weight ends in .x0 or .x5
+                                    console.debug("Decimal digits of weight " + value +
+                                            " don't end in .x0 or .x5.");
+                                    dlgBasketWeightBadDecimalDigits.invalidWeight = value;
+                                    dlgBasketWeightBadDecimalDigits.open();
+                                } else {
+                                    // Typical - no error, no confirmation needed
+                                    if (value === 0)
+                                        value = null;
+                                    modeSC.addBasketWeight(basket_id, value);
+                                    console.debug("Weight is OK without need for confirmation: '",
+                                        value, "'.");
+                                }
                             }
-                        }
-                        function numpadEnteredCount(basket_id, value) {
-                            console.debug("numPad Entered Count")
-                            if (value !== null && value !== '') {
-                                modeSC.editBasketCount(basket_id, value);
-                                // warnIfAvgWeightShowsAsZero();
-                            } else {  // re-null value
-                                modeSC.editBasketCount(basket_id, null);
+                            function numpadEnteredCount(basket_id, value) {
+                                console.debug("numPad Entered Count")
+                                dlgCounts.validate(basket_id, value)
                             }
-                            modeSC.reset();
-                        }
+                            ProtocolWarningDialog {
+                                // dlg wrapper for count value validations
+                                id: dlgCounts
+                                btnAckText: "Yes, count is correct"
+                                btnOKText: "No, return to entry"
+                                property int _count
+                                property int _basket
 
-                        function decimalPortionOfWeightIsOK(weight_string) {
-                            // FIELD-1423: Given a string with a float value with two decimal places,
-                            // return false if the second decimal digit is not 0 or 5.
-                            // TODO: Consider using regular expression. Current implementation
-                            // may be clearer, and it's only called on a numpad OK click.
-                            console.assert(typeof weight_string === 'string',
-                                    "Weight should be of type string.");
-                            console.assert(limitToTwoDecimalPlaces,
-                                'decimal place checking assuming two decimal digits');
-
-                            var decimalPtIdx = weight_string.indexOf('.');
-                            if (decimalPtIdx < 0) {
-                                // Weight has no decimal portion.
-                                return true;
+                                function save() {
+                                // reusable save func
+                                    if (_basket) {
+                                        modeSC.editBasketCount(_basket, _count)
+    //                                    warnIfAvgWeightShowsAsZero();  // not needed in FG...
+                                        modeSC.reset()
+                                    } else {
+                                        console.debug("Basket id not set, unable to save count")
+                                    }
+                                }
+                                function validate(basket_id, value) {
+                                // place to customize validations for yes/no dialogs
+                                    _count = value
+                                    _basket = basket_id
+                                    // validations go here: open() and return for custom validations
+                                    if (_count > 250) {  // FIELD-1224
+                                        dlgCounts.message = "Warning! Count is greater than expected.\nIs this count correct?"
+                                        dlgCounts.open()
+                                        return
+                                    } else {
+                                        dlgCounts.save()
+                                    }
+                                }
+                                onAccepted: { // select numpad txt field and set to 0
+                                    numPad.clearAndSelect()
+                                }
+                                onRejected: { // save basket count, reset
+                                    dlgCounts.save()
+                                }
                             }
-                            var decimalDigits = weight_string.substring(decimalPtIdx+1);
-                            if (decimalDigits.length < 2) {
-                                // Weight has less than two decimal digits. A zero may be implied.
-                                return true;
-                            }
-                            if (decimalDigits.endsWith('0') || decimalDigits.endsWith('5')) {
-                                // Last of two decimal digits is either zero or five.
-                                return true;
-                            }
-                            // weight_string has two decimal places and does not end in 0 or 5.
-                            return false;
-                        }
 
-                        function containsAValue() {
-                            return (numPad.textNumPad.text &&
-                                    numPad.textNumPad.text.length > 0);
-                        }
+                            function decimalPortionOfWeightIsOK(weight_string) {
+                                // FIELD-1423: Given a string with a float value with two decimal places,
+                                // return false if the second decimal digit is not 0 or 5.
+                                // TODO: Consider using regular expression. Current implementation
+                                // may be clearer, and it's only called on a numpad OK click.
+                                console.assert(typeof weight_string === 'string',
+                                        "Weight should be of type string.");
+                                console.assert(limitToTwoDecimalPlaces,
+                                    'decimal place checking assuming two decimal digits');
 
-                        function isNonZero() {
-                            if (containsAValue()) {
-                                return parseFloat(numPad.textNumPad.text) > 0;
-                            } else {
+                                var decimalPtIdx = weight_string.indexOf('.');
+                                if (decimalPtIdx < 0) {
+                                    // Weight has no decimal portion.
+                                    return true;
+                                }
+                                var decimalDigits = weight_string.substring(decimalPtIdx+1);
+                                if (decimalDigits.length < 2) {
+                                    // Weight has less than two decimal digits. A zero may be implied.
+                                    return true;
+                                }
+                                if (decimalDigits.endsWith('0') || decimalDigits.endsWith('5')) {
+                                    // Last of two decimal digits is either zero or five.
+                                    return true;
+                                }
+                                // weight_string has two decimal places and does not end in 0 or 5.
                                 return false;
                             }
-                        }
 
-                        function decimalPointHasBeenEntered() {
-                            if (numPad.containsAValue() &&
-                                    numPad.textNumPad.text.indexOf(".") > -1) {
-                                return true;
-                            } else {
-                                return false;
+                            function containsAValue() {
+                                return (numPad.textNumPad.text &&
+                                        numPad.textNumPad.text.length > 0);
+                            }
+
+                            function isNonZero() {
+                                if (containsAValue()) {
+                                    return parseFloat(numPad.textNumPad.text) > 0;
+                                } else {
+                                    return false;
+                                }
+                            }
+
+                            function decimalPointHasBeenEntered() {
+                                if (numPad.containsAValue() &&
+                                        numPad.textNumPad.text.indexOf(".") > -1) {
+                                    return true;
+                                } else {
+                                    return false;
+                                }
+                            }
+
+                            onNumpadinput: {
+                                //console.debug("Stored numpad result is '" + numPad.textNumPad.text + "'.");
+                                if (!checkDRSet()) {
+                                    return;
+                                }
+
+                                if (!appstate.sets.isCalWeightSpecified) {
+                                    dlgNoWM.open();
+                                    clearnumpad();
+                                    return;
+                                }
+
+                                NBSM.handleNewBasketEvent(NBSM.NEW_BASKET_EVENT.DIGIT, btnEditBasket.checked);
+
+
+                                // Could be handling digit for weight, or for count
+                                if (tvBaskets.currentRow == -1) { // Handling first digit for weight
+                                    // If user starts inputting without row selected, create new basket
+                                    modeSC.addNewBasket(null, null);
+                                }
+                            }
+
+                            onNoWeightPressed: {
+                                if (!checkDRSet()) {
+                                    return;
+                                }
+
+                                if (tvBaskets.currentRow == -1) { // Handling first digit for weight
+                                    // If user starts inputting without row selected, create new basket
+                                    modeSC.addNewBasket(null, null);
+                                }
+                                var basket_id = modeSC.getBasketIdForCurrentRow();
+                                NBSM.handleNewBasketEvent(NBSM.NEW_BASKET_EVENT.DIGIT, btnEditBasket.checked);
+                                numpadEnteredWeight(basket_id, null);
+
+                                if (ObserverSettings.enableAudio) {
+                                   soundPlayer.play_sound("noCount", false)
+                                }
                             }
                         }
-
-                        onNumpadinput: {
-                            //console.debug("Stored numpad result is '" + numPad.textNumPad.text + "'.");
-                            if (!checkDRSet()) {
-                                return;
+                        ObserverWeightMatrix { // FIELD-1698: Allow matrix weight selection
+                            id: wtMatrix
+                            y: 73
+                            x: 2
+                            // setting model defaults here just to be explicit
+                            increment: 0.25
+                            lowerRange: 0.25
+                            upperRange: 40.0
+                            enable_audio: true
+                            onWeightClicked: {
+                                if (!gridDR.is_dr_set() && !appstate.catches.species.isRetained && !is_mix) {  // FIELD-2028
+                                        dlgSelectDRWarning.open();
+                                        return;
+                                    }
+                                modeSC.addNewBasket(weight, 1)  // matrix weight always has count of 1
+                                warnIfAvgWeightShowsAsZero();
+                                modeSC.selectNewestRow()  // select newly added wt
                             }
-
-                            if (!appstate.sets.isCalWeightSpecified) {
-                                dlgNoWM.open();
-                                clearnumpad();
-                                return;
-                            }
-
-                            NBSM.handleNewBasketEvent(NBSM.NEW_BASKET_EVENT.DIGIT, btnEditBasket.checked);
-
-
-                            // Could be handling digit for weight, or for count
-                            if (tvBaskets.currentRow == -1) { // Handling first digit for weight
-                                // If user starts inputting without row selected, create new basket
-                                modeSC.addNewBasket(null, null);
-                            }
-                        }
-
-                        onNoWeightPressed: {
-                            if (!checkDRSet()) {
-                                return;
-                            }
-
-                            if (tvBaskets.currentRow == -1) { // Handling first digit for weight
-                                // If user starts inputting without row selected, create new basket
-                                modeSC.addNewBasket(null, null);
-                            }
-                            var basket_id = modeSC.getBasketIdForCurrentRow();
-                            NBSM.handleNewBasketEvent(NBSM.NEW_BASKET_EVENT.DIGIT, btnEditBasket.checked);
-                            numpadEnteredWeight(basket_id, null);
-
-                            if (ObserverSettings.enableAudio) {
-                               soundPlayer.play_sound("noCount", false)
+                            Component.onCompleted: {
+                                wtMatrix.addModel(0.10, 0.10, 40.1) // for later toggling; for some reason 40.0 is not inclusive...
                             }
                         }
                     }
@@ -866,6 +978,9 @@ Item {
             }
 
             onCurrentRowChanged: {
+                if (btnMatrixWeight.checked) {
+                    return  // don't do any of the stuff below if using weight matrix
+                }
                 // console.debug("currentRow='" + currentRow + "'.");
                 if (currentRow != -1 && currentRow < model.count) {
                     // Either: (1) a row was clicked: -> go into edit mode of existing basket
@@ -879,9 +994,11 @@ Item {
                     if (NBSM.isEnteringNewBasket()) {
                         btnEditBasket.checked = false;
                         btnManualCount.enabled = false; // Require OK'd weight before moving to count
+                        btnMatrixWeight.enabled = false;  // no switching to matrix mid-basket
                         basketEntryStatusMessage.update(NBSM.msgNBWIP);
                     } else if (btnEditBasket.checked) {
                         btnManualCount.enabled = true;
+                        btnMatrixWeight.enabled = false;  // no editing w matrix
                         basketEntryStatusMessage.update(NBSM.msgStartEditingExistingBasket);
                     }
                 }

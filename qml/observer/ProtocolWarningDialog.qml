@@ -41,7 +41,7 @@ Dialog {
                     Layout.alignment: Qt.AlignHCenter
                     fontsize: 20
                     bold: true
-                    onClicked: { console.info("User clicked " + btnOkay); dlg.accept() }
+                    onClicked: { console.info("User clicked " + btnOKText); dlg.accept() }
                     isDefault: true
                 } // btnOkay
                 FramButton {

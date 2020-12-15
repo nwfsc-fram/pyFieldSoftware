@@ -14,6 +14,7 @@ BorderImage {
 
     property alias textLeftBanner: textLeftBanner
     property alias textRightBanner: textRightBanner
+    property alias dlgCWNoCountCheck: dlgCWNoCountCheck
     property string title: "Title"
 
     // width of toolbar area that can be clicked to nav back/fwd
@@ -28,6 +29,42 @@ BorderImage {
     onBackwardEnable: {
         backward_enabled = enable;
         console.debug("Backward button enable: " + backward_enabled);
+    }
+
+    signal revertToCW
+    // dlg called onExit of CWs screen
+    ProtocolWarningDialog {
+        // FIELD-2039: warning if all baskets are no count, dlg sends you back to CW tab or ignores
+        id: dlgCWNoCountCheck
+        message: "You have not entered a count yet!\nAt least one basket must have a real count. \nEnsure you will be able to enter a count\nlater if dismissing this warning."
+        btnOKText:"Return to\nCatch/Weights"
+        btnAckText: "Dismiss: I'm going\nto have another\nbasket later\nI promise"
+        onAccepted: {
+            if (stackView.currentItem.page_state_id() === 'tabs_screen') {
+                revertToCW()  // signal tabs_screen to change index to 2 (counts/weights)
+            } else if (stackView.currentItem.page_state_id() === 'hauls_state') {
+                /* if you've gone all the way to hauls...
+                1. go to haul details state
+                2. push haul details qml
+                3. go to next state (cc_entry screen)
+                4. push tab screen
+                5. reactivate old selected catch, and species records
+                6. revert to CW tab
+                */
+                var speciesCompItemId = appstate.catches.species.currentSpeciesCompItemID
+                var catchId = appstate.catches.currentCatchID
+                obsSM.to_haul_details_state()
+                stackView.push(Qt.resolvedUrl("HaulDetailsScreen.qml"));
+                obsSM.to_next_state()
+                stackView.push(Qt.resolvedUrl("ObserverTabsScreen.qml"))
+                appstate.catches.reactivateCC(catchId)
+                appstate.catches.species.reactivateSpecies(speciesCompItemId)
+                revertToCW()
+            }
+        }
+        onRejected: {
+            console.info("ignoring no count for now...")
+        }
     }
 
     signal backClicked(string to_state, string text_clicked);

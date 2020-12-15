@@ -450,24 +450,23 @@ class ObserverState(QObject):
         for comment in comments_q:
             # Removed starting dash comment delimiter to adhere to IFQ TRIP_CHECK convention that
             # notes start with an alphanumeric. But continuing to use trailing dash separator.
-            self._comments_all += f'{comment.username} ({comment.appstateinfo}) ' \
+            new_comment_string = f'{comment.username} ({comment.appstateinfo}) ' \
                                   f'{comment.comment_date} ---\n{comment.comment}\n\n'
+            self._comments_all += new_comment_string
 
             try:
-                if comment.fishing_activity is None or comment.appstateinfo in self.trip_comment_states:
-                    self._comments_trip += f'{comment.username} ({comment.appstateinfo}) ' \
-                                           f'{comment.comment_date} ---\n{comment.comment}\n\n'
+                # Only want first half of appstateinfo, that variable now also holds the page title text
+                if comment.fishing_activity is None or comment.appstateinfo.split("::")[0] in self.trip_comment_states:
+                    self._comments_trip += new_comment_string
 
                     self._db_formatted_comments_trip += self._db_format_one_comment(comment)
                 else:
                     haul_id = comment.fishing_activity.fishing_activity
                     if haul_id not in self._comments_haul.keys():
-                        self._comments_haul[haul_id] = f'{comment.username} ({comment.appstateinfo}) ' \
-                                                       f'{comment.comment_date} ---\n{comment.comment}\n\n'
+                        self._comments_haul[haul_id] = new_comment_string
                         self._db_formatted_comments_haul[haul_id] = self._db_format_one_comment(comment)
                     else:  # append
-                        self._comments_haul[haul_id] += f'{comment.username} ({comment.appstateinfo}) ' \
-                                                        f'{comment.comment_date} ---\n{comment.comment}\n\n'
+                        self._comments_haul[haul_id] += new_comment_string
                         self._db_formatted_comments_haul[haul_id] += self._db_format_one_comment(comment)
             except Exception as e:  # Handle load of bad previous comment weirdness
                 self._logger.error(e)
@@ -507,8 +506,14 @@ class ObserverState(QObject):
         db_format_comment = self.strip_db_comment(comment.comment)
         # Removed starting dash comment delimiter to adhere to IFQ TRIP_CHECK convention that
         # notes start with an alphanumeric. But continuing to use trailing dash separators (but only 4).
+        # also need some smarts for the deleting the first half of the app state string if it's not
+        # blank
+
+        newappstate = comment.appstateinfo if len(comment.appstateinfo.split("::")) < 2 else \
+                      comment.appstateinfo.split("::", maxsplit=1)[1]
+
         db_formatted_comment = f'{comment.username} ' \
-                               f'({comment.appstateinfo}) {comment.comment_date} ' \
+                               f'({newappstate}) {comment.comment_date} ' \
                                f': {db_format_comment} -- '
         return db_formatted_comment
 
@@ -573,6 +578,9 @@ class ObserverState(QObject):
         NOTE: catch_weight cant be negative in DB, so if negative set to null / None
         :return: None
         """
+        if self.isFixedGear:  # wm5 doesn't exist w. FG
+            return
+
         wm5_catches = Catches.select(Catches.catch, Catches.catch_num).where(
             (Catches.fishing_activity == self._hauls.currentHaulDBId) &
             (Catches.catch_weight_method == '5')
@@ -599,9 +607,9 @@ class ObserverState(QObject):
         self._logger.info(f'Adding comment "{comment}" to current trip {self.currentTripId}')
         # TODO Add to trips, not Comment
         if self.isFixedGear:
-            haul_db_id = self.hauls.currentHaulDBId if self.hauls else None
-        else:
             haul_db_id = self.sets.currentSetDBId if self.sets else None
+        else:
+            haul_db_id = self.hauls.currentHaulDBId if self.hauls else None
 
         newcomment = Comment.create(username=self.currentObserver,
                                     comment_date=ObserverDBUtil.get_arrow_datestr(),

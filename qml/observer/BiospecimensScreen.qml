@@ -3,6 +3,7 @@ import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
 import QtQuick.Layouts 1.2
 import QtQuick.Controls.Private 1.0
+import QtQuick.Dialogs 1.2
 
 import "../common"
 import "."
@@ -39,6 +40,12 @@ ColumnLayout {
         tvBioEntries.selection.clear();
         tvBioEntries.currentRow = 0;
         tvBioEntries.selection.select(tvBioEntries.currentRow);
+    }
+
+    function unselect() {
+        // deselect all in tv model
+        tvBioEntries.selection.clear()
+        tvBioEntries.currentRow = -1
     }
 
     function set_biospecimen_species_from_catch_category() {
@@ -571,18 +578,124 @@ ColumnLayout {
                     Layout.preferredWidth: 30
                 }
                 ObserverSunlightButton {
+                    // button trigger for length matrix
+                    id: btnLengthMtx
+                    text: "Length\nMatrix"
+                    Layout.preferredWidth: 100
+                    Layout.preferredHeight: 50
+                    // hide if modify button checked, isPHLB and not BSM 10, or something other than length required
+                    visible: (!bModifyEntry.checked && ((appstate.catches.isPHLB && rowBiosample.currentBM == '10') || (appstate.catches.species.isLengthOnlyProtocols)))
+                    onClicked: {
+                        if(!labelBSMethodDesc.is_selected()) {
+                            dlgSelectBMWarning.open()
+                        } else { // set phlb or non-phlb models
+                            if (appstate.catches.isPHLB) {
+                                mtx.setModel(10)
+                            } else {
+                                mtx.setModel(1)
+                            }
+                            dlgLengthMatrix.open()
+                        }
+                    }
+                    Dialog {
+                        id: dlgLengthMatrix
+                        title: 'BS Length Matrix'
+                        width: mtx.matrixWidth + 70
+                        height: mtx.matrixHeight + 70
+                        property bool opened: false  // used to fake onClosed signal
+                        signal dlgClosed  // used to fake onClosed signal
+                        signal dlgOpened  // used to fake onClosed signal
+                        contentItem: Rectangle {
+                            anchors.margins: 20
+                            anchors.fill: parent
+                            color: "#eee"
+                            RowLayout {
+                                id: rlMtx
+                                FramLabel {
+                                    id: lblMtx
+                                    text: "Select a biospecimen length (cm):"
+                                    font.pixelSize: 20
+                                    Layout.preferredHeight: 40
+                                }
+                                ObserverMatrix {
+                                    id: mtx
+                                    anchors.top: lblMtx.bottom
+                                    enable_audio: true
+                                    lowerRange: 1
+                                    upperRange: 250
+                                    increment: 1
+                                    columns: 5
+                                    buttonHeight: 50
+                                    precision: 0
+                                    onValClicked: {
+                                        // TODO: option to save or retract low or high bs length
+                                        if (val < 10 && !appstate.catches.isPHLB && !appstate.hauls.isShrimpGear) {
+                                            dlgLengthWarning.display("Warning! Low length value selected:\n\n" + val + "cm < 10")
+                                        } else if (val > 100 && !appstate.catches.isPHLB) {
+                                            dlgLengthWarning.display("Warning! High length value selected:\n\n" + val + "cm > 100")
+                                        }
+                                        appstate.catches.biospecimens.addBiospecimenItem(
+                                            tfSpecies.text,
+                                            rowBiosample.currentBM,
+                                            null
+                                        );
+                                        appstate.catches.biospecimens.setData('specimen_length', val)
+                                        screenBio.selectNewestRow()
+                                    }
+                                    FramNoteDialog {
+                                        id: dlgLengthWarning
+                                        title: "Length Warning"
+                                        bkgcolor: "#FA8072"
+                                        height: 250
+                                        message: ""
+                                        function display(msg) {
+                                            message = msg
+                                            dlgLengthWarning.open()
+                                        }
+                                    }
+                                    Component.onCompleted: {
+                                        mtx.addModel(10, 10, 249) // custom PHLB model
+                                    }
+                                }
+                            }
+                        }
+                        // not sure why onClosed doesnt work for Dialog, but this mess below does
+                        onVisibleChanged : {
+                            if (!this.visible) {
+                                dlgClosed()
+                            } else {
+                                dlgOpened()
+                            }
+                        }
+                        onDlgClosed: {
+                            opened = false
+                            screenBio.unselect()
+                        }
+                        onDlgOpened: {
+                            opened = true
+                        }
+                    }
+                }
+                ObserverSunlightButton {
                     id: bSaveEntry
                     text: "Save\nEntry"
                     Layout.preferredWidth: 150
                     Layout.preferredHeight: 50
-                    enabled: labelBSMethodDesc.is_selected() && tvBioEntries.currentRow >= 0
+                    enabled: labelBSMethodDesc.is_selected() && tvBioEntries.currentRow >= 0 && !dlgLengthMatrix.opened
                     txtBold: true
                     highlightColor: "lightgreen"
 
                     onClicked: {
+                        var bsLen = appstate.catches.biospecimens.getData('specimen_length')
                         slw_screen.check_pending_protocols();
                         if (tabsBiospecimens.remainingProtocolsCount() > 0) {
                             dlgMissingProtocols.showNeeded();
+                        // check for length less then 10 for non-shrimp trips (not gear type 12 or 13)
+                        } else if (bsLen < 10 && !appstate.hauls.isShrimpGear) {
+                            slw_screen.trigger_sm_len_warning();
+                        // If length is 100 or over, ask user first before saving
+                        } else if (bsLen >= 100 && !appstate.catches.isPHLB) {
+                            slw_screen.trigger_len_warning();
                         } else {
                             save_biospecimen_entry();
                             slw_screen.updateSex();  // clear selection
