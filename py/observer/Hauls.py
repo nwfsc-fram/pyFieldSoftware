@@ -495,6 +495,10 @@ class Hauls(QObject):
 
         return False
 
+    @pyqtProperty(bool, notify=unusedSignal)
+    def isShrimpGear(self):
+        return self.getData('gear_type') in ['12', '13']
+
     @pyqtSlot(QVariant, result=QVariant, name='getObserverRetModel')
     def getObserverRetModel(self, haul_db_id):
         """

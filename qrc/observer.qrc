@@ -85,6 +85,7 @@
         <file>../qml/observer/ObserverNumPad.qml</file>
         <file>../qml/observer/ObserverNumPadDialog.qml</file>
         <file>../qml/observer/ObserverWeightMatrix.qml</file>
+        <file>../qml/observer/ObserverMatrix.qml</file>
         <file>../qml/observer/ObserverProgramPickerDialog.qml</file>
         <file>../qml/observer/ObserverSettings.qml</file>
         <file>../qml/observer/ObserverSunlightButton.qml</file>
