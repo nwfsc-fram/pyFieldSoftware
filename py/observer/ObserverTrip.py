@@ -184,6 +184,7 @@ class ObserverTrip(QObject):
         """
         self._logger.info("User ended trip # {}".format(self.tripId))
         self._current_trip = None
+        self._certs_model.clear()  # FIELD-2084: prevent permit to carry to next trip
         self.tripsChanged.emit()
         self.tripIdChanged.emit('')
         self.currentVesselNameChanged.emit('')
