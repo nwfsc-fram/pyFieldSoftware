@@ -320,7 +320,7 @@ ColumnLayout {
                 id: tvBioEntries
                 Layout.fillHeight: true
                 Layout.preferredWidth: parent.width
-
+                sortable: true
                 model: appstate.catches.biospecimens.BiospecimenItemsModel
                 item_height: 60
 
@@ -387,6 +387,19 @@ ColumnLayout {
                     updateBiosampleButtonAndDescription();
                 }
 
+                onSorted: { // FIELD-2090: make table sortable
+                    // make highlighted row follow model sort TODO: Consolidate functionality to ObserverTableView
+                    // make selection follow currently selected, should trigger currentRowChanged signal
+                    if (currentRow > -1) {
+                        var bsItemId = getSelItem().bio_specimen_item
+                        tvBioEntries.selection.clear();
+                        model.sort(col)
+                        currentRow = tvBioEntries.model.get_item_index('bio_specimen_item', bsItemId)
+                        tvBioEntries.selection.select(currentRow)
+                    } else { // nothing selected, just sort
+                        model.sort(col)
+                    }
+                }
                 onCurrentRowChanged: {
                     console.debug("tvBioEntries.currentRow changed to " + currentRow)
                     bModifyEntry.checked = false;
@@ -421,14 +434,10 @@ ColumnLayout {
                     }
                 }
 
-                TableViewColumn {
+				TableViewColumn {
                     title: "#"
+                    role: 'bio_specimen_item'  // FIELD-2090: replace rowcount - row with bio_specimen_item id
                     width: 50
-                    delegate: Text {
-                        text: tvBioEntries.model.count - styleData.row
-                        font.pixelSize: 20
-                        verticalAlignment: Text.AlignVCenter
-                    }
                 }
                 TableViewColumn {
                     role: "biosample_str"
