@@ -294,6 +294,20 @@ class Biospecimens(QObject):
             # Returning None or empty string causes error in ObserverSpecies.requiredProtocolsBarcodes
             return "None Selected"
 
+    @pyqtProperty(QVariant, notify=currentSpeciesIDChanged)
+    def currentSpeciesCategory(self):
+        if self._current_species:
+            return self._current_species.species_category
+        else:
+            return None
+
+    @pyqtProperty(QVariant, notify=currentSpeciesIDChanged)
+    def currentSpeciesSubCategory(self):
+        if self._current_species:
+            return self._current_species.species_sub_category
+        else:
+            return None
+
     @pyqtProperty(QVariant)
     def currentCatchDisposition(self):
         if self._current_catch_disposition:
