@@ -639,6 +639,15 @@ class ObserverTrip(QObject):
             ObserverDBUtil.set_current_fishery_id(fishery_id)
             self.tripDataChanged.emit()
 
+    @pyqtProperty(bool, notify=tripDataChanged)
+    def isShrimpFishery(self):
+        """
+        if fishery is 8 (CA Ridgeback), 9 (CA Pink Shrimp),
+        13 (OR Pink Shrimp), or 18 (WA Pink Shrimp), return true
+        """
+        if self._current_trip is not None:
+            return self._current_trip.fishery in ['8', '9', '13', '18']
+
     @pyqtProperty(str, notify=tripDataChanged)
     def currentSkipperName(self):
         """

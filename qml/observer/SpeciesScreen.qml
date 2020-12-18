@@ -485,7 +485,6 @@ Item {
             headerVisible: true
             headerPixelSize: 17
             sortable: true
-            property bool isSorting: false
 
             model: appstate.catches.species.observerSpeciesSelectedModel
             // Sorting column (catch(_id)) isn't visible, but use this attribute to determine how model is sorted.
