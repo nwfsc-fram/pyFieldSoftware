@@ -638,7 +638,7 @@ ColumnLayout {
                                     precision: 0
                                     onValClicked: {
                                         // TODO: option to save or retract low or high bs length
-                                        if (val < 10 && !appstate.catches.isPHLB && !appstate.hauls.isShrimpGear) {
+                                        if (val < 10 && !appstate.catches.isPHLB && !appstate.trips.isShrimpFishery) {
                                             dlgLengthWarning.display("Warning! Low length value selected:\n\n" + val + "cm < 10")
                                         } else if (val > 100 && !appstate.catches.isPHLB) {
                                             dlgLengthWarning.display("Warning! High length value selected:\n\n" + val + "cm > 100")
@@ -699,11 +699,11 @@ ColumnLayout {
                         slw_screen.check_pending_protocols();
                         if (tabsBiospecimens.remainingProtocolsCount() > 0) {
                             dlgMissingProtocols.showNeeded();
-                        // check for length less then 10 for non-shrimp trips (not gear type 12 or 13)
-                        } else if (bsLen < 10 && !appstate.hauls.isShrimpGear) {
+                        } else if (bsLen < 10 && !appstate.trips.isShrimpFishery) {
+                            // check for length less then 10 for non-shrimp trips
                             slw_screen.trigger_sm_len_warning();
-                        // If length is 100 or over, ask user first before saving
                         } else if (bsLen >= 100 && !appstate.catches.isPHLB) {
+                            // If length is 100 or over, ask user first before saving
                             slw_screen.trigger_len_warning();
                         } else {
                             save_biospecimen_entry();
