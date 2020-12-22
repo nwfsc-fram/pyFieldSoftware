@@ -9,6 +9,7 @@ TableView {
     property int item_height: 50
     property bool sortable: false  // allow basic table sorting to be turned on
     property int headerPixelSize: 20
+    property bool isSorting: false  // use if you need to surpress things while sorting
     signal sorted(string col)  // emit col name when table sorted (e.g. sorted("catch_num"))
 
     horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff

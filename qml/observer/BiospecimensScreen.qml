@@ -320,7 +320,7 @@ ColumnLayout {
                 id: tvBioEntries
                 Layout.fillHeight: true
                 Layout.preferredWidth: parent.width
-
+                sortable: true
                 model: appstate.catches.biospecimens.BiospecimenItemsModel
                 item_height: 60
 
@@ -387,6 +387,19 @@ ColumnLayout {
                     updateBiosampleButtonAndDescription();
                 }
 
+                onSorted: { // FIELD-2090: make table sortable
+                    // make highlighted row follow model sort TODO: Consolidate functionality to ObserverTableView
+                    // make selection follow currently selected, should trigger currentRowChanged signal
+                    if (currentRow > -1) {
+                        var bsItemId = getSelItem().bio_specimen_item
+                        tvBioEntries.selection.clear();
+                        model.sort(col)
+                        currentRow = tvBioEntries.model.get_item_index('bio_specimen_item', bsItemId)
+                        tvBioEntries.selection.select(currentRow)
+                    } else { // nothing selected, just sort
+                        model.sort(col)
+                    }
+                }
                 onCurrentRowChanged: {
                     console.debug("tvBioEntries.currentRow changed to " + currentRow)
                     bModifyEntry.checked = false;
@@ -421,14 +434,10 @@ ColumnLayout {
                     }
                 }
 
-                TableViewColumn {
+				TableViewColumn {
                     title: "#"
+                    role: 'bio_specimen_item'  // FIELD-2090: replace rowcount - row with bio_specimen_item id
                     width: 50
-                    delegate: Text {
-                        text: tvBioEntries.model.count - styleData.row
-                        font.pixelSize: 20
-                        verticalAlignment: Text.AlignVCenter
-                    }
                 }
                 TableViewColumn {
                     role: "biosample_str"
@@ -629,11 +638,7 @@ ColumnLayout {
                                     precision: 0
                                     onValClicked: {
                                         // TODO: option to save or retract low or high bs length
-                                        if (val < 10 && !appstate.catches.isPHLB && !appstate.hauls.isShrimpGear) {
-                                            dlgLengthWarning.display("Warning! Low length value selected:\n\n" + val + "cm < 10")
-                                        } else if (val > 100 && !appstate.catches.isPHLB) {
-                                            dlgLengthWarning.display("Warning! High length value selected:\n\n" + val + "cm > 100")
-                                        }
+                                        dlgLengthCheck.check(val)
                                         appstate.catches.biospecimens.addBiospecimenItem(
                                             tfSpecies.text,
                                             rowBiosample.currentBM,
@@ -643,14 +648,36 @@ ColumnLayout {
                                         screenBio.selectNewestRow()
                                     }
                                     FramNoteDialog {
-                                        id: dlgLengthWarning
+                                        /*
+                                        TODO: change this to match slw_screen.trigger_len warnings, or vice versa
+                                        I vote for using this basic popup rather than
+                                        save option logic with slw_screen (this is simpler here)
+                                        NOTE!!!: Any updates to logic in check function should likely be implemented in
+                                        SaveEntry onClicked trigger
+                                        */
+                                        id: dlgLengthCheck
                                         title: "Length Warning"
                                         bkgcolor: "#FA8072"
                                         height: 250
                                         message: ""
-                                        function display(msg) {
-                                            message = msg
-                                            dlgLengthWarning.open()
+                                        function check(length) {
+                                            if (length < 10) {
+                                                if (!appstate.trips.isShrimpFishery) {
+                                                    message = "Warning! Low length value selected:\n\n" + length + "cm < 10"
+                                                    open()
+                                                }
+                                            } else if (length >= 100) {
+                                                if (!( // exclude the species / categories below from check
+                                                    appstate.catches.isPHLB ||  // Pacific Halibut
+                                                    appstate.catches.biospecimens.currentSpeciesSubCategory == '106' ||  // sharks
+                                                    appstate.catches.biospecimens.currentSpeciesSubCategory == '107' || // skates, rays
+                                                    appstate.catches.biospecimens.currentSpeciesID == 10509 ||  // green sturgeon
+                                                    appstate.catches.biospecimens.currentSpeciesID == 10380  // white sturgeon
+                                                )) {
+                                                    message = "Warning! High length value selected:\n\n" + length + "cm >= 100"
+                                                    open()
+                                                }
+                                            }
                                         }
                                     }
                                     Component.onCompleted: {
@@ -686,15 +713,22 @@ ColumnLayout {
                     highlightColor: "lightgreen"
 
                     onClicked: {
+                        // TODO: tuck all of this logic in with save_biospecimen_entry()
                         var bsLen = appstate.catches.biospecimens.getData('specimen_length')
                         slw_screen.check_pending_protocols();
                         if (tabsBiospecimens.remainingProtocolsCount() > 0) {
                             dlgMissingProtocols.showNeeded();
-                        // check for length less then 10 for non-shrimp trips (not gear type 12 or 13)
-                        } else if (bsLen < 10 && !appstate.hauls.isShrimpGear) {
+                        } else if (bsLen < 10 && !appstate.trips.isShrimpFishery) {
+                            // check for length less then 10 for non-shrimp trips
                             slw_screen.trigger_sm_len_warning();
                         // If length is 100 or over, ask user first before saving
-                        } else if (bsLen >= 100 && !appstate.catches.isPHLB) {
+                        } else if (bsLen >= 100 && !(  // excludes specific species/categories
+                            appstate.catches.isPHLB ||  // Pacific Halibut
+                            appstate.catches.biospecimens.currentSpeciesSubCategory == '106' ||  // sharks
+                            appstate.catches.biospecimens.currentSpeciesSubCategory == '107' || // skates, rays
+                            appstate.catches.biospecimens.currentSpeciesID == 10509 ||  // green sturgeon
+                            appstate.catches.biospecimens.currentSpeciesID == 10380  // white sturgeon
+                        )) {
                             slw_screen.trigger_len_warning();
                         } else {
                             save_biospecimen_entry();
