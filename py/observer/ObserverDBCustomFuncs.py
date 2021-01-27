@@ -62,13 +62,73 @@ class ObserverDBCustomFuncs:
         return len(inspect.signature(method).parameters)
 
     @staticmethod
-    def get_sqlite_date_str_udf(date_str):
+    def optecs_get_unixtime_udf(date_str):
         """
-        assumes date str will follow pattern: 'MM/DD/YYYY HH:mm'
-        :param date_str: 'MM/DD/YYYY HH:mm'
-        :return: 'YYYY-MM-DD HH:mm'
+        Takes optecs date str and converts it to seconds since
+        1970 (unix time).
+        Mirrors OBSPROD.OPTECS_GET_SECONDS func
+        :param date_str: str with format 'MM/DD/YYYY HH:mm' (see ObserverDBUtil)
+        :return: int
+        """
+        return arrow.get(date_str, SQLITE_DATE_STR).timestamp
+
+    @staticmethod
+    def optecs_get_year_udf(date_str):
+        """
+        Extract year int from optecs datestr
+        :param date_str: str with format 'MM/DD/YYYY HH:mm' (see ObserverDBUtil)
+        :return: int (YYYY)
+        """
+        return arrow.get(date_str, SQLITE_DATE_STR).year
+
+    @staticmethod
+    def optecs_get_month_udf(date_str):
+        """
+        Extract month int from optecs datestr
+        :param date_str: str with format 'MM/DD/YYYY HH:mm' (see ObserverDBUtil)
+        :return: int (MM)
+        """
+        return arrow.get(date_str, SQLITE_DATE_STR).month
+
+    @staticmethod
+    def optecs_get_day_udf(date_str):
+        """
+        Extract day int from optecs datestr
+        :param date_str: str with format 'MM/DD/YYYY HH:mm' (see ObserverDBUtil)
+        :return: int (DD)
+        """
+        return arrow.get(date_str, SQLITE_DATE_STR).day
+
+    @staticmethod
+    def optecs_get_hour_udf(date_str):
+        """
+        Extract hour int from optecs datestr
+        :param date_str: str with format 'MM/DD/YYYY HH:mm' (see ObserverDBUtil)
+        :return: int (HR24)
+        """
+        return arrow.get(date_str, SQLITE_DATE_STR).hour
+
+    @staticmethod
+    def optecs_parse_date_udf(date_str):
+        """
+        Takes optecs date str and converts it to a format
+        that SQLite can recognize as a date
+        Mirors function OBSPROD.OPTECS_PARSE_DATE
+        :param date_str: str with format 'MM/DD/YYYY HH:mm' (see ObserverDBUtil)
+        :return: str with format 'YYYY-MM-DD HH:mm' (see https://sqlite.org/lang_datefunc.html)
         """
         return arrow.get(date_str, SQLITE_DATE_STR).format('YYYY-MM-DD HH:mm')
+
+    @staticmethod
+    def reformat_date_str_udf(date_str, old_format, new_format):
+        """
+        allows conversion from one date str to another
+        :param date_str: str of date
+        :param old_format: format of date_str
+        :param new_format: new format e.g YYYY-MM-DD HH:mm
+        :return: reformatted date str
+        """
+        return arrow.get(date_str, old_format).format(new_format)
 
 
 # if __name__ == '__main__':
