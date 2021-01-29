@@ -46,6 +46,7 @@ from py.observer.SampleMethod import SampleMethod
 from py.observer.DiscardReason import DiscardReason
 from py.observer.CatchCategory import CatchCategory
 from py.observer.ObserverDBMigrations import ObserverDBMigrations
+from py.observer.ObserverDBCustomFuncs import ObserverDBCustomFuncs
 
 PROFILE_CODE = False
 
@@ -182,6 +183,7 @@ if __name__ == '__main__' or __name__ == 'observer__main__':
     migrator.perform_migrations()
 
     connect_orm()  # ObserverORM
+    ObserverDBCustomFuncs().register_funcs()
 
     main_qml = QUrl('qrc:/qml/observer/ObserverLogin.qml')
     appGuid = '8284d07e-d07c-4aad-8874-36720e37ce53'
