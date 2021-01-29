@@ -171,6 +171,7 @@ class ObserverSpecies(QObject):
     totalCatchCountChanged = pyqtSignal(QVariant, arguments=['count'], name='totalCatchCountChanged')
     totalCatchCountFGChanged = pyqtSignal(QVariant, arguments=['count'], name='totalCatchCountFGChanged')
     reactivateSpecies = pyqtSignal(QVariant, arguments=['speciesCompItemId'])  #FIELD-2039
+    selectedSpeciesItemChanged = pyqtSignal()
 
     species_list_types = (
         'Full',  # Full list from SPECIES table of observer.db
@@ -1095,6 +1096,7 @@ class ObserverSpecies(QObject):
 
             self._logger.info('Set species item {}'.format(self._current_speciescomp_item.species_comp_item))
             self.counts_weights.currentSpeciesCompItem = item_id
+            self.selectedSpeciesItemChanged.emit()  # FIELD-2095: custom signal for species switch
         except SpeciesCompositionItems.DoesNotExist:
             self.clear_current_species_item_id()
         except ValueError:

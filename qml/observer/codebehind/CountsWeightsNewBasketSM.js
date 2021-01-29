@@ -201,6 +201,16 @@ function saveTabEnableState() {
     }
 }
 
+function unsaveTabEnableState() {
+    // FIELD-2095: clears out sticky tab states after species switch
+    if (originalTabEnablesSaved) {
+        originalTabCCEnable = true;
+        originalTabSpEnable = true;
+        originalTabBSEnable = true;
+        originalTabEnablesSaved = false;
+    }
+}
+
 function enableTabNavigation(doEnable) {
     if (!doEnable) {
         // Consider adding CC to this: tabView.enableEntryTabs(false);

@@ -38,6 +38,13 @@ Item {
             }
         }
     }
+    Connections {
+        // FIELD-2095: clears out sticky tab states after species switch
+        target: appstate.catches.species
+        onSelectedSpeciesItemChanged: {
+            NBSM.unsaveTabEnableState()
+        }
+    }
 
     function basketWeightIsTooHigh(weight) {
         // Maximum trawling basket weight is specified in the SETTINGS table of Observer.db
