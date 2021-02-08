@@ -515,7 +515,12 @@ ColumnLayout {
                         verticalAlignment: Text.AlignVCenter
                     }
                 }
-
+                TableViewColumn { // FIELD-2087: debriefer QA/QC purposes
+                    role: "created_date"
+                    title: "Created"
+                    width: 200
+                    visible: appstate.trips.debrieferMode   // Make visible for debriefers
+                }
                 FramConfirmDialog {
                     id: confirmDeleteEntry
                     visible: false
