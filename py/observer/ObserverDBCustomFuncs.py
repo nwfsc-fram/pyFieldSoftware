@@ -20,6 +20,7 @@ import arrow
 import inspect
 from py.observer.ObserverDBBaseModel import database
 from py.observer.ObserverDBUtil import ObserverDBUtil
+from geopy.distance import geodesic
 
 SQLITE_DATE_STR = ObserverDBUtil().default_dateformat  # current format being inserted to SQLite, used below
 
@@ -71,7 +72,14 @@ class ObserverDBCustomFuncs:
         :param date_str: str with format 'MM/DD/YYYY HH:mm' (see ObserverDBUtil)
         :return: int
         """
-        return arrow.get(date_str, SQLITE_DATE_STR).timestamp
+        try:
+            return arrow.get(date_str, SQLITE_DATE_STR).timestamp
+        except TypeError:
+            logging.debug(f"Invalid date_str dtype: {type(date_str)}")
+            return None
+        except BaseException:
+            logging.debug('Unknown function error, review parameters.')
+            return None
 
     @staticmethod
     def optecs_get_year_udf(date_str):
@@ -80,7 +88,14 @@ class ObserverDBCustomFuncs:
         :param date_str: str with format 'MM/DD/YYYY HH:mm' (see ObserverDBUtil)
         :return: int (YYYY)
         """
-        return arrow.get(date_str, SQLITE_DATE_STR).year
+        try:
+            return arrow.get(date_str, SQLITE_DATE_STR).year
+        except TypeError:
+            logging.debug(f"Invalid date_str dtype: {type(date_str)}")
+            return None
+        except BaseException:
+            logging.debug('Unknown function error, review parameters.')
+            return None
 
     @staticmethod
     def optecs_get_month_udf(date_str):
@@ -89,7 +104,14 @@ class ObserverDBCustomFuncs:
         :param date_str: str with format 'MM/DD/YYYY HH:mm' (see ObserverDBUtil)
         :return: int (MM)
         """
-        return arrow.get(date_str, SQLITE_DATE_STR).month
+        try:
+            return arrow.get(date_str, SQLITE_DATE_STR).month
+        except TypeError:
+            logging.debug(f"Invalid date_str dtype: {type(date_str)}")
+            return None
+        except BaseException:
+            logging.debug('Unknown function error, review parameters.')
+            return None
 
     @staticmethod
     def optecs_get_day_udf(date_str):
@@ -98,7 +120,14 @@ class ObserverDBCustomFuncs:
         :param date_str: str with format 'MM/DD/YYYY HH:mm' (see ObserverDBUtil)
         :return: int (DD)
         """
-        return arrow.get(date_str, SQLITE_DATE_STR).day
+        try:
+            return arrow.get(date_str, SQLITE_DATE_STR).day
+        except TypeError:
+            logging.debug(f"Invalid date_str dtype: {type(date_str)}")
+            return None
+        except BaseException:
+            logging.debug('Unknown function error, review parameters.')
+            return None
 
     @staticmethod
     def optecs_get_hour_udf(date_str):
@@ -107,7 +136,14 @@ class ObserverDBCustomFuncs:
         :param date_str: str with format 'MM/DD/YYYY HH:mm' (see ObserverDBUtil)
         :return: int (HR24)
         """
-        return arrow.get(date_str, SQLITE_DATE_STR).hour
+        try:
+            return arrow.get(date_str, SQLITE_DATE_STR).hour
+        except TypeError:
+            logging.debug(f"Invalid date_str dtype: {type(date_str)}")
+            return None
+        except BaseException:
+            logging.debug('Unknown function error, review parameters.')
+            return None
 
     @staticmethod
     def optecs_parse_date_udf(date_str):
@@ -118,7 +154,63 @@ class ObserverDBCustomFuncs:
         :param date_str: str with format 'MM/DD/YYYY HH:mm' (see ObserverDBUtil)
         :return: str with format 'YYYY-MM-DD HH:mm' (see https://sqlite.org/lang_datefunc.html)
         """
-        return arrow.get(date_str, SQLITE_DATE_STR).format('YYYY-MM-DD HH:mm')
+        try:
+            return arrow.get(date_str, SQLITE_DATE_STR).format('YYYY-MM-DD HH:mm')
+        except TypeError:
+            logging.debug(f"Invalid date_str dtype: {type(date_str)}")
+            return None
+        except BaseException:
+            logging.debug('Unknown function error, review parameters.')
+            return None
+
+    @staticmethod
+    def optecs_unix_to_datestr_udf(seconds, fmt):
+        """
+        parse unix time into string of choice format
+        :param seconds: unix time, int
+        :param fmt: string date format (e.g. 'YYYY-MM-DD HH:mm')
+        :return: date string
+        """
+        try:
+            return arrow.get(seconds).format(fmt)
+        except arrow.parser.ParserError:
+            logging.debug(f'Error with seconds arg, unable to parse val f{seconds}')
+            return None
+        except TypeError:
+            logging.debug(f'Error with format arg, invalid type: f{type(fmt)}')
+            return None
+        except BaseException:
+            logging.debug('Unknown function error, review parameters.')
+            return None
+
+    @staticmethod
+    def optecs_get_distance_udf(lat1, lon1, lat2, lon2, um='mi', sr='WGS-84'):
+        """
+        Calc geodesic dist (mi) between two coordinates
+        ellipsoid WGS-84 is default, but calling explicitly
+        https://geopy.readthedocs.io/en/stable/#module-geopy.distance
+        :param lat1: float (decimal degrees)
+        :param lon1: float (decimal degrees)
+        :param lat2: float (decimal degrees)
+        :param lon2: float (decimal degrees)
+        :param um: units str
+        :param sr: spatial reference string
+        :return: miles
+        """
+        try:
+            if um.lower() == 'mi':
+                return geodesic((lat1, lon1), (lat2, lon2), ellipsoid=sr).miles
+            elif um.lower() == 'km':
+                return geodesic((lat1, lon1), (lat2, lon2), ellipsoid=sr).km
+            else:
+                logging.debug(f'Invalid units:{um}; specify either mi or km')
+                return None
+        except ValueError:
+            logging.debug(f'Invalid lat/lon vals:({lat1},{lon1}),({lat1},{lon1})')
+            return None
+        except BaseException:
+            logging.debug('Unknown function error, review parameters.')
+            return None
 
     @staticmethod
     def reformat_date_str_udf(date_str, old_format, new_format):
@@ -130,7 +222,6 @@ class ObserverDBCustomFuncs:
         :return: reformatted date str
         """
         return arrow.get(date_str, old_format).format(new_format)
-
 
 # if __name__ == '__main__':
 #     ocf = ObserverDBCustomFuncs()
