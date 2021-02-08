@@ -161,10 +161,17 @@ class ObserverTrip(QObject):
         """
         try:
             is_fixed_gear = ObserverTrip.get_fg_value()
-            newtrip = Trips.create(user=observer_id, vessel=vessel_id, program=program_id,
-                                   partial_trip='F', trip_status='FALSE', created_by=observer_id,
-                                   created_date=ObserverDBUtil.get_arrow_datestr(),
-                                   is_fg_trip_local=is_fixed_gear)
+            newtrip = Trips.create(
+                user=observer_id,
+                vessel=vessel_id,
+                program=program_id,
+                partial_trip='F',
+                trip_status='FALSE',
+                created_by=observer_id,
+                created_date=ObserverDBUtil.get_arrow_datestr(),
+                is_fg_trip_local=is_fixed_gear,
+                data_source=ObserverDBUtil.get_data_source()  # FIELD-2099: setting data source initially
+            )
 
             self.add_trip(newtrip)
             return newtrip

@@ -457,7 +457,7 @@ class ObserverDBSyncController(QObject):
                 # "EVALUATION_ID", "PARTIAL_TRIP", "SKIPPER_ID", "FISHERY", "CREW_SIZE",
                 None, None, row.logbook_type, first_receiver,  # TODO: PERMIT_NUMBER, LICENSE_NUMBER
                 # "PERMIT_NUMBER", "LICENSE_NUMBER", "LOGBOOK_TYPE", "FIRST_RECEIVER",
-                None, None, None, None, ObserverDBUtil.get_data_source(),
+                None, None, None, None, row.data_source,
                 # "EXPORT", "EXTERNAL_TRIP_ID", "DO_EXPAND", "RUN_TER", "DATA_SOURCE",
                 None, None, row.fish_processed, None,
                 # "ROW_PROCESSED", "ROW_STATUS", "FISH_PROCESSED", "NO_FISHING_ACTIVITY",
