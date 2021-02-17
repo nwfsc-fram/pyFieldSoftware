@@ -218,9 +218,9 @@ class ObserverAutoComplete(QObject):
                     (do_full_search and sug.lower().find(partial_str_lc) > 0)
         ]
 
-        if self._current_loaded_data == ACDataTypes.captains \
-                and len(self._suggestions) == 0 and len(partial_str) == 0:
-            self._suggestions.append('No skipper is associated with vessel.\nPlease add name in comments\nand contact Neil Riley to add to DB.')
+        if self._current_loaded_data == ACDataTypes.captains:
+            self._suggestions.append('"Not Listed"')  # FIELD-2076: give user option (doesn't actually do anything)
+
         self._logger.debug('Suggestion count: ' + str(len(self._suggestions)))
 
     @staticmethod
