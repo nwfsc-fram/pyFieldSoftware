@@ -315,7 +315,16 @@ Item {
                     }
                 }
                 onTextChanged: {
+                    if (text === '"Not Listed"') { // FIELD-2076: handle missing captain
+                        dlgSkipperNL.open();
+                        text = '';
+                    }
                     appstate.trips.currentSkipperName = text;
+                }
+                FramNoteDialog {  // FIELD-2076: tell user to report via comments
+                    id: dlgSkipperNL
+                    width: 500
+                    message: "Please leave the skipper field blank and the\nname of the missing skipper in a comment.\n\nContact Jim Fellows for DB adjustment\n at james.fellows@noaa.gov."
                 }
             }
 
