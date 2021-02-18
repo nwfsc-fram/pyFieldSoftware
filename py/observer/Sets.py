@@ -222,8 +222,10 @@ class Sets(QObject):
             if avg_hook_count and c.gear_segments_sampled:
                 old_hooks = c.hooks_sampled
                 new_hooks = round(avg_hook_count * c.gear_segments_sampled)
-                self._logger.info(f'Catch {c.catch} Hooks sampled {old_hooks} -> {new_hooks}')
+                new_hooks_unrounded = avg_hook_count * c.gear_segments_sampled
+                self._logger.info(f'Catch {c.catch} Hooks sampled {old_hooks} -> {new_hooks} (unrounded = {new_hooks_unrounded})')
                 c.hooks_sampled = new_hooks
+                c.hooks_sampled_unrounded = new_hooks_unrounded  # FIELD-2102: this is the val used for OTC recalc
                 c.save()
 
 
