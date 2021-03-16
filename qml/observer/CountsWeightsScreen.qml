@@ -333,7 +333,7 @@ Item {
                         model: modeSC.discardModel
 
                         ObserverGroupButton {
-                            visible: discard_id != -1
+                            visible: ['-1', '12', '15'].indexOf(discard_id) == -1  // FIELD-2104
                             text: discard_id
                             exclusiveGroup: groupDR
                             Layout.preferredWidth: 50
