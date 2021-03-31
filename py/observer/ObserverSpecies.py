@@ -20,7 +20,8 @@ from py.observer.CountsWeights import CountsWeights
 from py.observer.ObserverConfig import display_decimal_places
 from py.observer.ObserverDBModels import Catches, FishingActivities, ProtocolGroups, Settings, \
     Species, SpeciesCompositions, SpeciesCompositionItems, SpeciesCorrelation, SpeciesSamplingPlanLu, \
-    SpeciesCatchCategories, Lookups, GeartypeStratumGroupMtx, BioSpecimens, StratumLu, SpeciesCompositionBaskets
+    SpeciesCatchCategories, Lookups, GeartypeStratumGroupMtx, BioSpecimens, StratumLu, SpeciesCompositionBaskets, \
+    CatchCategories
 from py.observer.ObserverDBUtil import ObserverDBUtil
 from py.observer.ObserverLookups import RockfishCodes
 
@@ -172,6 +173,7 @@ class ObserverSpecies(QObject):
     totalCatchCountFGChanged = pyqtSignal(QVariant, arguments=['count'], name='totalCatchCountFGChanged')
     reactivateSpecies = pyqtSignal(QVariant, arguments=['speciesCompItemId'])  #FIELD-2039
     selectedSpeciesItemChanged = pyqtSignal()
+    avgRetainedFishWtChanged = pyqtSignal()
 
     species_list_types = (
         'Full',  # Full list from SPECIES table of observer.db
@@ -240,7 +242,7 @@ class ObserverSpecies(QObject):
 
         self._species_comp_items_model = ObserverSpeciesCompModel()
 
-        self._counts_weights = CountsWeights()
+        self._counts_weights = CountsWeights(self)
         self._filter_name = ''  # Filter both by common_name and by scientific_name
 
         self.current_protocol_str = ''  # store protocol lookup, e.g. 'FL, WS'
@@ -285,6 +287,31 @@ class ObserverSpecies(QObject):
         # Helper class with Weight Method 3
         self._observer_catches = observer_catches
         self._weight_method_3_helper = WeightMethod3Helper(self._logger, self._observer_catches)
+        self._species_comp_item_notes = None
+
+    @property
+    def species_comp_item_notes(self):
+        return self._species_comp_item_notes
+
+    @species_comp_item_notes.setter
+    def species_comp_item_notes(self, notes):
+        if self._current_speciescomp_item:
+            self._current_speciescomp_item.notes = notes
+            self._current_speciescomp_item.save()
+
+    @pyqtSlot(QVariant, name="setWeight")
+    def set_weight(self, wt):
+        if self._current_speciescomp_item:
+            self._current_speciescomp_item.species_weight = wt
+            self._current_speciescomp_item.save()
+
+    @property
+    def observer_catches(self):
+        return self._observer_catches
+
+    @property
+    def assoc_species(self):
+        return self._assoc_species
 
     @pyqtSlot(name='reloadSpeciesDatabase')
     def reload_species_database(self):
@@ -430,6 +457,7 @@ class ObserverSpecies(QObject):
         @return: 
         """
         self._assoc_species_model.clear()
+        print("Loading associated species model...")
         if catch_category_id:
             self._assoc_species.set_catch_category(cc_id=catch_category_id)
         assoc_species_codes = self._assoc_species.get_species_ids()
@@ -437,6 +465,7 @@ class ObserverSpecies(QObject):
                                     if entry['species'] in assoc_species_codes]
         self._assoc_species_list = ObserverSpecies._sort_species(self._assoc_species_list)
         self._assoc_species_model.setItems(self._assoc_species_list.copy())
+        print("Associated species list set to ", self._assoc_species_list)
 
     def _load_trip_list_model(self):
         self._trip_list_species_model.clear()

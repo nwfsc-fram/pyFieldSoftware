@@ -713,6 +713,27 @@ Item {
                 }
             }
 
+            function refreshCatchRow(catchId) {
+                var originalSelection = getSelRow()
+                selectRowByCatchId(catchId)
+                selectRow(originalSelection)
+                appstate.catches.currentCatch = getSelItem()
+            }
+
+            function refreshCatchRecord(catchId, newWt) {
+                var lastSelected = getSelRow()
+                for(var i = 0; i < model.count; i++){
+                    if (model.get(i).catch === catchId) {
+                        selectRow(i);
+                        appstate.catches.currentCatch = getSelItem();
+                        appstate.catches.setData("catch_weight", newWt)
+                    }
+                }
+                // reselect original catch
+                selectRow(lastSelected)
+                appstate.catches.currentCatch = getSelItem()
+            }
+
             function refreshWm5Weights(catchId, newWt) {
                 // needed when retained wt changed, OTC-RET must change too
                 console.info("Refreshing WM5 Catch weight (CatchID: )" + catchId)

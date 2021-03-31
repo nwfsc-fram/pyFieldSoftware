@@ -10,6 +10,8 @@
 
 import logging
 from decimal import *
+from peewee import fn
+import time
 
 from PyQt5.QtCore import pyqtProperty, QVariant, QObject, pyqtSignal, pyqtSlot
 
@@ -35,11 +37,13 @@ class CountsWeights(QObject):
     tallyFGFishCountChanged = pyqtSignal(QVariant, name='tallyFGFishCountChanged')
     tallyTimesAvgWeightChanged = pyqtSignal(QVariant, name='tallyTimesAvgWeightChanged')
     tallyAvgWeightChanged = pyqtSignal(QVariant, name='tallyAvgWeightChanged')
+    recalculateRetainedFishAvg = pyqtSignal()
     unusedSignal = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, observer_species):
         super().__init__()
         self._logger = logging.getLogger(__name__)
+        self._observer_species = observer_species
 
         # weight metrics
         self._species_weight = None
@@ -49,6 +53,7 @@ class CountsWeights(QObject):
         self._extrapolated_species_fish_count = None
         self._tally_table_fish_count = None
         self._tally_fg_fish_count = None  # This is stored in the DB at species comp level
+        self._tally_times_avg_wt = None
 
         self._actual_weight = None
         self._avg_weight = None
@@ -317,6 +322,7 @@ class CountsWeights(QObject):
         self._species_fish_count = None
         self._extrapolated_species_fish_count = None
         self._tally_table_fish_count = None
+        self._tally_times_avg_wt = None
 
         weighted_baskets = 0
         species_fish_count = 0
@@ -357,7 +363,7 @@ class CountsWeights(QObject):
         self._tally_table_fish_count = species_unweighted_count + species_fish_count
         self._species_fish_count = species_fish_count
 
-        if weighted_baskets == 0:  # Didn't find any weight data
+        if weighted_baskets == 0 and self._observer_species.discardReason not in ['15', '12']:  # Didn't find any weight data
             self._species_weight = self._extrapolated_species_weight = self._actual_weight = self._avg_weight = None
             self.emit_calculated_weights()
             return
@@ -437,7 +443,7 @@ class CountsWeights(QObject):
         self.tallyFGFishCountChanged.emit(self._tally_fg_fish_count)
         self.tallyFishCountChanged.emit(self._tally_table_fish_count)
         self.speciesWeightChanged.emit(self._species_weight)
-        self.tallyTimesAvgWeightChanged.emit(self.tallyTimesAvgWeight)  # ws - is this FG only?
+        self.tallyTimesAvgWeightChanged.emit(self._tally_times_avg_wt)  # ws - is this FG only?
         if not self.isFixedGear:
             self.speciesFishCountChanged.emit(self._extrapolated_species_fish_count, self._total_tally)
             self.extrapolatedWeightChanged.emit(self._extrapolated_species_weight)
@@ -496,12 +502,13 @@ class CountsWeights(QObject):
     def tallyFGFishCount(self, count: int):
         if not self.isFixedGear:
             return
-        self._logger.debug(f'Tally FG count now {count}')
         try:
+            self._logger.warning(f'Tally FG count now {count}')
             self._tally_fg_fish_count = count
             self._updateFGTallyCalculations(int(count))
             self._calc_and_propage_species_comp()
         except Exception as e:  # catch CHK
+            self._logger.warning(str(e))
             pass
 
     def _updateFGTallyCalculations(self, count: int):
@@ -509,14 +516,15 @@ class CountsWeights(QObject):
             return
 
         if self._current_species_comp_item:
+            self._calculate_tally_times_avg_wt()  # set _tally_times_avg_wt
             self._species_fish_count = count
             self._tally_fg_fish_count = count
-            self._species_weight = self.tallyTimesAvgWeight
-            self._logger.info(f'FG * {count} wt: {self.tallyTimesAvgWeight}')
+            self._species_weight = self._tally_times_avg_wt
+            self._logger.info(f'FG * {count} wt: {self._tally_times_avg_wt}')
             self._current_species_comp_item = self.currentSpeciesCompItem
             self._current_species_comp_item.species_number = count if count else None
             self._current_species_comp_item.total_tally = count if count else None
-            self._current_species_comp_item.species_weight = self.tallyTimesAvgWeight if self.tallyTimesAvgWeight else None
+            self._current_species_comp_item.species_weight = self._tally_times_avg_wt
             self._current_species_comp_item.species_weight_um = 'LB'
             # NOTE extrapolated_species_weight is used for Trawl only. For FG, species_weight is extrapolated.
             self._current_species_comp_item.save()
@@ -527,14 +535,43 @@ class CountsWeights(QObject):
         else:
             self._logger.error('No SC item set, cant save tally')
 
-    @pyqtProperty(QVariant, notify=tallyFGFishCountChanged)
-    def tallyTimesAvgWeight(self):
-        if self.avgWeight and self.tallyFGFishCount:
-            val = Decimal(self.avgWeight) * Decimal(self.tallyFGFishCount)
-            round_val = val.quantize(Decimal('.01'), rounding=ROUND_HALF_UP)
-            # https://stackoverflow.com/questions/56820/round-doesnt-seem-to-be-rounding-properly#56833
-            return float(round_val)
+    @pyqtProperty(QVariant, notify=tallyTimesAvgWeightChanged)
+    def tallyTimesAvgWt(self):
+        return self._tally_times_avg_wt
+
+    def _calculate_tally_times_avg_wt(self):
+        """
+        if DR predated/dropoff, try to calculate with retained avg, else use regular avg
+        :return:
+        """
+        if self._observer_species.discardReason in ['12', '15'] and self._observer_species.observer_catches.avgRetainedFishWt:
+            avg = self._observer_species.observer_catches.avgRetainedFishWt
+            note = f"SPECIES_WEIGHT=RET_AVG*TALLY={round(avg, 2)}*{self._tally_fg_fish_count}"
+        elif self.avgWeight:
+            avg = self.avgWeight
+            note = f"SPECIES_WEIGHT=AVG*TALLY={round(avg, 2)}*{self._tally_fg_fish_count}"
         else:
+            self._tally_times_avg_wt = None
+            return
+
+        self._tally_times_avg_wt = self.tally_times_avg(avg, self._tally_fg_fish_count)
+        self._observer_species.species_comp_item_notes = note if self._tally_times_avg_wt else None
+        self._logger.info(f"TallyTimesAvgWt = {self._tally_times_avg_wt}, note = {self._observer_species.species_comp_item_notes}")
+
+    @staticmethod
+    def tally_times_avg(avg, tally):
+        """
+        Extrapolate weight with fish average and tally
+        TypeError should catch where either val is None
+        :param avg: average fish weight (float)
+        :param tally: fish tally (int)
+        :return: float (None if invalid calculation)
+        """
+        try:
+            wt = Decimal(avg) * Decimal(tally)
+            qwt = float(wt.quantize(Decimal('.01'), rounding=ROUND_HALF_UP))
+            return qwt if qwt else None  # prevent 0 value, not allowed in DB for SPECIES_WEIGHT
+        except TypeError as e:
             return None
 
     @pyqtSlot(QVariant)
@@ -663,6 +700,7 @@ class CountsWeights(QObject):
 
         total_number = 0
         total_weight = 0
+
         for item in all_species_comp_item_q:
             if item.species_number:
                 total_number += item.species_number
