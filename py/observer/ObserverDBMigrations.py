@@ -100,6 +100,7 @@ class ObserverDBMigrations(QObject):
 
         # SPECIES_COMPOSITION_BASKETS
         self.migrate_speciescompbaskets_is_tally()
+        self.migrate_speciescompbaskets_is_subsample()
 
         # COMMENTS
         self.migrate_comments()
@@ -209,6 +210,20 @@ class ObserverDBMigrations(QObject):
                                          self.nullable_int_field),
             )
             self._logger.info('Added is_fg_tally_local to SPECIES_COMPOSITION_BASKETS.')
+        except SQLError:
+            pass
+
+    def migrate_speciescompbaskets_is_subsample(self) -> None:
+        """
+        Easily track tally baskets
+        @return:
+        """
+        try:
+            migrate(
+                self.migrator.add_column('SPECIES_COMPOSITION_BASKETS', 'IS_SUBSAMPLE',
+                                         self.nullable_int_field),
+            )
+            self._logger.info('Added is_subsample to SPECIES_COMPOSITION_BASKETS.')
         except SQLError:
             pass
 

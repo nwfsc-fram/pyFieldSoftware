@@ -8,8 +8,12 @@ import QtQuick.Controls.Styles 1.4
 TextField {
     id: control
 
+
+    property string textColor: "black"
+//    property alias textColor : textColor
+
     style: TextFieldStyle {
-        textColor: "black"
+        textColor: control.textColor
         background: Rectangle {
             radius: 2
             implicitWidth: 100

@@ -809,7 +809,7 @@ class ObserverSpecies(QObject):
         # END DISABLE
         self._calculate_total_catch_weight_current()
 
-    def _handle_species_count_changed(self, ct, tally_ct):
+    def _handle_species_count_changed(self, ct, tally_ct, notes=None):
         """
 
         :param ct: Total fish count, including tally_ct. I.e. a count of weighed and unweighed fish
@@ -832,6 +832,7 @@ class ObserverSpecies(QObject):
             # Update the species composition record with weighed count and tally count.
             self._current_speciescomp_item.species_number = db_ct_val
             self._current_speciescomp_item.total_tally = tally_ct
+            self._current_speciescomp_item.notes = notes
             self._current_speciescomp_item.save()
             self._logger.debug(f"SCI updates: species_num={db_ct_val}, total_tally={tally_ct}.")
 

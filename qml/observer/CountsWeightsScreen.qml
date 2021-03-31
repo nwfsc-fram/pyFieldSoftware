@@ -18,22 +18,29 @@ Item {
     property bool is_mix: appstate.catches.species.currentSpeciesItemName === 'MIX'
     property int dec_places: appstate.displayDecimalPlaces  // Number of decimal places to display weight values
 
+    function sum_fish_counted() {
+    // helper func to check if user has entered any counts
+        var total = 0;
+        var basket_count;
+        for (var i = 0; i < tvBaskets.model.items.length; i++) {
+            basket_count = tvBaskets.model.items[i].fish_number_itq
+            if (!isNaN(basket_count)) {
+                total += tvBaskets.model.items[i].fish_number_itq
+            }
+        }
+        return total;
+    }
+
     Connections {
         target: obsSM
         onEnteringCW: {
             modeSC.reset();
         }
         onExitingCW: {  // FIELD-2039: warn if all baskets are no count (and not mix)
-            if (!is_mix) {
+            if (!is_mix && !appstate.catches.species.counts_weights.subsampleAvgMode) {
                 // check if we have all No Count baskets, warn if true
-                if (tvBaskets.model.count > 0) {
-                    var total_count = 0
-                    for (var i = 0; i < tvBaskets.model.items.length; i++) {
-                        total_count += tvBaskets.model.items[i].fish_number_itq
-                    }
-                    if (!total_count) {
-                        framHeader.dlgCWNoCountCheck.open()
-                    }
+                if (screenCW.sum_fish_counted() === 0) {
+                    framHeader.dlgCWNoCountCheck.open()
                 }
             }
         }
@@ -766,7 +773,7 @@ Item {
             id: tvBaskets
             x: grpMeasurementType.x + grpMeasurementType.width + 20
             y: 190
-            width: 400
+            width: 420
             height: main.height - 335
             enabled: !isEditingExistingBasket && !NBSM.isEnteringNewBasket()
 
@@ -825,8 +832,18 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                 }
             }
-
-
+            TableViewColumn {
+                role: "is_subsample"
+                title: "SS"
+                visible: screenCW.speciesIsCounted()
+                width: 50
+                delegate: Text {
+                    text: styleData.value ? "X" : ""
+                    font.pixelSize: 20
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                }
+            }
             onClicked: {
                 if (!btnEditBasket.checked) {
                     tvBaskets.selection.clear();
@@ -860,6 +877,7 @@ Item {
                         basketEntryStatusMessage.update(NBSM.msgStartEditingExistingBasket);
                     }
                 }
+                btnSubsample.refresh_check()  // update check status when row changes....
             }
 
             TrawlOkayDialog {
@@ -932,6 +950,20 @@ Item {
                 property int widthTF: 100
                 property int fontsize: 18
 
+                function changeSubsampleText() {
+                    if (appstate.catches.species.counts_weights.subsampleAvgMode) {
+                        return {
+                            'italics': false,
+                            'color': "green"
+                        }
+                    } else {
+                        return {
+                            'italics': true,
+                            'color': "gray"
+                        }
+                    }
+                }
+
                 Label {
                     // Set on counts weights model change
                     id: lblMultiplier
@@ -940,9 +972,11 @@ Item {
                     font.pixelSize: 15
                     Layout.alignment: Qt.AlignHCenter
                 }
+                RowLayout {
+                anchors.right: parent.right
                 Label {
                     id: lblExpandedWeight
-                    text: "Expanded Weight"
+                    text: "Expanded Wt:"
                     visible: tfExpandedWeight.visible
                     font.pixelSize: colWeightInfo.fontsize
                     Layout.alignment: Qt.AlignHCenter
@@ -959,69 +993,183 @@ Item {
                     Layout.alignment: Qt.AlignHCenter
                     horizontalAlignment: TextInput.AlignRight
                 }
-                Label {
-                    // spacer
-                }
-                Label {
-                    id: lblActualWeight
-                    text: "Total Basket Weights"
-                    font.pixelSize: colWeightInfo.fontsize
-                    visible: tfActualWeight.visible
-                    Layout.alignment: Qt.AlignHCenter
-                }
-                ObserverTextField {
-                    id: tfActualWeight
-                    text: appstate.catches.species.counts_weights.actualWeight ?
-                              appstate.catches.species.counts_weights.actualWeight.toFixed(dec_places) : ""
-                    Layout.preferredWidth: colWeightInfo.widthTF
-                    font.pixelSize: colWeightInfo.fontsize
-                    readOnly: true
-                    Layout.alignment: Qt.AlignHCenter
-                    horizontalAlignment: TextInput.AlignRight
-                }
-                Label {
-                    // spacer
                 }
 
-                Label {
-                    id: lblAvgWeight
-                    text: "Average Fish Weight"
-                    visible: screenCW.speciesIsCounted()
-                    font.pixelSize: colWeightInfo.fontsize
-                    Layout.alignment: Qt.AlignHCenter
+//                Label {
+//                    // spacer
+//                }
+                RowLayout {
+                    anchors.right: parent.right
+                    Label {
+                        id: lblActualWeight
+                        text: "Total Basket Wt:"
+                        font.pixelSize: colWeightInfo.fontsize
+                        visible: tfActualWeight.visible
+                        Layout.alignment: Qt.AlignHCenter
+                    }
+                    ObserverTextField {
+                        id: tfActualWeight
+                        text: appstate.catches.species.counts_weights.actualWeight ?
+                                  appstate.catches.species.counts_weights.actualWeight.toFixed(dec_places) : ""
+                        Layout.preferredWidth: colWeightInfo.widthTF
+                        font.pixelSize: colWeightInfo.fontsize
+                        readOnly: true
+                        Layout.alignment: Qt.AlignHCenter
+                        horizontalAlignment: TextInput.AlignRight
+//                        anchors.right: parent.right
+                    }
                 }
-                ObserverTextField {
-                    id: tfAvgWeight
-                    text: appstate.catches.species.counts_weights.avgWeight ?
+                RowLayout {
+                    anchors.right: parent.right
+                    Label {
+                        id: lblAvgWeight
+                        text: "Avg Fish Wt:"
+                        visible: screenCW.speciesIsCounted()
+                        font.pixelSize: colWeightInfo.fontsize
+                        color: appstate.catches.species.counts_weights.subsampleAvgMode ? "gray" : "black"
+                        font.italic: appstate.catches.species.counts_weights.subsampleAvgMode
+                        Layout.alignment: Qt.AlignHCenter
+                    }
+                    ObserverTextField {
+                        id: tfAvgWeight
+                        text: appstate.catches.species.counts_weights.avgWeight ?
                               appstate.catches.species.counts_weights.avgWeight.toFixed(dec_places) : ""
-                    visible: screenCW.speciesIsCounted()
-                    Layout.preferredWidth: colWeightInfo.widthTF
-                    font.pixelSize: colWeightInfo.fontsize
-                    readOnly: true
+                        visible: screenCW.speciesIsCounted()
+                        Layout.preferredWidth: colWeightInfo.widthTF
+                        font.italic: appstate.catches.species.counts_weights.subsampleAvgMode
+                        textColor: appstate.catches.species.counts_weights.subsampleAvgMode ? "gray" : "green"
+                        font.pixelSize: colWeightInfo.fontsize
+                        readOnly: true
+                        Layout.alignment: Qt.AlignHCenter
+                        horizontalAlignment: TextInput.AlignRight
+                    }
+                }
+                RowLayout{
+                    anchors.right: parent.right
+                    Label {
+                        id: lblTotalExCount
+                        text: "Total+Extrap Ct:"
+                        visible: screenCW.speciesIsCounted()
+                        font.pixelSize: colWeightInfo.fontsize
+                        Layout.alignment: Qt.AlignHCenter
+                    }
+                    ObserverTextField {
+                        id: tfExCount
+                        text: appstate.catches.species.counts_weights.speciesFishCount ?
+                                  appstate.catches.species.counts_weights.speciesFishCount : ""
+                        visible: screenCW.speciesIsCounted()
+                        Layout.preferredWidth: colWeightInfo.widthTF
+                        font.pixelSize: colWeightInfo.fontsize
+                        readOnly: true
+                        Layout.alignment: Qt.AlignHCenter
+                        horizontalAlignment: TextInput.AlignRight
+                    }
+                }
+                ColumnLayout {
+                    id: colSubsample
+                    visible: appstate.catches.weightMethod !== '8'
+                    Layout.column: 0
                     Layout.alignment: Qt.AlignHCenter
-                    horizontalAlignment: TextInput.AlignRight
+                    anchors.right: parent.right
+
+//                    property int widthTF: 100
+
+                RowLayout {
+                    anchors.right: parent.right
+                    Label {
+                        id: lblSubsampleWt
+                        visible: !is_mix
+                        text: "Daily SS Wt:"
+                        font.pixelSize: colWeightInfo.fontsize
+                        color: appstate.catches.species.counts_weights.subsampleAvgMode ? "black" : "gray"
+                        font.italic: !appstate.catches.species.counts_weights.subsampleAvgMode
+                        Layout.alignment: Qt.AlignHCenter
+                    }
+                    ObserverTextField {
+                        id: tfSubsampleWt
+                        visible: !is_mix
+                        text: appstate.catches.species.counts_weights.subsampleWeight ?
+                            appstate.catches.species.counts_weights.subsampleWeight.toFixed(2) : ""
+                        Layout.preferredWidth: colWeightInfo.widthTF
+                        font.pixelSize: colWeightInfo.fontsize
+                        font.italic: !appstate.catches.species.counts_weights.subsampleAvgMode
+                        textColor: appstate.catches.species.counts_weights.subsampleAvgMode ? "black" : "gray"
+                        readOnly: true
+                        Layout.alignment: Qt.AlignHCenter
+                        horizontalAlignment: TextInput.AlignRight
+                        Connections {
+                            target: appstate.catches.species.counts_weights
+                            onSubsampleWeightChanged: {
+                                tfSubsampleWt.text = wt ? wt.toFixed(2) : ""
+                            }
+                        }
+                    }
                 }
-                Label {
-                    // spacer
+                RowLayout {
+                    anchors.right: parent.right
+                    Label {
+                        id: lblSubsampleCt
+                        text: "Daily SS Ct:"
+                        font.pixelSize: colWeightInfo.fontsize
+                        color: appstate.catches.species.counts_weights.subsampleAvgMode ? "black" : "gray"
+                        font.italic: !appstate.catches.species.counts_weights.subsampleAvgMode
+                        Layout.alignment: Qt.AlignHCenter
+                        visible: !is_mix
+                    }
+                    ObserverTextField {
+                        id: tfSubsampleCt
+                        visible: !is_mix
+                        text: appstate.catches.species.counts_weights.subsampleCount ?
+                            appstate.catches.species.counts_weights.subsampleCount : ""
+                        Layout.preferredWidth: colWeightInfo.widthTF
+                        font.pixelSize: colWeightInfo.fontsize
+                        font.italic: !appstate.catches.species.counts_weights.subsampleAvgMode
+                        textColor: appstate.catches.species.counts_weights.subsampleAvgMode ? "black" : "gray"
+                        readOnly: true
+                        Layout.alignment: Qt.AlignHCenter
+                        horizontalAlignment: TextInput.AlignRight
+                        Connections {
+                            target: appstate.catches.species.counts_weights
+                            onSubsampleCountChanged: {
+                                console.info("Subsample count changed!, ", ct)
+                                tfSubsampleCt.text = ct ? ct : ""
+                            }
+                        }
+                    }
                 }
-                Label {
-                    id: lblTotalExCount
-                    text: "Total + Extrapolated Count"
-                    visible: screenCW.speciesIsCounted()
-                    font.pixelSize: colWeightInfo.fontsize
-                    Layout.alignment: Qt.AlignHCenter
+                RowLayout {
+                    anchors.right: parent.right
+                    Label {
+                        id: lblSubsampleAvg
+                        text: "Daily SS Avg:"
+                        color: appstate.catches.species.counts_weights.subsampleAvgMode ? "black" : "gray"
+                        font.italic: !appstate.catches.species.counts_weights.subsampleAvgMode
+                        font.pixelSize: colWeightInfo.fontsize
+                        Layout.alignment: Qt.AlignHCenter
+                        visible: !is_mix
+                    }
+                    ObserverTextField {
+                        id: tfSubsampleAvg
+                        visible: !is_mix
+                        text: appstate.catches.species.counts_weights.subsampleAvgWeight ?
+                            appstate.catches.species.counts_weights.subsampleAvgWeight.toFixed(2) : ""
+                        Layout.preferredWidth: colWeightInfo.widthTF
+                        font.pixelSize: colWeightInfo.fontsize
+                        font.italic: !appstate.catches.species.counts_weights.subsampleAvgMode
+                        textColor: appstate.catches.species.counts_weights.subsampleAvgMode ? "green" : "gray"
+                        readOnly: true
+                        Layout.alignment: Qt.AlignHCenter
+                        horizontalAlignment: TextInput.AlignRight
+                        Connections {
+                            target: appstate.catches.species.counts_weights
+                            onSubsampleAvgChanged: {
+                                tfSubsampleAvg.text = avg ? avg.toFixed(2) : ""
+                            }
+                        }
+                    }
                 }
-                ObserverTextField {
-                    id: tfExCount
-                    text: appstate.catches.species.counts_weights.speciesFishCount ?
-                              appstate.catches.species.counts_weights.speciesFishCount : ""
-                    visible: screenCW.speciesIsCounted()
-                    Layout.preferredWidth: colWeightInfo.widthTF
-                    font.pixelSize: colWeightInfo.fontsize
-                    readOnly: true
-                    Layout.alignment: Qt.AlignHCenter
-                    horizontalAlignment: TextInput.AlignRight
                 }
+
                 Label {
                     // spacer
                 }
@@ -1045,6 +1193,58 @@ Item {
                                 basketEntryStatusMessage.update(NBSM.msgEditClickedWithoutBasketSelected);
                             }
                         }
+                    }
+                }
+                ObserverSunlightButton {
+                    id: btnSubsample
+                    text: "Mark Subsample"
+                    Layout.preferredWidth: 150
+                    Layout.alignment: Qt.AlignHCenter
+                    checkable: true
+                    visible: btnEditBasket.checked && screenCW.speciesIsCounted()
+                    checked: tvBaskets.model.get(tvBaskets.currentRow).is_subsample === 1
+                    onClicked: {
+                        /*
+                        Changes to field here kick off subsampleChanged signalling
+                        1. Edit basket subsample flag, set in DB and model
+                        2. recalculate counts, weights, and avgs for day
+                        3. signal new vals back to UI
+                        */
+                        console.info("count???? ", appstate.catches.species.counts_weights.speciesFishCount)
+                        if (checked) {
+                            if (tvBaskets.currentRow === -1) {
+                                dlgSSSelectionNeeded.open()
+                                btnSubsample.checked = false
+                            } else if (!tvBaskets.model.get(tvBaskets.currentRow).fish_number_itq) {
+                                dlgSSCountNeeded.open()
+                                btnSubsample.checked = false
+                            } else if (tvBaskets.model.get(tvBaskets.currentRow).basket_weight_itq < 0.3) {
+                                dlgSSSmallWeight.open()
+                                btnSubsample.checked = false
+                            } else {
+                                appstate.catches.species.counts_weights.editBasketSubsample(modeSC.getBasketIdForCurrentRow(), 1)
+                            }
+                        } else {
+                            appstate.catches.species.counts_weights.editBasketSubsample(modeSC.getBasketIdForCurrentRow(), null)
+                        }
+                    }
+                    FramNoteDialog {
+                        id: dlgSSSelectionNeeded
+                        message: "Please select a basket to\nflag as subsample."
+                        font_size: 18
+                    }
+                    FramNoteDialog {
+                        id: dlgSSSmallWeight
+                        message: "Subsample basket must weigh\n more than 0.3 lbs!"
+                        font_size: 18
+                    }
+                    FramNoteDialog {
+                        id: dlgSSCountNeeded
+                        message: "Subsample basket must have\nactual count!"
+                        font_size: 18
+                    }
+                    function refresh_check() {
+                        btnSubsample.checked = tvBaskets.model.get(tvBaskets.currentRow).is_subsample === 1
                     }
                 }
                 ObserverSunlightButton {
