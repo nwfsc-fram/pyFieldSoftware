@@ -1082,166 +1082,120 @@ Item {
 
             property int tallyButtonSize: 70
 
-            ColumnLayout {
+            ColumnLayout {  // organize right-hand panel of tally/weights/counts
                 id: colWeightInfo
                 Layout.column: 0
                 Layout.alignment: Qt.AlignHCenter
 
                 property int widthTF: 100
                 property int fontsize: 18
-
-                RowLayout {
-                    Layout.alignment: Qt.AlignLeft
-                    Label {
-                        id: lblTallyCount
-                        text: "Tally Count"
-                        font.pixelSize: 22
-                        font.bold: true
-                        visible: tfActualWeight.visible
-                        Layout.alignment: Qt.AlignHCenter
-                    }
-                    ObserverTextField {
-                        id: tfTallyCount
-                        placeholderText: "Tally Count"
-                        Layout.preferredWidth: colWeightInfo.widthTF
-                        font.pixelSize: colWeightInfo.fontsize
-
-                        Layout.alignment: Qt.AlignRight
-                        horizontalAlignment: TextInput.AlignRight
-                        text: appstate.catches.species.counts_weights.tallyFGFishCount ?
-                                appstate.catches.species.counts_weights.tallyFGFishCount : ""
-                        onActiveFocusChanged: {
-                            if (focus) {
-                                focus = false;  // otherwise, dialogs opened forever
-                                numpadTally.setValue(text)
-                                numpadTally.open()
+                GroupBox {  // organize tally buttons
+                    Layout.fillWidth: true
+                    ColumnLayout {
+                        anchors.fill: parent
+                        Layout.fillWidth: true
+                        RowLayout {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            Label {
+                                id: lblTallyCount
+                                text: "Total Tally"
+                                font.pixelSize: 22
+                                font.bold: true
+                                Layout.alignment: Qt.AlignHCenter
                             }
                         }
-                        onTextChanged: {
-                            var tallyCount = parseInt(text);
-                            if (!isNaN(tallyCount) && tallyCount !== appstate.catches.species.counts_weights.tallyFGFishCount) {
-                                appstate.catches.species.counts_weights.tallyFGFishCount = tallyCount;
+                        RowLayout {
+                            id: rlTallyCount
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            ObserverTextField {
+                                id: tfTallyCount
+                                placeholderText: "Tally Count"
+                                Layout.preferredWidth: controlsGrid.tallyButtonSize*2+5
+                                font.pixelSize: colWeightInfo.fontsize
+                                Layout.alignment: Qt.AlignRight
+                                horizontalAlignment: TextInput.AlignHCenter
+                                text: appstate.catches.species.counts_weights.tallyFGFishCount ?
+                                        appstate.catches.species.counts_weights.tallyFGFishCount : ""
+                                onActiveFocusChanged: {
+                                    if (focus) {
+                                        focus = false;  // otherwise, dialogs opened forever
+                                        numpadTally.setValue(text)
+                                        numpadTally.open()
+                                    }
+                                }
+                                onTextChanged: {
+                                    var tallyCount = parseInt(text);
+                                    if (!isNaN(tallyCount) && tallyCount !== appstate.catches.species.counts_weights.tallyFGFishCount) {
+                                        appstate.catches.species.counts_weights.tallyFGFishCount = tallyCount;
+                                    }
+                                }
+                            }
+                            ObserverNumPadDialog {
+                                id: numpadTally
+                                placeholderText: tfTallyCount.placeholderText
+                                enable_audio: ObserverSettings.enableAudio
+                                onValueAccepted: {
+                                    appstate.catches.species.counts_weights.tallyFGFishCount = accepted_value;
+                                }
+                            }
+                        }
+                        RowLayout {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            FramButton {
+                                Layout.preferredHeight: controlsGrid.tallyButtonSize
+                                Layout.preferredWidth: controlsGrid.tallyButtonSize
+                                text: "+"
+                                fontsize: 30
+                                property bool enableAudio: ObserverSettings.enableAudio
+                                onClicked: {
+                                    appstate.catches.species.counts_weights.addToTallyFGCount(1)
+                                    if (enableAudio) {
+                                        soundPlayer.play_sound("keyInput", false)
+                                    }
+                                }
+                            }
+                            FramButton {
+                                Layout.preferredHeight: controlsGrid.tallyButtonSize
+                                Layout.preferredWidth: controlsGrid.tallyButtonSize
+                                text: "-"
+                                fontsize: 30
+                                enabled: appstate.catches.species.counts_weights.tallyFGFishCount >0
+                                property bool enableAudio: ObserverSettings.enableAudio
+                                onClicked: {
+                                    appstate.catches.species.counts_weights.addToTallyFGCount(-1)
+                                    if (enableAudio) {
+                                        soundPlayer.play_sound("numpadBack", false)
+                                    }
+                                }
+                            }
+                        }
+                        RowLayout {
+                                Layout.fillWidth: true
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                ObserverSunlightButton {
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    id: btnAddToTally
+                                    text: "Add total count to tally"
+                                    fontsize: 18
+            //                        enabled: tfExCount.text !== tfTallyCount.text
+                                    onClicked: {
+                                        addToTallyCount(appstate.catches.species.counts_weights.tallyFishCount);
+                                        visible = false;
+                                    }
+                                }
                             }
                         }
                     }
-                    ObserverNumPadDialog {
-                        id: numpadTally
-                        placeholderText: tfTallyCount.placeholderText
-                        enable_audio: ObserverSettings.enableAudio
-                        onValueAccepted: {
-                            appstate.catches.species.counts_weights.tallyFGFishCount = accepted_value;
-                        }
-                    }
-                    FramButton {
-                        Layout.preferredHeight: controlsGrid.tallyButtonSize
-                        Layout.preferredWidth: controlsGrid.tallyButtonSize
-                        text: "+"
-                        fontsize: 30
-                        property bool enableAudio: ObserverSettings.enableAudio
-                        onClicked: {
-                            appstate.catches.species.counts_weights.addToTallyFGCount(1)
-                            if (enableAudio) {
-                                soundPlayer.play_sound("keyInput", false)
-                            }
-                        }
-
-                    }
-                    FramButton {
-                        Layout.preferredHeight: controlsGrid.tallyButtonSize
-                        Layout.preferredWidth: controlsGrid.tallyButtonSize
-                        text: "-"
-                        fontsize: 30
-                        enabled: appstate.catches.species.counts_weights.tallyFGFishCount >0
-                        property bool enableAudio: ObserverSettings.enableAudio
-                        onClicked: {
-                            appstate.catches.species.counts_weights.addToTallyFGCount(-1)
-                            if (enableAudio) {
-                                soundPlayer.play_sound("numpadBack", false)
-                            }
-                        }
-                    }
-
-                }
-                RowLayout {
-                    Layout.alignment: Qt.AlignLeft
-                    Label {
-                        id: labelTotalWt
-                        text: "Tally * Avg Wt ="
-                        font.pixelSize: 18
-                        visible: tfActualWeight.visible
-                        Layout.alignment: Qt.AlignHCenter
-                    }
-                    ObserverTextField {
-                        id: tfTallyTimesAvg
-                        Layout.preferredWidth: colWeightInfo.widthTF
-                        font.pixelSize: colWeightInfo.fontsize
-                        readOnly: true
-                        text: appstate.catches.species.counts_weights.tallyTimesAvgWeight ?
-                                  appstate.catches.species.counts_weights.tallyTimesAvgWeight : ""
-
-                        Layout.alignment: Qt.AlignRight
-                        horizontalAlignment: TextInput.AlignRight
-                    }
-                }
-                Label {
-                    // spacer
-                }
-
-                RowLayout {
-                    Label {
-                        id: lblActualWeight
-                        text: "Total Basket Weights\n(from table)"
-                        font.pixelSize: colWeightInfo.fontsize
-                        visible: tfActualWeight.visible
-                        Layout.alignment: Qt.AlignLeft
-                    }
-                    ObserverTextField {
-                        id: tfActualWeight
-                        text: appstate.catches.species.counts_weights.actualWeight ?
-                                  appstate.catches.species.counts_weights.actualWeight.toFixed(dec_places) : ""
-                        Layout.preferredWidth: colWeightInfo.widthTF
-                        font.pixelSize: colWeightInfo.fontsize
-                        readOnly: true
-                        Layout.alignment: Qt.AlignLeft
-                        horizontalAlignment: TextInput.AlignRight
-                    }
-                }
-
-                Label {
-                    // spacer
-                }
-                RowLayout {
-                    Label {
-                        id: lblAvgWeight
-                        text: "Average Fish Weight"
-                        visible: screenCW.speciesIsCounted()
-                        font.pixelSize: colWeightInfo.fontsize
-                        Layout.alignment: Qt.AlignLeft
-                    }
-                    ObserverTextField {
-                        id: tfAvgWeight
-                        text: appstate.catches.species.counts_weights.avgWeight ?
-                                  appstate.catches.species.counts_weights.avgWeight.toFixed(dec_places) : ""
-                        visible: screenCW.speciesIsCounted()
-                        Layout.preferredWidth: colWeightInfo.widthTF
-                        font.pixelSize: colWeightInfo.fontsize
-                        readOnly: true
-                        Layout.alignment: Qt.AlignLeft
-                        horizontalAlignment: TextInput.AlignRight
-                    }
-                }
-                Label {
-                    // spacer
-                }
-                RowLayout {
-                    Label {
-                        id: lblTotalExCount
-                        text: "Total Count\n(from table)"
-                        visible: screenCW.speciesIsCounted()
-                        font.pixelSize: colWeightInfo.fontsize
-                        Layout.alignment: Qt.AlignLeft
-                    }
+                    Label {} //spacer
                     RowLayout {
+                        anchors.right: parent.right
+                        Label {
+                            id: lblTotalExCount
+                            text: "Tot Weighed Ct:"
+                            visible: screenCW.speciesIsCounted()
+                            font.pixelSize: colWeightInfo.fontsize
+                            Layout.alignment: Qt.AlignLeft
+                        }
                         ObserverTextField {
                             id: tfExCount
                             text: appstate.catches.species.counts_weights.tallyFishCount ?
@@ -1253,67 +1207,132 @@ Item {
                             Layout.alignment: Qt.AlignHCenter
                             horizontalAlignment: TextInput.AlignRight
                         }
-                        ObserverSunlightButton {
-                            id: btnAddToTally
-                            text: "Add to tally count"
-                            fontsize: 18
-    //                        enabled: tfExCount.text !== tfTallyCount.text
-                            onClicked: {
-                                addToTallyCount(appstate.catches.species.counts_weights.tallyFishCount);
-                                visible = false;
-                            }
+                    }
+                    RowLayout {
+                        anchors.right: parent.right
+                        Label {
+                            id: lblActualWeight
+                            text: "Tot Basket Wt:"
+                            font.pixelSize: colWeightInfo.fontsize
+                            Layout.alignment: Qt.AlignLeft
+                        }
+                        ObserverTextField {
+                            id: tfActualWeight
+                            text: appstate.catches.species.counts_weights.actualWeight ?
+                                      appstate.catches.species.counts_weights.actualWeight.toFixed(dec_places) : ""
+                            Layout.preferredWidth: colWeightInfo.widthTF
+                            font.pixelSize: colWeightInfo.fontsize
+                            readOnly: true
+                            Layout.alignment: Qt.AlignLeft
+                            horizontalAlignment: TextInput.AlignRight
                         }
                     }
-                }
-                Label {
-                    // spacer
-                }
-                ObserverSunlightButton {
-                    id: btnEditBasket
-                    text: "Edit Basket"
-                    Layout.preferredWidth: 150
-                    Layout.alignment: Qt.AlignHCenter
-                    checkable: true
-                    checked: tvBaskets.isEditingExistingBasket
+                    RowLayout {
+                        anchors.right: parent.right
+    //                    Layout.alignment: Qt.AlignLeft
+                        Label {
+                            id: labelTotalWt
+                            text: "Tally*Avg Wt:"
+                            font.pixelSize: 18
+                            Layout.alignment: Qt.AlignHCenter
+                        }
+                        ObserverTextField {
+                            id: tfTallyTimesAvg
+                            Layout.preferredWidth: colWeightInfo.widthTF
+                            font.pixelSize: colWeightInfo.fontsize
+                            readOnly: true
+                            text: appstate.catches.species.counts_weights.tallyTimesAvgWt ?
+                                      appstate.catches.species.counts_weights.tallyTimesAvgWt : ""
 
-                    onClicked: {
-                        if (!checked) {
-                            // User has de-selected edit. Return to default state, ready for new basket entry.
-                            modeSC.reset();
-                        } else {
-                            if (tvBaskets.currentRow != -1 && tvBaskets.rowCount > 0) {
-                                tvBaskets.isEditingExistingBasket = true;
-                                basketEntryStatusMessage.update(NBSM.msgStartEditingExistingBasket);
+                            Layout.alignment: Qt.AlignRight
+                            horizontalAlignment: TextInput.AlignRight
+                        }
+                    }
+                    RowLayout {
+                        anchors.right: parent.right
+                        Label {
+                            id: lblAvgWeight
+                            text: "Avg Fish Wt:"
+                            font.pixelSize: colWeightInfo.fontsize
+                            Layout.alignment: Qt.AlignLeft
+                        }
+                        ObserverTextField {
+                            id: tfAvgWeight
+                            text: appstate.catches.species.counts_weights.avgWeight ?
+                                      appstate.catches.species.counts_weights.avgWeight.toFixed(dec_places) : ""
+                            Layout.preferredWidth: colWeightInfo.widthTF
+                            font.pixelSize: colWeightInfo.fontsize
+                            readOnly: true
+                            Layout.alignment: Qt.AlignLeft
+                            horizontalAlignment: TextInput.AlignRight
+                        }
+                    }
+                    RowLayout {
+                        anchors.right:parent.right
+                        visible: ['12', '15'].indexOf(appstate.catches.species.discardReason) !== -1 || appstate.catches.species.isRetained
+                        Label {
+                            id: lblAvgRet
+                            font.pixelSize: 18
+                            text: "Avg Ret Fish Wt:"
+                        }
+                        ObserverTextField {
+                            id: tfAvgRetWt
+                            text: appstate.catches.avgRetainedFishWt ?
+                                      appstate.catches.avgRetainedFishWt.toFixed(dec_places) : ""
+                            Layout.preferredWidth: colWeightInfo.widthTF
+                            font.pixelSize: colWeightInfo.fontsize
+                            readOnly: true
+                            Layout.alignment: Qt.AlignLeft
+                            horizontalAlignment: TextInput.AlignRight
+                        }
+                    }
+                    Label {
+                        // spacer
+                    }
+                    ObserverSunlightButton {
+                        id: btnEditBasket
+                        text: "Edit Basket"
+                        Layout.preferredWidth: 150
+                        Layout.alignment: Qt.AlignHCenter
+                        checkable: true
+                        checked: tvBaskets.isEditingExistingBasket
+
+                        onClicked: {
+                            if (!checked) {
+                                // User has de-selected edit. Return to default state, ready for new basket entry.
+                                modeSC.reset();
                             } else {
-                                basketEntryStatusMessage.update(NBSM.msgEditClickedWithoutBasketSelected);
+                                if (tvBaskets.currentRow != -1 && tvBaskets.rowCount > 0) {
+                                    tvBaskets.isEditingExistingBasket = true;
+                                    basketEntryStatusMessage.update(NBSM.msgStartEditingExistingBasket);
+                                } else {
+                                    basketEntryStatusMessage.update(NBSM.msgEditClickedWithoutBasketSelected);
+                                }
+                            }
+                        }
+                    }
+                    ObserverSunlightButton {
+                        id: btnDeleteBasket
+                        text: "Delete Basket"
+                        Layout.preferredWidth: 150
+                        Layout.alignment: Qt.AlignHCenter
+                        visible: false  // Until btnEditBasket checked
+
+                        // Only show button if Edit Basket button is checked.
+                        Connections {
+                            target: btnEditBasket
+                            onCheckedChanged: {
+                                console.debug("btnEditBasket.checked now = " + btnEditBasket.checked);
+                                btnDeleteBasket.visible = btnEditBasket.checked;
+                            }
+                        }
+                        onClicked: {
+                            if (tvBaskets.currentRow != -1 && tvBaskets.rowCount > 0) {
+                                confirmRemoveBasket.show("remove this basket", "remove_basket")
                             }
                         }
                     }
                 }
-                ObserverSunlightButton {
-                    id: btnDeleteBasket
-                    text: "Delete Basket"
-                    Layout.preferredWidth: 150
-                    Layout.alignment: Qt.AlignHCenter
-                    visible: false  // Until btnEditBasket checked
-
-                    // Only show button if Edit Basket button is checked.
-                    Connections {
-                        target: btnEditBasket
-                        onCheckedChanged: {
-                            console.debug("btnEditBasket.checked now = " + btnEditBasket.checked);
-                            btnDeleteBasket.visible = btnEditBasket.checked;
-                        }
-                    }
-                    onClicked: {
-                        if (tvBaskets.currentRow != -1 && tvBaskets.rowCount > 0) {
-                            confirmRemoveBasket.show("remove this basket", "remove_basket")
-                        }
-                    }
-                }
-            }
-
-
             ColumnLayout {
                 id: colTally
                 Layout.column: 1

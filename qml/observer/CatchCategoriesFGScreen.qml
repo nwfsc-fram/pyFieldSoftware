@@ -565,6 +565,9 @@ Item {
             Connections {
                 target: appstate.catches
 
+                onPredatedDroppedWeightsUpdated: {
+                    tvSelectedCatchCat.refreshCatchRow(catchId)
+                }
                 onSampleMethodChanged : {
                     console.debug("Connection in tvSelectedCatchCat received sample method change to " + sample_method);
                     tvSelectedCatchCat.updatedSampleMethod();
@@ -683,6 +686,27 @@ Item {
                 var newRow = getNewestRowIdx();
                 if (newRow >= 0) {
                     selectRow(newRow);
+                }
+            }
+
+            function selectRowByCatchId(catchId) {
+                var idx = tvSelectedCatchCat.model.get_item_index('catch', catchId)
+                tvSelectedCatchCat.selectRow(idx)
+            }
+
+            function refreshCatchRow(catchId) {
+                var originalSelection = getSelRow()
+                selectRowByCatchId(catchId)
+                selectRow(originalSelection)
+//                appstate.catches.currentCatch = getSelItem()
+            }
+
+            function refreshTableValue(catchId, name, value) {
+                var lastSelected = getSelRow()
+                for (var i = 0; i < model.count; i++) {
+                    selectRow(i);
+                    appstate.catches.currentCatch = getSelItem()
+                    appstate.catches.setData(name, value)
                 }
             }
 
