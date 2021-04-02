@@ -29,7 +29,7 @@ class CountsWeights(QObject):
     avgWeightChanged = pyqtSignal(QVariant, name='avgWeightChanged')
     speciesWeightChanged = pyqtSignal(QVariant, name='speciesWeightChanged')
     extrapolatedWeightChanged = pyqtSignal(QVariant, name='extrapolatedWeightChanged')
-    speciesFishCountChanged = pyqtSignal(QVariant, QVariant, QVariant, name='speciesFishCountChanged')
+    speciesFishCountChanged = pyqtSignal(QVariant, QVariant, name='speciesFishCountChanged')
     actualWeightChanged = pyqtSignal(QVariant, name='actualWeightChanged')
     wm15RatioChanged = pyqtSignal(QVariant, name='wm15RatioChanged')
     discardReasonSelected = pyqtSignal(QVariant, name='discardReasonSelected')
@@ -68,7 +68,6 @@ class CountsWeights(QObject):
         self._subsample_count = None
         self._subsample_avg_weight = None
         self._subsample_avg_mode = None
-        self._species_comp_item_notes = None
 
         self._current_species_comp_item = None
         self._baskets_model = ObserverBasketsModel()
@@ -312,8 +311,9 @@ class CountsWeights(QObject):
         TODO: should this be avg in last 24hrs?
         :return: sets float val _todays_avg_weight (exposed as todaysAvgWeight property)
         """
-        print("calc ss weight called!!!")
-        if self._current_species_comp_item:
+        cc_spp = self._observer_species.observer_catches.current_matching_species_ids
+        if self._current_species_comp_item and cc_spp:
+            self._logger.info(f"Calculating daily subsample weight for species {cc_spp}")
             self.subsampleWeight = Trips.select(
                 fn.sum(SpeciesCompositionBaskets.basket_weight_itq)
             ).join(
@@ -330,7 +330,7 @@ class CountsWeights(QObject):
                 Species, on=SpeciesCompositionItems.species == Species.species  # no rel_model in model def...
             ).where(
                 (Trips.trip == ObserverDBUtil.get_current_trip_id()) &
-                (Species.species_code == self._current_species_comp_item.species.species_code) &
+                (Species.species.in_(cc_spp)) &
                 # (fn.substr(FishingActivities.created_date, 1, 10) == fn.substr(ObserverDBUtil.get_arrow_datestr(), 1, 10)) &
                 (fn.substr(FishingActivities.created_date, 1, 10) == fn.substr(SpeciesCompositionItems.created_date, 1, 10)) &
                 (SpeciesCompositionBaskets.is_subsample == 1)
@@ -342,7 +342,9 @@ class CountsWeights(QObject):
         TODO: should this be avg in last 24hrs?
         :return: sets float val _todays_avg_weight (exposed as todaysAvgWeight property)
         """
+        cc_spp = self._observer_species.observer_catches.current_matching_species_ids
         if self._current_species_comp_item:
+            self._logger.info(f"Calculating daily subsample count for species {cc_spp}")
             self.subsampleCount = Trips.select(
                 fn.sum(SpeciesCompositionBaskets.fish_number_itq)
             ).join(
@@ -468,7 +470,6 @@ class CountsWeights(QObject):
         self._extrapolated_species_fish_count = None
         self._tally_table_fish_count = None
         self._tally_times_avg_wt = None
-        self._species_comp_item_notes = None
 
         weighted_baskets = 0
         species_fish_count = 0
@@ -580,9 +581,9 @@ class CountsWeights(QObject):
             self._logger.info('Extrapolated count calculation: {}'.format(species_extrapolated_count))
             self._extrapolated_species_fish_count = round(self._species_fish_count + species_extrapolated_count)
             if self._subsample_avg_mode == 1:
-                self._species_comp_item_notes = f'SPECIES_NUMBER=WEIGHT/SUBSAMPLE_AVG={species_weight}/{round(self._subsample_avg_weight, 2)}'
+                self._observer_species.species_comp_item_notes = f'SPECIES_NUMBER=WEIGHT/SUBSAMPLE_AVG={species_weight}/{round(self._subsample_avg_weight, 2)}'
             elif species_extrapolated_count:
-                self._species_comp_item_notes = f'SPECIES_NUMBER=(NO_COUNT_WEIGHT/FISH_AVG)+ACTUAL_COUNT=({species_weight - species_counted_weight}/{self._avg_weight})+{species_fish_count}'
+                self._observer_species.species_comp_item_notes = f'SPECIES_NUMBER=(NO_COUNT_WEIGHT/FISH_AVG)+ACTUAL_COUNT=({species_weight - species_counted_weight}/{self._avg_weight})+{species_fish_count}'
 
             if self._current_weight_method == '8' and self._total_tally is not None:
                 self._logger.info(f"WM8: Adding total tally {self._total_tally} to extrapolated " +
@@ -613,7 +614,7 @@ class CountsWeights(QObject):
         self.speciesWeightChanged.emit(self._species_weight)
         self.tallyTimesAvgWeightChanged.emit(self._tally_times_avg_wt)  # ws - is this FG only?
         if not self.isFixedGear:
-            self.speciesFishCountChanged.emit(self._extrapolated_species_fish_count, self._total_tally, self._species_comp_item_notes)
+            self.speciesFishCountChanged.emit(self._extrapolated_species_fish_count, self._total_tally)
             self.extrapolatedWeightChanged.emit(self._extrapolated_species_weight)
         self.totalTallyChanged.emit(self._total_tally)
 
