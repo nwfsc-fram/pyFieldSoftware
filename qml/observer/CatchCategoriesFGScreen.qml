@@ -565,9 +565,6 @@ Item {
             Connections {
                 target: appstate.catches
 
-                onPredatedDroppedWeightsUpdated: {
-                    tvSelectedCatchCat.refreshCatchRow(catchId)
-                }
                 onSampleMethodChanged : {
                     console.debug("Connection in tvSelectedCatchCat received sample method change to " + sample_method);
                     tvSelectedCatchCat.updatedSampleMethod();
@@ -613,6 +610,10 @@ Item {
                     }
 
                     appstate.catches.setData(parmName, parmValue);
+                }
+
+                onPredatedDroppedWeightsUpdated: {
+                    tvSelectedCatchCat.refreshCatchRow(catchId)
                 }
 
                 onTotalCatchWeightFGChanged: {    // Parameter: weight

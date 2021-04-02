@@ -44,6 +44,7 @@ class CountsWeights(QObject):
         super().__init__()
         self._logger = logging.getLogger(__name__)
         self._observer_species = observer_species
+        self._observer_species.calculateTotalsForDrChange.connect(self._calculate_totals)
 
         # weight metrics
         self._species_weight = None
@@ -363,8 +364,10 @@ class CountsWeights(QObject):
         self._tally_table_fish_count = species_unweighted_count + species_fish_count
         self._species_fish_count = species_fish_count
 
+        # FIELD-1900: exclude DRs 12/15 so we can just click tally button to update weight
         if weighted_baskets == 0 and self._observer_species.discardReason not in ['15', '12']:  # Didn't find any weight data
-            self._species_weight = self._extrapolated_species_weight = self._actual_weight = self._avg_weight = None
+            self._species_weight = self._extrapolated_species_weight = self._actual_weight = self._avg_weight = self._tally_times_avg_wt = None
+            self._observer_species.species_comp_item_notes = None
             self.emit_calculated_weights()
             return
 
@@ -544,8 +547,8 @@ class CountsWeights(QObject):
         if DR predated/dropoff, try to calculate with retained avg, else use regular avg
         :return:
         """
-        if self._observer_species.discardReason in ['12', '15'] and self._observer_species.observer_catches.avgRetainedFishWt:
-            avg = self._observer_species.observer_catches.avgRetainedFishWt
+        if self._observer_species.discardReason in ['12', '15'] and self._observer_species.avgRetainedFishWt:
+            avg = self._observer_species.avgRetainedFishWt
             note = f"SPECIES_WEIGHT=RET_AVG*TALLY={round(avg, 2)}*{self._tally_fg_fish_count}"
         elif self.avgWeight:
             avg = self.avgWeight

@@ -1269,7 +1269,7 @@ Item {
                     }
                     RowLayout {
                         anchors.right:parent.right
-                        visible: ['12', '15'].indexOf(appstate.catches.species.discardReason) !== -1 || appstate.catches.species.isRetained
+                        visible: ['12', '15'].indexOf(appstate.catches.species.discardReason) !== -1 //|| appstate.catches.species.isRetained
                         Label {
                             id: lblAvgRet
                             font.pixelSize: 18
@@ -1277,8 +1277,8 @@ Item {
                         }
                         ObserverTextField {
                             id: tfAvgRetWt
-                            text: appstate.catches.avgRetainedFishWt ?
-                                      appstate.catches.avgRetainedFishWt.toFixed(dec_places) : ""
+                            text: appstate.catches.species.avgRetainedFishWt ?
+                                      appstate.catches.species.avgRetainedFishWt.toFixed(dec_places) : ""
                             Layout.preferredWidth: colWeightInfo.widthTF
                             font.pixelSize: colWeightInfo.fontsize
                             readOnly: true

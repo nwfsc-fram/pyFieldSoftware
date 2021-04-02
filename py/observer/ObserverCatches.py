@@ -26,7 +26,7 @@ from py.observer.Biospecimens import Biospecimens
 from py.observer.CatchCategory import CatchCategory
 
 from py.observer.ObserverDBModels import BioSpecimens, Catches, CatchCategories, FishingActivities, \
-    Species, SpeciesCatchCategories, SpeciesCompositions, SpeciesCompositionItems, SpeciesCompositionBaskets
+    Species, SpeciesCatchCategories, SpeciesCompositions
 
 from py.observer.ObserverCatchBaskets import ObserverCatchBaskets
 from py.observer.ObserverCatchesModel import CatchesModel
@@ -49,13 +49,9 @@ class ObserverCatches(QObject):
     unusedSignal = pyqtSignal(name='unusedSignal')  # Make QML warning go away
     otcFGWeightChanged = pyqtSignal(QVariant, QVariant, name='otcFGWeightChanged', arguments=['otc_fg', 'fishing_activity_num'])
     retainedCatchWeightChanged = pyqtSignal(name='retainedCatchWeightChanged')
-    retainedSampleWeightChanged = pyqtSignal(name='retainedSampleWeightChanged')
     refreshTvWm5Weights = pyqtSignal(int, QVariant, arguments=["catchId", "newWt"])
     ccCancelled = pyqtSignal()  # middleman for CC and CC details, can I signal directly between QMLs?
     reactivateCC = pyqtSignal(QVariant, arguments=['catchId'])  # FIELD-2039, use to reselect CC with revert to CW
-    avgRetainedFishWtChanged = pyqtSignal()
-    predatedDroppedWeightsUpdated = pyqtSignal(QVariant, arguments=['catchId'])
-    # refreshTvCC
 
     PACIFIC_HALIBUT_CATCH_CATEGORY_CODE = 'PHLB'
     CATCH_DISCARD_REASON_UNKNOWN = '?'
@@ -75,7 +71,6 @@ class ObserverCatches(QObject):
 
         # Species uses some values in ObserverCatches (e.g. weight method); pass self as parm.
         self._species = ObserverSpecies(self)
-        self._avg_retained_fish_wt = None
 
         self._biospecimens = Biospecimens(self, db)  # Biospecimens uses some values in ObserverCatches; pass as parm.
 
@@ -98,97 +93,6 @@ class ObserverCatches(QObject):
         # uses some values in ObserverCatches (e.g. weight method); pass self as parm.
         # TODO: Consider dropping self as parm in favor of signals.
         self._observer_catch_baskets = ObserverCatchBaskets(self)
-
-    @pyqtProperty(QVariant, notify=avgRetainedFishWtChanged)
-    def avgRetainedFishWt(self):
-        """
-        use to extrapolate weights for drop-off/predated FG fish
-        :return: float
-        """
-        return self._avg_retained_fish_wt
-
-    @avgRetainedFishWt.setter
-    def avgRetainedFishWt(self, avg):
-        """
-        if val changes, do something
-        :param avg: float
-        :return: None
-        """
-        if self._avg_retained_fish_wt != avg:
-            self._avg_retained_fish_wt = avg
-            self._logger.info(f"Calculating new retained fish average = {self._avg_retained_fish_wt}")
-            self.avgRetainedFishWtChanged.emit()
-            self._update_predated_dropoff_weights()
-
-    def _calculate_avg_retained_fish_wt(self):
-        """
-        Query db for species in a haul for retained fish wt average
-        :return: set _avg_retained_wt to float
-        """
-        cc_spp = self._species.assoc_species.get_cc_species(self._current_catch.catch_category)
-        if cc_spp:
-            self.avgRetainedFishWt = Catches.select(
-                fn.sum(SpeciesCompositionBaskets.basket_weight_itq) / fn.sum(SpeciesCompositionBaskets.fish_number_itq)
-            ).join(
-                SpeciesCompositions
-            ).join(
-                SpeciesCompositionItems
-            ).join(
-                SpeciesCompositionBaskets
-            ).where(
-                (Catches.fishing_activity == self._current_fishing_activity_id) &  # haul
-                (Catches.catch_disposition == 'R') &  # retained
-                (SpeciesCompositionBaskets.basket_weight_itq.is_null(False)) &  # baskets with actual weights
-                (SpeciesCompositionBaskets.fish_number_itq.is_null(False)) &  # baskets with actual counts
-                (SpeciesCompositionItems.species.in_(cc_spp))  # species associated with CC
-            ).scalar()
-
-    def _update_predated_dropoff_weights(self):
-        """
-        If any retained weight changes for a species, we need to find
-        and update weights for any dropoff/predated species_comp_items
-        Looping through each record for logging purposes
-        :return: None (update DB directly across haul)
-        """
-        if self._avg_retained_fish_wt:
-            cc_spp = self._species.assoc_species.get_cc_species(self._current_catch.catch_category)
-            if cc_spp:
-                sp_comp_items = SpeciesCompositionItems.select(
-                    SpeciesCompositionItems.species_comp_item,
-                    SpeciesCompositionItems.species_weight,
-                    SpeciesCompositionItems.species_number,
-                    SpeciesCompositionItems.discard_reason,
-                    Catches.catch
-                ).join(
-                    SpeciesCompositions, on=SpeciesCompositions.species_composition == SpeciesCompositionItems.species_composition
-                ).join(
-                    Catches, on=Catches.catch == SpeciesCompositions.catch
-                ).where(
-                    (Catches.fishing_activity == self._current_fishing_activity_id) &
-                    (Catches.catch_disposition != 'R') &
-                    (SpeciesCompositionItems.species_number.is_null(False)) &
-                    (SpeciesCompositionItems.discard_reason.in_(['12', '15'])) &
-                    (SpeciesCompositionItems.species.in_(cc_spp))
-                )
-                total_wt = 0
-                changed_catches = []
-                for item in sp_comp_items.dicts():
-
-                    new_wt = self._species.counts_weights.tally_times_avg(self._avg_retained_fish_wt, item['species_number'])
-                    total_wt += new_wt
-                    new_note = f"SPECIES_WEIGHT=RET_AVG*TALLY={round(self._avg_retained_fish_wt, 2)}*{item['species_number']}" if new_wt else None
-                    changed_catches.append(item['catch'])
-
-                    SpeciesCompositionItems.update(
-                        species_weight=new_wt,
-                        notes=new_note
-                    ).where(
-                        SpeciesCompositionItems.species_comp_item == item['species_comp_item']
-                    )
-                    self._logger.info(f"Updating species_weight for sci {item['species_comp_item']}, dr {item['discard_reason']} to {new_wt}; {new_note}")
-
-                for c in list(set(changed_catches)):
-                    self.predatedDroppedWeightsUpdated.emit(c)
 
     @pyqtProperty(QVariant, notify=unusedSignal)
     def currentFishingActivityId(self):
@@ -247,11 +151,8 @@ class ObserverCatches(QObject):
             doomed_catch.delete_instance(recursive=True)
             self._logger.info('Deleted catch_id {}'.format(catch_id))
             if self._current_catch.catch_disposition == 'R':
-                if ObserverDBUtil.is_fixed_gear():
-                    self._calculate_avg_retained_fish_wt()  # currently only needed with FG
-                else:
-                    self.retainedCatchWeightChanged.emit()  # trigger update to WM5 records
-                    self.refresh_wm5_weights()  # update CC tableview for WM5 vals
+                self.retainedCatchWeightChanged.emit()  # trigger update to WM5 records
+                self.refresh_wm5_weights()  # update CC tableview for WM5 vals
             # Delete any SpeciesCompositions records for this catch, non-recursively (see comment above).
             orphan_spec_comps = SpeciesCompositions.select().where(SpeciesCompositions.catch == catch_id)
             if orphan_spec_comps.count() == 0:
@@ -380,11 +281,48 @@ class ObserverCatches(QObject):
             related_species = SpeciesCatchCategories.select().where(
                 SpeciesCatchCategories.catch_category == catch_category_id)
             found_species_count = len(related_species)
-            logging.info(f'Species count for {catch_category_id} catch cat: {found_species_count}')
+            logging.debug(f'Species count for {catch_category_id} catch cat: {found_species_count}')
             return found_species_count
         except Exception as e:
             logging.warning(f'Error looking up catch category {catch_category_id}, {e}')
             return found_species_count
+
+    @property
+    def current_matching_species_ids(self):
+        """
+        returns list of related species_ids instead of the function below, that returns single id
+        For the current catch category, is there a species that is associated with the current category,
+        either by:
+        1. Having an entry in the SPECIES_CATCH_CATEGORIES table or
+        2. A shared category code (PacFIN code) or
+        3. A shared case-insensitive common name.
+        :return: species_ids[]
+        """
+        if not self._current_catch:
+            return []
+
+        # set current vars
+        cc_common_name = self._current_catch.catch_category.catch_category_name
+        cc_id = self._current_catch.catch_category.catch_category
+        pfin_code = self._current_catch.catch_category.catch_category_code
+
+        # start by getting species ids from SpeciesCatchCategories with CC_ID
+        spcc_query = SpeciesCatchCategories.select(
+            SpeciesCatchCategories.species
+        ).where(
+            SpeciesCatchCategories.catch_category == cc_id
+        )
+
+        # also get from species table where common name matches, or pacfin code = CC_Code
+        spp_query = Species.select(
+            Species.species
+        ).where(
+            (fn.Lower(Species.common_name) == cc_common_name.lower()) |
+            (Species.pacfin_code == pfin_code)
+        )
+
+        # union to eliminate dupes, return list of species IDs
+        return [x.species.species for x in spcc_query | spp_query]
 
     @pyqtProperty(QVariant)
     def currentMatchingSpeciesId(self):
@@ -499,7 +437,7 @@ class ObserverCatches(QObject):
             catch_id_changed, weight_method_changed = self._check_key_fields_for_change(
                 old_current_catch_model, data_dict)
             if catch_id_changed:
-                self._calculate_avg_retained_fish_wt()
+                print("CatchID CHANGED!")
                 self.catchIdChanged.emit()
             if weight_method_changed:
                 self.weightMethodChanged.emit()
@@ -619,6 +557,8 @@ class ObserverCatches(QObject):
             return self._current_catch.hooks_sampled
         elif data_name == 'density':  # Translate to NOTES
             return self._get_current_catch_ratio()
+        elif data_name == 'catch_category':
+            return self._current_catch.catch_category.catch_category
         else:
             self._logger.warning('Attempt to get unknown data name: {}'.format(data_name))
             return None
@@ -718,8 +658,6 @@ class ObserverCatches(QObject):
             self.weightMethodChanged.emit()
         elif data_name == 'catch_weight' and self._current_catch.catch_disposition == 'R':
             self.retainedCatchWeightChanged.emit()
-        elif data_name == 'sample_weight' and self._current_catch.catch_disposition == 'R':
-            self._calculate_avg_retained_fish_wt()  #
 
     def _set_cur_prop(self, prop, value):
         """
