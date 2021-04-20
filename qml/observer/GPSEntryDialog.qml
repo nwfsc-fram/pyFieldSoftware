@@ -606,7 +606,7 @@ Dialog {
                         anchors.left: parent.left
                         FramButton {
                             id: btnGenerateLatLon
-                            text: "Poll Current Lat/Long\nfrom Tablet GPS"
+                            text: "Get Tablet Lat/Lon"
                             Layout.leftMargin: 20
                             implicitWidth: 100
                             onClicked: {
@@ -621,7 +621,7 @@ Dialog {
                         Connections {
                             target: appstate.hauls.locations.tabletGPS
                             onStatusChanged: {
-                                labelGpsStatus.text = s
+                                labelGpsStatus.text = s ? s : ''
                                 if (s === 'Signal Acquired') {
                                     labelGpsStatus.color = 'green'
                                 } else {
@@ -677,7 +677,7 @@ Dialog {
                         Connections {
                             target: appstate.hauls.locations.tabletGPS
                             onTimestampChanged: {
-                                time_val = new Date(ts)
+                                time_val = ts ? new Date(ts): ""
                             }
                         }
                     }
@@ -889,6 +889,7 @@ Dialog {
                         Connections {
                             target: appstate.hauls.locations.tabletGPS
                             onLatitudeChanged: {
+                                // signal only emitted when valid numbers are returned (to avoid tripping validation)
                                 tfLatDeg.text = appstate.hauls.locations.tabletGPS.latDegrees
                                 tfLatMinWhole.text = appstate.hauls.locations.tabletGPS.latMinutes
                                 tfLatMinFract.text = ((appstate.hauls.locations.tabletGPS.latSeconds/60)*100).toFixed(0)
@@ -1078,6 +1079,7 @@ Dialog {
                         Connections {
                             target: appstate.hauls.locations.tabletGPS
                             onLongitudeChanged: {
+                                // signal only emitted when valid numbers are returned (to avoid tripping validation)
                                 tfLongDeg.text = Math.abs(appstate.hauls.locations.tabletGPS.lonDegrees)
                                 tfLongMinWhole.text = appstate.hauls.locations.tabletGPS.lonMinutes
                                 tfLongMinFract.text = ((appstate.hauls.locations.tabletGPS.lonSeconds/60)*100).toFixed(0)
