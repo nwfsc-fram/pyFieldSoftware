@@ -34,7 +34,7 @@ class TabletGPS(QObject):
     statusChanged = pyqtSignal(QVariant, arguments=['s'])  # emits to UI to display status
     unusedSignal = pyqtSignal()
 
-    TIMEOUT = 5  # used in subprocess for powershell timeout when getting coordinates
+    TIMEOUT = 10  # used in subprocess for powershell timeout when getting coordinates
     TIMESTAMP_STR_FMT = '%a %b %d %H:%M:%S %Y'  # str date format that javascript likes
 
     # status / error handling for gps signal try
@@ -62,10 +62,10 @@ class TabletGPS(QObject):
         Clear out data to reset
         :return:
         """
-        self._lat_dd = None
-        self._lon_dd = None
-        self._timestamp = None
-        self._status = None
+        self.latDD = None
+        self.lonDD = None
+        self.timestamp = None
+        self.status = None
 
     @pyqtProperty(QVariant, notify=unusedSignal)
     def status(self):
@@ -91,7 +91,9 @@ class TabletGPS(QObject):
         """
         if self._timestamp != ts:
             self._timestamp = ts
-            self.timestampChanged.emit(self._timestamp)
+            self._logger.info(f"timestamp updated to {self._timestamp}")
+            if self._timestamp:
+                self.timestampChanged.emit(self._timestamp)
 
     def _generate_timestamp(self):
         """
@@ -117,7 +119,9 @@ class TabletGPS(QObject):
             self._lat_degrees = self.dd_to_dms(dd)[0]
             self._lat_minutes = self.dd_to_dms(dd)[1]
             self._lat_seconds = self.dd_to_dms(dd)[2]
-            self.latitudeChanged.emit()
+            self._logger.info(f"Lat changed to {dd} or {self._lat_degrees}'{self._lat_minutes}.{self._lat_seconds}")
+            if self._lat_dd and isinstance(self._lat_dd, float):  # avoid emitting invalid nums to QML
+                self.latitudeChanged.emit()
 
     @pyqtProperty(QVariant, notify=unusedSignal)
     def latDegrees(self):
@@ -147,7 +151,9 @@ class TabletGPS(QObject):
             self._lon_degrees = self.dd_to_dms(dd)[0]
             self._lon_minutes = self.dd_to_dms(dd)[1]
             self._lon_seconds = self.dd_to_dms(dd)[2]
-            self.longitudeChanged.emit()
+            self._logger.info(f"Lon changed to {dd} or {self._lon_degrees}'{self._lon_minutes}.{self._lon_seconds}")
+            if self._lon_dd and isinstance(self._lon_dd, float):  # avoid emitting invalid nums to QML
+                self.longitudeChanged.emit()
 
     @pyqtProperty(QVariant, notify=unusedSignal)
     def lonDegrees(self):
@@ -214,7 +220,7 @@ class TabletGPS(QObject):
         :return: tuple of floats (latitude, longitude); units = decimal degrees
         """
         self._reset_data()
-
+        self._logger.info(f"Trying to acquire coordinates from tablet GPS...")
         pshell_cmd = f'''
             Add-Type -AssemblyName System.Device
             $GeoWatcher = New-Object System.Device.Location.GeoCoordinateWatcher
@@ -255,7 +261,9 @@ class TabletGPS(QObject):
             return
         else:
             dds = tuple([float(xy) for xy in output_strs])
-            self._timestamp = self._generate_timestamp()
-            self._lat_dd = dds[0]
-            self._lon_dd = dds[1]
+
+            # set actual pyqtProperties here to trigger signals
+            self.timestamp = self._generate_timestamp()
+            self.latDD = dds[0]
+            self.lonDD = dds[1]
             self.status = self.GPS_AVAILABLE
