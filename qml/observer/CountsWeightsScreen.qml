@@ -773,7 +773,7 @@ Item {
             id: tvBaskets
             x: grpMeasurementType.x + grpMeasurementType.width + 20
             y: 190
-            width: 420
+            width: appstate.trips.debrieferMode ? 620 : 420  // add width of created_date col if debreifer mode
             height: main.height - 335
             enabled: !isEditingExistingBasket && !NBSM.isEnteringNewBasket()
 
@@ -843,6 +843,12 @@ Item {
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
                 }
+            }
+            TableViewColumn {  // FIELD-2087: debriefer QA/QC purposes
+                role: "created_date"
+                title: "Created"
+                width: 200
+                visible: appstate.trips.debrieferMode   // Make visible for debriefers
             }
             onClicked: {
                 if (!btnEditBasket.checked) {
