@@ -22,7 +22,7 @@ from playhouse.shortcuts import model_to_dict, dict_to_model
 from peewee import fn, IntegrityError
 
 from py.observer.ObserverDBModels import Trips, Vessels, Settings, Users, Programs, \
-    Contacts, Ports, FishTickets, TripCertificates, IfqDealers, FishingActivities, Lookups
+    Contacts, Ports, FishTickets, TripCertificates, IfqDealers, FishingActivities, Lookups, VesselContacts
 from py.observer.ObserverDBSyncController import ObserverDBSyncController
 from py.observer.ObserverTripsModel import TripsModel
 from py.observer.FishTicketsModel import FishTicketsModel
@@ -426,11 +426,20 @@ class ObserverTrip(QObject):
             # FIELD-1509 this breaks when app is frozen. Just building a dict instead. [didn't work quite right.]
             # FIELD-1882 issue with multiple first names
             # FIELD-1882 rewritten to search all names, but will only return first match.
+            # FIELD-2106 if dupe skippers exist in DB, need to select by vessel/active status
             skippers = {}
-            contacts_q = Contacts.select().where(Contacts.first_name.is_null(False))
+            contacts_q = Contacts.select().join(
+                VesselContacts
+            ).where(
+                (Contacts.first_name.is_null(False)) &
+                (VesselContacts.contact_status == 'A') &  # Skipper autocomplete won't offer inactive contacts
+                (VesselContacts.vessel == self._current_trip.vessel.vessel)  # Skipper must be with current vessel
+                # assuming above that self._current_trip must be set if we've gotten to skipper menu...
+            )
 
             for c in contacts_q:
                 if (c.first_name + ' ' + c.last_name) == skipper_name:
+                    self._logger.info(f"Matched skipper {skipper_name} to active FK {c.contact}")
                     return c.contact
             return None
         except Exception as e:
