@@ -164,6 +164,21 @@ Item {
                 appstate.sets.updateModelOTC(otc_fg, fishing_activity_num);
             }
         }
+
+        Connections {
+            target: appstate.sets
+            onDoPredMissedWeights: {
+                dlgDoPredMissed.message = "Species listed do not have retained samples\nto auto-calc dropoff/predated basket weights.\nManual weight entry required:\n\n" + common_names
+                dlgDoPredMissed.open()
+            }
+        }
+        FramNoteDialog {
+            id: dlgDoPredMissed
+            width: 450
+            height: 400
+            bkgcolor: '#FA8072'
+            title: "Null Basket Weights!"
+        }
     }
 
     TrawlOkayDialog {
