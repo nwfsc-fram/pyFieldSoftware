@@ -172,6 +172,7 @@ class ObserverSpecies(QObject):
     totalCatchCountFGChanged = pyqtSignal(QVariant, arguments=['count'], name='totalCatchCountFGChanged')
     reactivateSpecies = pyqtSignal(QVariant, arguments=['speciesCompItemId'])  #FIELD-2039
     selectedSpeciesItemChanged = pyqtSignal()
+    calculateTotalsForDrChange = pyqtSignal()
 
     species_list_types = (
         'Full',  # Full list from SPECIES table of observer.db
@@ -240,7 +241,7 @@ class ObserverSpecies(QObject):
 
         self._species_comp_items_model = ObserverSpeciesCompModel()
 
-        self._counts_weights = CountsWeights()
+        self._counts_weights = CountsWeights(self)
         self._filter_name = ''  # Filter both by common_name and by scientific_name
 
         self.current_protocol_str = ''  # store protocol lookup, e.g. 'FL, WS'
@@ -411,6 +412,37 @@ class ObserverSpecies(QObject):
         species_sorted = sorted(species, key=itemgetter(sort_field))
 
         return species_sorted
+
+    @staticmethod
+    def get_related_species(species_id):
+        """
+        If species is one of a few where multiple need to be compared,
+        return a list of related species, else return that species only
+        TODO: Use table instead of hardcoding to make these relationships
+        :param species_id: species DB id (int)
+        :return: int[]
+        """
+        complexes = {
+            'thornyhead': [
+                10239,  # longspine
+                10492,  # shortspine / longspine
+                10491  # shortspine
+            ],
+            'shortraker': [
+                10254,  # shortraker
+                10427,  # shortraker/rougheye/blackspotted
+                10490  # rougheye/blackspotted
+            ],
+            'skate': [
+                10334,  # big skate
+                10337,  # longnose skate
+                10338  # sandpaper skate
+            ]
+        }
+        for species in complexes.values():
+            if species_id in species:
+                return species
+        return [species_id]
 
     def _load_full_list_model(self):
         """
@@ -727,6 +759,10 @@ class ObserverSpecies(QObject):
                 old_dr = self._current_speciescomp_item.discard_reason
                 self._current_speciescomp_item.discard_reason = dr
                 self._current_speciescomp_item.save()
+
+                if old_dr in ['12', '15'] or dr in ['12', '15']:
+                    self.calculateTotalsForDrChange.emit()
+
                 if old_dr:
                     bios_q = BioSpecimens.select().where(
                         (BioSpecimens.catch == self._current_species_comp.catch) &
@@ -1507,6 +1543,15 @@ class ObserverSpecies(QObject):
     def totalCatchCount(self):
         return self._total_haul_count
 
+    @property
+    def species_comp_item_notes(self):
+        return self._species_comp_item_notes
+
+    @species_comp_item_notes.setter
+    def species_comp_item_notes(self, notes):
+        if self._current_speciescomp_item:
+            self._current_speciescomp_item.notes = notes
+            self._current_speciescomp_item.save()
 
 class TestObserverSpecies(unittest.TestCase):
     def setUp(self):
