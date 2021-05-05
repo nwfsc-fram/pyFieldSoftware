@@ -16,7 +16,7 @@ from py.observer.ObserverFishingLocations import ObserverFishingLocations
 from py.observer.ObserverCatches import ObserverCatches
 from py.observer.ObserverSpecies import ObserverSpecies
 import logging
-from peewee import fn
+from peewee import fn, JOIN_LEFT_OUTER
 
 
 class Sets(QObject):
@@ -175,7 +175,8 @@ class Sets(QObject):
         :return: None
         """
         self._logger.info(f"Checking for post-set calculations for current set id: {self._current_set.fishing_activity}")
-        self._update_predated_do_basket_weights()
+        # self._update_predated_do_basket_weights()
+        self._update_predated_do_species_comps()
 
     def _calculate_retained_spp_avg(self, species_ids):
         """
@@ -259,30 +260,35 @@ class Sets(QObject):
             catch.save()
             self._logger.info(f"Catch {catch_id} sample_weight updated to {new_wt}")
 
-    def _update_predated_do_basket_weights(self):
+    def _update_predated_do_species_comps(self):
         """
-        Function to update predated/dropoff fish weights based on retained samples from same haul and species complex
+        Post-set function that calculates retained average of species and applies it to drop off or predated fish
+        (discard reason 12, 15).  If manually entered baskets exist, this calc will ignore.  Retained avg may be
+        calculated for single or related (see ObserverSpecies.get_related_species) retained species
         Steps
-        1. Find all predated/dropoff baskets
-        2. Loop through baskets, calculate retained avg, and update based on avg*tally
-        3. If any baskets change, update parent species_comp_item and catch record weights
-        4. If any baskets still have null weights, emit signal to trigger warning
-        5. Trigger OTC recalculation
+        1. Query species comp items where DR = 12|15 and no baskets exist for current haul
+        2. Identify related species and calculate retained fish average
+        3. Multiply predated/dropoff tally with retained avg, save value to species_comp_item.species_weight (add notes)
+        4. Update parent catch weights if species_comp weights change
+        5. recalculate OTC if catches change
+        6. If any predated/dropoffs still have null weights (we calculated a null avg), emit signal to warn user
         :return: None
         """
         faid = self._current_set.fishing_activity
-        pred_dropped_baskets = SpeciesCompositionBaskets.select(
-            SpeciesCompositionBaskets.species_comp_basket,
-            SpeciesCompositionBaskets.fish_number_itq,
-            SpeciesCompositionBaskets.basket_weight_itq,
-            SpeciesCompositionBaskets.species_comp_basket,
+        pred_dropped_items = SpeciesCompositionItems.select(
             SpeciesCompositionItems.species_comp_item,
+            SpeciesCompositionItems.species_weight,
+            SpeciesCompositionItems.species_number,
+            SpeciesCompositionItems.total_tally,
+            SpeciesCompositionItems.notes,
             Species.species,
-            Species.common_name,
+            Species.common_name.alias("cname"),
             Catches.catch,
             CatchCategories.catch_category,
             CatchCategories.catch_category_code
         ).join(
+            SpeciesCompositionBaskets, JOIN_LEFT_OUTER
+        ).switch(
             SpeciesCompositionItems
         ).join(
             Species
@@ -296,44 +302,41 @@ class Sets(QObject):
             CatchCategories
         ).where(
             (Catches.fishing_activity == faid) &
-            (SpeciesCompositionItems.discard_reason.in_(['12', '15']))  # dropoff/predated
+            (SpeciesCompositionItems.discard_reason.in_(['12', '15'])) & # dropoff/predated
+            (SpeciesCompositionBaskets.fish_number_itq.is_null(True)) &
+            (SpeciesCompositionBaskets.basket_weight_itq.is_null(True))  # ignore when we have manual baskets
         ).naive()
 
-        if not pred_dropped_baskets:
+        if not pred_dropped_items:
+            self._logger.info(f"No predated/dropped species comps found to update for faid {faid}")
             return
 
-        # setup lists for doing things outside of baskets loop
-        null_species = []
-        spp_comp_items_changed = []
-        catches_changed = []
+        null_species = []  # append species with null weights here to emit signal for GUI warning
+        catches_changed = []  # append catches that need their weights updated
 
-        # start baskets loop for updating weights
-        species_avgs = {}
-        for b in pred_dropped_baskets:
-            if b.species not in species_avgs.keys():  # so we only calc avg once per species
-                spp_complex = list(set(ObserverCatches.get_species_complex(b.catch_category) + [b.species]))
-                species_avgs.update({b.species: self._calculate_retained_spp_avg(spp_complex)})
-            self._logger.info(f"Retained species avgs found: {species_avgs}")
-            avg = species_avgs[b.species]
+        for i in pred_dropped_items:
+            related_species = ObserverSpecies.get_related_species(i.species.species)  # get list of related speciesIds
+            self._logger.info(f"related species for {i.species.species} = {related_species}")
+            avg = self._calculate_retained_spp_avg(related_species)
             try:
-                new_wt = avg * b.fish_number_itq
-            except TypeError as e:
-                self._logger.warning(f"No retained avg for species {b.common_name}, clearing DO/Pred basket {b.species_comp_basket} weight")
-                null_species.append(b.common_name)
+                new_wt = avg * i.species_number
+            except TypeError:
+                self._logger.warning(f"No ret avg for species {i.cname}, DO/Pred comp item {i.species_comp_item} wt = NULL")
+                null_species.append(i.cname)
                 new_wt = None
 
-            if b.basket_weight_itq != new_wt:
-                b.basket_weight_itq = new_wt
-                b.save()
-                spp_comp_items_changed.append((b.species_comp_item, f"SPECIES_WT=TALLY*RET_AVG (AVG={avg})"))
-                catches_changed.append(b.catch)
-                self._logger.info(f"DO/Pred {b.common_name} basket {b.species_comp_basket} weight updated to {new_wt} ({avg}*{b.fish_number_itq})")
+            if i.species_weight != new_wt:
+                i.species_weight = new_wt
+                note = f"SPECIES_WT=TALLY*RET_AVG={i.species_number}*{avg}"
+                i.notes = note
+                i.save()
+                catches_changed.append(i.catch)
+                self._logger.info(f"DO/Pred {i.cname} comp item {i.species_comp_item} weight updated to {new_wt} ({note})")
 
-        # need to update parent species comp items if any baskets changed weights
-        for sci in spp_comp_items_changed:
-            self._sum_species_comp_item_weight(sci[0], note=sci[1])
+            else:
+                self._logger.info(f"DO/Pred {i.cname} comp item {i.species_comp_item} weight already up to date.")
+                continue
 
-        # need to update parent catches if any baskets changed weights
         for c in catches_changed:
             self._sum_catch_weight(c)
 

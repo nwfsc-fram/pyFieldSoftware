@@ -331,39 +331,6 @@ class ObserverCatches(QObject):
             self._logger.warning(fmt_str.format(catchcat_common_name))
             return None
 
-    @staticmethod
-    def get_species_complex(cc_id):
-        """
-        Return list of species ids related to catch category
-        Match species on 1.) catch category ID in many-to-many SpeciesCatchCategories table
-        2.) catch category name == species common name in Species table
-        3.) catch category code == species pacfin code in Species table
-        Static method so classes above (Sets) can use this in calculations
-        :param cc_id: Catch Category DB ID
-        :return: list (empty list if nothing found)
-        """
-        try:
-            cc = CatchCategories.get(CatchCategories.catch_category == cc_id)
-        except CatchCategories.DoesNotExist as e:
-            return []
-
-        # get linked species via SpeciesCatchCategories
-        spcc = SpeciesCatchCategories.select(
-            SpeciesCatchCategories.species
-        ).where(
-            SpeciesCatchCategories.catch_category == cc_id
-        )
-
-        # get species matched on pacfin code / catch category code
-        spp = Species.select(
-            Species.species
-        ).where(
-            (fn.Lower(Species.common_name) == cc.catch_category_name.lower()) |
-            (Species.pacfin_code == cc.catch_category_code)
-        )
-
-        return [s.species.species for s in spcc | spp]
-
     @pyqtProperty(QVariant, notify=catchIdChanged)
     def currentCatchCatCode(self):
         if self._current_catch:
