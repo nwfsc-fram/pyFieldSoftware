@@ -606,7 +606,7 @@ Dialog {
                         anchors.left: parent.left
                         FramButton {
                             id: btnGenerateLatLon
-                            text: "Poll Current Lat/Long\nfrom Tablet GPS"
+                            text: "Tablet GPS Lat/Lon"
                             Layout.leftMargin: 20
                             implicitWidth: 100
                             onClicked: {
