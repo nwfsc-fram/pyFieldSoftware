@@ -240,7 +240,7 @@ class ObserverSpecies(QObject):
 
         self._species_comp_items_model = ObserverSpeciesCompModel()
 
-        self._counts_weights = CountsWeights()
+        self._counts_weights = CountsWeights(self)
         self._filter_name = ''  # Filter both by common_name and by scientific_name
 
         self.current_protocol_str = ''  # store protocol lookup, e.g. 'FL, WS'
@@ -1506,6 +1506,36 @@ class ObserverSpecies(QObject):
     @pyqtProperty(QVariant, notify=totalCatchCountChanged)
     def totalCatchCount(self):
         return self._total_haul_count
+
+    @staticmethod
+    def get_related_species(species_id):
+        """
+        If species is one of a few where multiple need to be compared,
+        return a list of related species, else return that species only
+        :param species_id: species DB id (int)
+        :return: int[]
+        """
+        complexes = {
+            'thornyhead': [
+                10239,  # longspine
+                10492,  # shortspine / longspine
+                10491  # shortspine
+            ],
+            'shortraker': [
+                10254,  # shortraker
+                10427,  # shortraker/rougheye/blackspotted
+                10490  # rougheye/blackspotted
+            ],
+            'skate': [
+                10334,  # big skate
+                10337,  # longnose skate
+                10338  # sandpaper skate
+            ]
+        }
+        for species in complexes.values():
+            if species_id in species:
+                return species
+        return [species_id]
 
 
 class TestObserverSpecies(unittest.TestCase):
