@@ -20,6 +20,7 @@ from py.observer.FishingLocationsModel import FishingLocationsModel  # View mode
 # Imports for unit testing
 import unittest
 from py.observer.ObserverDBModels import *
+from py.observer.ObserverTabletGPS import TabletGPS
 from playhouse.apsw_ext import APSWDatabase
 from playhouse.test_utils import test_database
 
@@ -28,6 +29,7 @@ from playhouse.test_utils import test_database
 class ObserverFishingLocations(QObject):
     modelChanged = pyqtSignal()
     locationChanged = pyqtSignal()
+    unusedSignal = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -35,6 +37,11 @@ class ObserverFishingLocations(QObject):
         self._locations_model = FishingLocationsModel()
         self._current_location = None
         self._current_activity_id = None
+        self._tablet_gps = TabletGPS()
+
+    @pyqtProperty(QVariant, notify=unusedSignal)
+    def tabletGPS(self):
+        return self._tablet_gps
 
     def load_fishing_locations(self, fishing_activity_id):
         """
