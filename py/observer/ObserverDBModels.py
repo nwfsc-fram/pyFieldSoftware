@@ -758,6 +758,7 @@ class SpeciesCompositionBaskets(BaseModel):
     species_comp_item = ForeignKeyField(db_column='SPECIES_COMP_ITEM_ID', rel_model=SpeciesCompositionItems,
                                         to_field='species_comp_item')
     is_fg_tally_local = IntegerField(db_column='IS_FG_TALLY_LOCAL', null=True)
+    is_subsample = IntegerField(db_column='IS_SUBSAMPLE', null=True)
 
     class Meta:
         db_table = 'SPECIES_COMPOSITION_BASKETS'
