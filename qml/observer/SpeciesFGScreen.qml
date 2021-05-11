@@ -734,6 +734,16 @@ Item {
                 font.pixelSize: 20
                 Layout.preferredWidth: 50
             }
+            ObserverSunlightButton {
+                // FIELD-1900: allow kick-off of set-wide calculations, then refresh species weights
+                id: btnUpdateSetCalcs
+                Layout.leftMargin: 50
+                text: "Run Set Calcs"
+                onClicked: {
+                    appstate.sets.updateCurrentSetCalcs()
+                    tvSelectedSpecies.activate_recalc_all()  // use to refresh weight shown in UI
+                }
+            }
         }
     } // ListView
 

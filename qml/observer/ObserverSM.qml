@@ -440,6 +440,9 @@ DSM.StateMachine {
         id: sets_state
         onEntered: {
             console.info(">>>>----> Entered SETS state");
+            if (['set', 'tally_state', 'bs_entry_state', 'species_fg_entry_state', 'cc_entry_fg_state'].indexOf(currentStateName) > -1) {
+                appstate.sets.updateCurrentSetCalcs()
+            }
             currentStateName = "sets_state";
             if (!appstate.isFixedGear) {
                 console.error("Gear type is not set to FG.");

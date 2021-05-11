@@ -1553,6 +1553,37 @@ class ObserverSpecies(QObject):
             self._current_speciescomp_item.notes = notes
             self._current_speciescomp_item.save()
 
+    @staticmethod
+    def get_related_species(species_id):
+        """
+        If species is one of a few where multiple need to be compared,
+        return a list of related species, else return that species only
+        :param species_id: species DB id (int)
+        :return: int[]
+        """
+        complexes = {
+            'thornyhead': [
+                10239,  # longspine
+                10492,  # shortspine / longspine
+                10491  # shortspine
+            ],
+            'shortraker': [
+                10254,  # shortraker
+                10427,  # shortraker/rougheye/blackspotted
+                10490  # rougheye/blackspotted
+            ],
+            'skate': [
+                10334,  # big skate
+                10337,  # longnose skate
+                10338  # sandpaper skate
+            ]
+        }
+        for species in complexes.values():
+            if species_id in species:
+                return species
+        return [species_id]
+
+
 class TestObserverSpecies(unittest.TestCase):
     def setUp(self):
         logging.basicConfig(level=logging.DEBUG)

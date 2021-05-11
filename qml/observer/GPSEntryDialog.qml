@@ -597,12 +597,39 @@ Dialog {
                 //Layout.alignment: Qt.AlignHCenter
 
                 GridLayout { // Time/Latitude/Longitude/Depth
-                    rows: 4
+                    rows: 5
                     columns: 1
                     flow: GridLayout.TopToBottom
                     columnSpacing: 0
                     rowSpacing: 20
-
+                    RowLayout {
+                        anchors.left: parent.left
+                        FramButton {
+                            id: btnGenerateLatLon
+                            text: "Tablet GPS Lat/Lon"
+                            Layout.leftMargin: 20
+                            implicitWidth: 100
+                            onClicked: {
+                                appstate.hauls.locations.tabletGPS.getGPSLatLon()
+                            }
+                        }
+                        Label {
+                            id: labelGpsStatus
+                            text: ""
+                            font.pixelSize: 14
+                        }
+                        Connections {
+                            target: appstate.hauls.locations.tabletGPS
+                            onStatusChanged: {
+                                labelGpsStatus.text = s
+                                if (s === 'Signal Acquired') {
+                                    labelGpsStatus.color = 'green'
+                                } else {
+                                    labelGpsStatus.color = 'red'
+                                }
+                            }
+                        }
+                    }
                     RowLayout { // TIME
                         // Give extra row space between Time and Latitude (columns aren't aligned, diff measures)
                         Layout.alignment: Qt.AlignHCenter || Qt.AlignTop
@@ -643,8 +670,14 @@ Dialog {
                             id: dateLocationPicker
                             enable_audio: numPad.enable_audio
                             onDateAccepted: {
-                                console.info("Picked: start datetime: " + selected_date);
+                                console.info("Picked start datetime: " + selected_date);
                                 time_val = selected_date;
+                            }
+                        }
+                        Connections {
+                            target: appstate.hauls.locations.tabletGPS
+                            onTimestampChanged: {
+                                time_val = new Date(ts)
                             }
                         }
                     }
@@ -853,6 +886,14 @@ Dialog {
                             Layout.preferredHeight: default_tf_height
                             verticalAlignment: Text.AlignTop
                         }
+                        Connections {
+                            target: appstate.hauls.locations.tabletGPS
+                            onLatitudeChanged: {
+                                tfLatDeg.text = appstate.hauls.locations.tabletGPS.latDegrees
+                                tfLatMinWhole.text = appstate.hauls.locations.tabletGPS.latMinutes
+                                tfLatMinFract.text = ((appstate.hauls.locations.tabletGPS.latSeconds/60)*100).toFixed(0)
+                            }
+                        }
                     }
                     RowLayout { // LONGITUDE
                         spacing: 0
@@ -1033,6 +1074,14 @@ Dialog {
                             font.pixelSize: default_fontsize_pixels
                             Layout.preferredHeight: default_tf_height
                             verticalAlignment: Text.AlignTop
+                        }
+                        Connections {
+                            target: appstate.hauls.locations.tabletGPS
+                            onLongitudeChanged: {
+                                tfLongDeg.text = Math.abs(appstate.hauls.locations.tabletGPS.lonDegrees)
+                                tfLongMinWhole.text = appstate.hauls.locations.tabletGPS.lonMinutes
+                                tfLongMinFract.text = ((appstate.hauls.locations.tabletGPS.lonSeconds/60)*100).toFixed(0)
+                            }
                         }
                     }
                     RowLayout { // DEPTH

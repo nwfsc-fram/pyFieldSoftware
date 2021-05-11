@@ -49,7 +49,7 @@ class CountsWeights(QObject):
         self._logger = logging.getLogger(__name__)
         self._observer_species = observer_species
         self._observer_species.calculateTotalsForDrChange.connect(self._calculate_totals)
-
+        
         # weight metrics
         self._species_weight = None
         self._total_tally = None
@@ -65,6 +65,7 @@ class CountsWeights(QObject):
         self._subsample_count = None
         self._subsample_avg_weight = None
         self._subsample_avg_mode = None
+        self._weighted_baskets = 0
 
         self._current_species_comp_item = None
         self._baskets_model = ObserverBasketsModel()
@@ -96,6 +97,7 @@ class CountsWeights(QObject):
         self._extrapolated_species_fish_count = None
         self._actual_weight = None
         self._tally_fg_fish_count = None
+        self._weighted_baskets = 0
         if self._baskets_model:
             self._baskets_model.clear()
         # self.dataExistsChanged.emit()
@@ -384,7 +386,6 @@ class CountsWeights(QObject):
         try:
             basket_q = self._get_basket_db_item(basket_id)
             # Both weight and count can be empty string. Map empty string to zero.
-            weight = None
             count = None
             ss_flag = None
             if set_weight:
@@ -470,6 +471,7 @@ class CountsWeights(QObject):
         self._species_fish_count = None
         self._extrapolated_species_fish_count = None
         self._tally_table_fish_count = None
+        self._weighted_baskets = 0
 
         weighted_baskets = 0
         species_fish_count = 0
@@ -493,7 +495,7 @@ class CountsWeights(QObject):
                 cur_fish_count = self._baskets_model.get(i)['fish_number_itq']
 
                 if cur_wt is not None and cur_wt > 0:
-                    weighted_baskets += 1
+                    self._weighted_baskets += 1
                     species_weight += cur_wt
 
                     if cur_fish_count is not None and cur_fish_count > 0:
@@ -510,10 +512,12 @@ class CountsWeights(QObject):
         self._tally_table_fish_count = species_unweighted_count + species_fish_count
         self._species_fish_count = species_fish_count
 
-        if weighted_baskets == 0:  # Didn't find any weight data
+        if self._weighted_baskets == 0:  # Didn't find any weight data
             self._species_weight = self._extrapolated_species_weight = self._actual_weight = self._avg_weight = None
             self.emit_calculated_weights()
             return
+        # elif self._weighted_baskets == 0 and self._observer_species.discardReason in ['12', '15']:
+
 
         self._species_weight = self._extrapolated_species_weight = self._actual_weight = species_weight
 
@@ -702,7 +706,10 @@ class CountsWeights(QObject):
 
     @pyqtProperty(QVariant, notify=tallyFGFishCountChanged)
     def tallyTimesAvgWeight(self):
-        if self.avgWeight and self.tallyFGFishCount:
+        if self._observer_species.discardReason in ['12', '15'] and self._weighted_baskets == 0:
+            self._logger.info(f"DR12/15 without baskets, not calculating species weight with avg val = {self.avgWeight}")
+            return self._current_species_comp_item.species_weight
+        elif self.avgWeight and self.tallyFGFishCount:
             val = Decimal(self.avgWeight) * Decimal(self.tallyFGFishCount)
             round_val = val.quantize(Decimal('.01'), rounding=ROUND_HALF_UP)
             # https://stackoverflow.com/questions/56820/round-doesnt-seem-to-be-rounding-properly#56833
