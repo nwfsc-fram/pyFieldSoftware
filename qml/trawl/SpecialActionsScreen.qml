@@ -342,7 +342,7 @@ Item {
     function changeLoc(location) {
         tvSamples.selection.forEach (
             function(rowIndex) {
-                tvSamples.model.setProperty(rowIndex, "value", value)
+                tvSamples.model.setProperty(rowIndex, "value", location)
                 var item = tvSamples.model.get(rowIndex)
                 if (location === null) {
                     specialActions.delete_specimen(item["specimenId"])
