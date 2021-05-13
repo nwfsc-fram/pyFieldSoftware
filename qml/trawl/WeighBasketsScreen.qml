@@ -62,13 +62,13 @@ Item {
         if (tfSubsampleFrequency.text) {
             var diff = tvBaskets.model.count - weighBaskets.lastSubsampleBasket
             if (diff >= parseInt(tfSubsampleFrequency.text)) {
-                soundPlayer.play_sound("takeSubsample", false)
+                soundPlayer.playSound("takeSubsample", 0, false)
                 soundPlayed = true
                 dlgConfirm.show("to take a subsample", "take subsample")
             }
         }
         if (!soundPlayed) {
-            soundPlayer.play_sound("takeWeight", false)
+            soundPlayer.playSound("takeWeight", 0, false)
         }
     }
 
