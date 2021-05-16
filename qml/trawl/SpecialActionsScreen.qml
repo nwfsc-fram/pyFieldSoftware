@@ -241,18 +241,14 @@ Item {
             // AB - added to capture the 'location' type for pyrosome project
             case "location":
                 switch (value) {
-                    case "Age_Wt":
-                        btnAgeWt.checked = true;
+                    case "Subsample":
+                        btnSub.checked = true;
                         break;
-                    case "Length":
-                        btnLen.checked = true;
-                        break;
-                    case "Catch":
+                    case "Overall Catch":
                         btnCatch.checked = true;
                         break;
                     case undefined:
-                        btnAgeWt.checked = false;
-                        btnLen.checked = false;
+                        btnSub.checked = false;
                         btnCatch.checked = false;
                         break;
                 }
@@ -852,37 +848,26 @@ Item {
         }
 
         TrawlBackdeckButton {
-            id: btnAgeWt
-            text: qsTr("Age_Wt")
+            id: btnSub
+            text: qsTr("Subsample")
             Layout.preferredHeight: this.height
             Layout.preferredWidth: this.width
             state: qsTr("enabled")
             checkable: true
             checked: false
             exclusiveGroup: egLoc
-            onClicked: changeLoc("Age_Wt")
-        }
-        TrawlBackdeckButton {
-            id: btnLen
-            text: qsTr("Length")
-            Layout.preferredHeight: this.height
-            Layout.preferredWidth: this.width
-            state: qsTr("enabled")
-            checkable: true
-            checked: false
-            exclusiveGroup: egLoc
-            onClicked: changeLoc("Length")
+            onClicked: changeLoc("Subsample")
         }
         TrawlBackdeckButton {
             id: btnCatch
-            text: qsTr("Catch")
+            text: qsTr("Overall Catch")
             Layout.preferredHeight: this.height
             Layout.preferredWidth: this.width
             state: qsTr("enabled")
             checkable: true
             checked: false
             exclusiveGroup: egLoc
-            onClicked: changeLoc("Catch")
+            onClicked: changeLoc("Overall Catch")
         }
     } // colLoc
     ColumnLayout {
