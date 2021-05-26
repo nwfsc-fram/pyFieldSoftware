@@ -838,14 +838,12 @@ class FishSampling(QObject):
         self.specimenCount += 1
 
         # Common values used across parent specimen + linealValue + sex specimen record insertions
-        # AB - not sure why, but the query below was looking for species_sampling_plan rather than
-        # species_sampling_plan_id - changed 5/6/21
         catch_id = self._app.state_machine.species["catch_id"]
         try:
             species_sampling_plan_id = SpeciesSamplingPlanLu.get(SpeciesSamplingPlanLu.taxonomy ==
                                                                  self._app.state_machine.species["taxonomy_id"],
                                                                  SpeciesSamplingPlanLu.plan_name == "FRAM Standard Survey") \
-                                            .species_sampling_plan_id
+                                            .species_sampling_plan
         except DoesNotExist as ex:
             # logging.info("Species sampling plan does not exist in SPECIES_SAMPLING_PLAN_LU for taxonomy_id = " +
             #              str(self._app.state_machine.species["taxonomy_id"]) + " (" +
