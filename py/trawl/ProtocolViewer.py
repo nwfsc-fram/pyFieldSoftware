@@ -104,11 +104,13 @@ class ProtocolViewer:
 
                 # Set the widgetType - this drives which UI widgets are displayed on the right side of SpecialActionsScreen.qml
                 # TODO Todd Hay - Fix the determination of widgetType as this is a big hack right now
+                # todo: note from AB 2021 - this could be done by using the database to determine the widgettype
                 newprot["widgetType"] = "id"
                 # logging.info(f"displayName = {displayName}")
                 # AB - modified this to include any displayName that includes 'photo' - 5/6/21
+                # AB - modified this to include any displayName that includes 'presence' - 5/26/21
                 if displayName.lower() in ["is age weight sample", "is sex length sample"] or \
-                        'photo' in displayName.lower():
+                        'photo' in displayName.lower() or 'presence' in displayName.lower():
                     newprot["widgetType"] = "yesno"
                 elif "sex" in displayName.lower():
                     newprot["widgetType"] = "sex"
