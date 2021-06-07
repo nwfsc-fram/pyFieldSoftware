@@ -3,5 +3,5 @@
 future==0.15.2
 peewee==2.8.5
 pefile==2016.3.28
-PyInstaller==3.2
+PyInstaller==3.6
 pypiwin32==219

@@ -164,6 +164,7 @@ Item {
                     }
                 }
                 break;
+            // AB - this is not used in 2021
             case "coral":
                 var keys = ["Coral Photograph", "Coral Whole Specimen", "Coral Specimen ID"]
                 for (var i=0; i<keys.length; i++) {
@@ -194,6 +195,7 @@ Item {
                     }
                 }
                 break;
+            // AB - this is not used in 2021
             case "sponge":
                 var keys = ["Sponge Photograph", "Sponge Specimen ID"]
                 for (var i=0; i<keys.length; i++) {
@@ -233,6 +235,21 @@ Item {
                         btnMale.checked = false;
                         btnFemale.checked = false;
                         btnUnsex.checked = false;
+                        break;
+                }
+                break;
+            // AB - added to capture the 'location' type for pyrosome project
+            case "location":
+                switch (value) {
+                    case "Subsample":
+                        btnSub.checked = true;
+                        break;
+                    case "Overall Catch":
+                        btnCatch.checked = true;
+                        break;
+                    case undefined:
+                        btnSub.checked = false;
+                        btnCatch.checked = false;
                         break;
                 }
                 break;
@@ -312,6 +329,23 @@ Item {
                     specialActions.delete_specimen(item["specimenId"])
                 } else {
                     specialActions.upsert_specimen(rowIndex)
+                }
+            }
+        )
+    }
+
+    // AB - added to deal with location changes
+    function changeLoc(location) {
+        tvSamples.selection.forEach (
+            function(rowIndex) {
+                tvSamples.model.setProperty(rowIndex, "value", location)
+                var item = tvSamples.model.get(rowIndex)
+                if (location === null) {
+                    specialActions.delete_specimen(item["specimenId"])
+                    console.info('trying to delete')
+                } else {
+                    specialActions.upsert_specimen(rowIndex)
+                    console.info("upserting")
                 }
             }
         )
@@ -802,6 +836,40 @@ Item {
             onClicked: changeSex("U")
         }
     } // colSex
+        // AB - added for a location option (5/6/21)
+    ColumnLayout {
+        id: colLoc
+        anchors.left: tvSamples.right
+        anchors.leftMargin: 20
+        y: tvSamples.y
+        spacing: 10
+        ExclusiveGroup {
+            id: egLoc
+        }
+
+        TrawlBackdeckButton {
+            id: btnSub
+            text: qsTr("Subsample")
+            Layout.preferredHeight: this.height
+            Layout.preferredWidth: this.width
+            state: qsTr("enabled")
+            checkable: true
+            checked: false
+            exclusiveGroup: egLoc
+            onClicked: changeLoc("Subsample")
+        }
+        TrawlBackdeckButton {
+            id: btnCatch
+            text: qsTr("Overall Catch")
+            Layout.preferredHeight: this.height
+            Layout.preferredWidth: this.width
+            state: qsTr("enabled")
+            checkable: true
+            checked: false
+            exclusiveGroup: egLoc
+            onClicked: changeLoc("Overall Catch")
+        }
+    } // colLoc
     ColumnLayout {
         id: colYesNo
         anchors.left: tvSamples.right
@@ -1180,7 +1248,7 @@ Item {
             this.hide()
         }
     }
-
+    // AB - added colLoc information to each and a state for location - 5/6/21
     states: [
         State {
             name: "id"
@@ -1189,6 +1257,7 @@ Item {
             PropertyChanges { target: rwlSponges; enabled: false; visible: false; }
             PropertyChanges { target: glSalmonOptions; enabled: false; visible: false}
             PropertyChanges { target: numPad; enabled: true; visible: true}
+            PropertyChanges { target: colLoc; enabled: false; visible: false}
             PropertyChanges { target: colSex; enabled: false; visible: false}
             PropertyChanges { target: colYesNo; enabled: false; visible: false}
             PropertyChanges { target: cllMaturityLevel; enabled: false; visible: false;}
@@ -1201,6 +1270,7 @@ Item {
             PropertyChanges { target: rwlSponges; enabled: false; visible: false; }
             PropertyChanges { target: glSalmonOptions; enabled: false; visible: false}
             PropertyChanges { target: numPad; enabled: true; visible: true}
+            PropertyChanges { target: colLoc; enabled: false; visible: false}
             PropertyChanges { target: colSex; enabled: false; visible: false}
             PropertyChanges { target: colYesNo; enabled: false; visible: false}
             PropertyChanges { target: cllMaturityLevel; enabled: false; visible: false;}
@@ -1213,6 +1283,7 @@ Item {
             PropertyChanges { target: rwlSponges; enabled: false; visible: false; }
             PropertyChanges { target: glSalmonOptions; enabled: true; visible: true}
             PropertyChanges { target: numPad; enabled: false; visible: false}
+            PropertyChanges { target: colLoc; enabled: false; visible: false}
             PropertyChanges { target: colSex; enabled: false; visible: false}
             PropertyChanges { target: colYesNo; enabled: false; visible: false}
             PropertyChanges { target: cllMaturityLevel; enabled: false; visible: false;}
@@ -1226,6 +1297,7 @@ Item {
             PropertyChanges { target: glSalmonOptions; enabled: false; visible: false}
             PropertyChanges { target: colSex; enabled: false; visible: false}
             PropertyChanges { target: numPad; enabled: true; visible: true}
+            PropertyChanges { target: colLoc; enabled: false; visible: false}
             PropertyChanges { target: colYesNo; enabled: false; visible: false}
             PropertyChanges { target: cllMaturityLevel; enabled: false; visible: false;}
             PropertyChanges { target: cllCategoricalList; enabled: false; visible: false;}
@@ -1238,6 +1310,7 @@ Item {
             PropertyChanges { target: glSalmonOptions; enabled: false; visible: false}
             PropertyChanges { target: colSex; enabled: false; visible: false}
             PropertyChanges { target: numPad; enabled: true; visible: true}
+            PropertyChanges { target: colLoc; enabled: false; visible: false}
             PropertyChanges { target: colYesNo; enabled: false; visible: false}
             PropertyChanges { target: cllMaturityLevel; enabled: false; visible: false;}
             PropertyChanges { target: cllCategoricalList; enabled: false; visible: false;}
@@ -1250,10 +1323,24 @@ Item {
             PropertyChanges { target: rwlSponges; enabled: false; visible: false; }
             PropertyChanges { target: glSalmonOptions; enabled: false; visible: false}
             PropertyChanges { target: numPad; enabled: false; visible: false}
+            PropertyChanges { target: colLoc; enabled: false; visible: false}
             PropertyChanges { target: colYesNo; enabled: false; visible: false}
             PropertyChanges { target: cllMaturityLevel; enabled: false; visible: false;}
             PropertyChanges { target: cllCategoricalList; enabled: false; visible: false;}
         }, // sex
+        State {
+            name: "location"
+            PropertyChanges { target: rwlTagID; enabled: false; visible: false}
+            PropertyChanges { target: colSex; enabled: false; visible: false}
+            PropertyChanges { target: rwlCorals; enabled: false; visible: false}
+            PropertyChanges { target: rwlSponges; enabled: false; visible: false; }
+            PropertyChanges { target: glSalmonOptions; enabled: false; visible: false}
+            PropertyChanges { target: numPad; enabled: false; visible: false}
+            PropertyChanges { target: colLoc; enabled: true; visible: true}
+            PropertyChanges { target: colYesNo; enabled: false; visible: false}
+            PropertyChanges { target: cllMaturityLevel; enabled: false; visible: false;}
+            PropertyChanges { target: cllCategoricalList; enabled: false; visible: false;}
+        }, // location
         State {
             name: "yesno"
             PropertyChanges { target: rwlTagID; enabled: false; visible: false}
@@ -1262,6 +1349,7 @@ Item {
             PropertyChanges { target: rwlSponges; enabled: false; visible: false; }
             PropertyChanges { target: glSalmonOptions; enabled: false; visible: false}
             PropertyChanges { target: numPad; enabled: false; visible: false}
+            PropertyChanges { target: colLoc; enabled: false; visible: false}
             PropertyChanges { target: colYesNo; enabled: true; visible: true}
             PropertyChanges { target: cllMaturityLevel; enabled: false; visible: false;}
             PropertyChanges { target: cllCategoricalList; enabled: false; visible: false;}
@@ -1274,6 +1362,7 @@ Item {
             PropertyChanges { target: rwlSponges; enabled: false; visible: false; }
             PropertyChanges { target: glSalmonOptions; enabled: false; visible: false}
             PropertyChanges { target: numPad; enabled: false; visible: false}
+            PropertyChanges { target: colLoc; enabled: false; visible: false}
             PropertyChanges { target: colYesNo; enabled: false; visible: false}
             PropertyChanges { target: cllMaturityLevel; enabled: true; visible: true;}
             PropertyChanges { target: cllCategoricalList; enabled: false; visible: false;}
@@ -1286,6 +1375,7 @@ Item {
             PropertyChanges { target: rwlSponges; enabled: false; visible: false; }
             PropertyChanges { target: glSalmonOptions; enabled: false; visible: false}
             PropertyChanges { target: numPad; enabled: false; visible: false}
+            PropertyChanges { target: colLoc; enabled: false; visible: false}
             PropertyChanges { target: colYesNo; enabled: false; visible: false}
             PropertyChanges { target: cllMaturityLevel; enabled: false; visible: false;}
             PropertyChanges { target: cllCategoricalList; enabled: true; visible: true;}

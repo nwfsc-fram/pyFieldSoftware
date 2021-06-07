@@ -104,33 +104,42 @@ class ProtocolViewer:
 
                 # Set the widgetType - this drives which UI widgets are displayed on the right side of SpecialActionsScreen.qml
                 # TODO Todd Hay - Fix the determination of widgetType as this is a big hack right now
+                # todo: note from AB 2021 - this could be done by using the database to determine the widgettype
                 newprot["widgetType"] = "id"
                 # logging.info(f"displayName = {displayName}")
-                if displayName.lower() in ["is age weight sample",
-                                           "is sex length sample",
-                                           "photograph",
-                                           "head photograph"]:
+                # AB - modified this to include any displayName that includes 'photo' - 5/6/21
+                # AB - modified this to include any displayName that includes 'presence' - 5/26/21
+                if displayName.lower() in ["is age weight sample", "is sex length sample"] or \
+                        'photo' in displayName.lower() or 'presence' in displayName.lower():
                     newprot["widgetType"] = "yesno"
                 elif "sex" in displayName.lower():
                     newprot["widgetType"] = "sex"
-                elif "id" in displayName.lower():
-                    newprot["widgetType"] = "id"
+                # AB - moved id check to later since this is the default and replaced with a check for 'barcode'
+                # so it wouldn't assign a tag for those that should intake a barcode; also added diameter - 5/6/21
                 elif "length" in displayName.lower() or \
-                    "width" in displayName.lower() or \
-                    "weight" in displayName.lower() or \
-                    "blood plasma" in displayName.lower():
+                     "width" in displayName.lower() or \
+                     "weight" in displayName.lower() or \
+                     "blood plasma" in displayName.lower() or \
+                     "barcode" in displayName.lower() or \
+                     "diameter" in displayName.lower():
                     newprot["widgetType"] = "measurement"
                 elif "maturity level" in displayName.lower():
                     newprot["widgetType"] = "maturityLevel"
                 elif "excision site" in displayName.lower():
                     newprot["widgetType"] = "categoricalList"
+                # AB - added to deal with Pyrosome project - will ask for location of predator (A/W, length, or catch)
+                elif "location" in displayName.lower():
+                    newprot["widgetType"] = "location"
+                elif "id" in displayName.lower():
+                    newprot["widgetType"] = "id"
 
+                # AB - coral, sponge seem to work better if not hard coded like this - commented out 5/6/21
                 if self._app.process_catch.checkSpeciesType("salmon", newplan["taxonId"]) and newplan["pi"] == "FRAM":
                     newprot["widgetType"] = "salmon"
-                elif self._app.process_catch.checkSpeciesType("coral", newplan["taxonId"]) and newplan["pi"] == "FRAM":
-                    newprot["widgetType"] = "coral"
-                elif self._app.process_catch.checkSpeciesType("sponge", newplan["taxonId"]) and newplan["pi"] == "FRAM":
-                    newprot["widgetType"] = "sponge"
+                #elif self._app.process_catch.checkSpeciesType("coral", newplan["taxonId"]) and newplan["pi"] == "FRAM":
+                #    newprot["widgetType"] = "coral"
+                #elif self._app.process_catch.checkSpeciesType("sponge", newplan["taxonId"]) and newplan["pi"] == "FRAM":
+                #    newprot["widgetType"] = "sponge"
 
                 if action[1]:
                     displayName = str(action[1]) + " " + displayName

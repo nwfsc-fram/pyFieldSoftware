@@ -942,6 +942,9 @@ class SpecialActions(QObject):
                 self._sound_player.play_sound(sound_name="takeBarcode")
             elif "otolith age id" in item["specialAction"].lower():
                 self._sound_player.play_sound(sound_name="takeBarcode")
+            # AB - added to have the sound play if any special action that contains barcode is entered
+            elif "barcode" in item["specialAction"].lower():
+                self._sound_player.play_sound(sound_name="takeBarcode")
 
             elif "tissue id" in item["specialAction"].lower() and \
                 "sudmant" in item["principalInvestigator"].lower():
