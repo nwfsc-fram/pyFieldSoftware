@@ -14,12 +14,39 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
+import fileinput  # for updating build number in-place
+import re
 
 # Useful library. http://click.pocoo.org/5/api/#click.confirm
 import click
 
 from cx_Freeze import setup, Executable
 from buildzipper import buildzipper
+from py.trawl.TrawlBackdeckConfig import TRAWL_BACKDECK_VERSION
+
+def increment_build_number(do_increment=True) -> str:
+    """
+    Increment build number (function copied from Optecs.build_observer.py)
+    @param do_increment: perform increment. For testing, can set this to False
+    @return: Full TrawlBackdeck String version string
+    """
+    build_config_path = '../py/trawl/TrawlBackdeckConfig.py'
+    if not os.path.exists(build_config_path):
+        print('*** Unable to increment build #.')
+        return
+    version_info = None
+    for i, line in enumerate(fileinput.input(build_config_path, inplace=1)):
+        m = re.search(r'TRAWL_BACKDECK_VERSION = \"[0-9]*\.[0-9]*\.[0-9]*\+(?P<build_num>[0-9]*)', line)
+        if m:
+            old_build_num = int(m.group('build_num'))
+            if do_increment:
+                line = line.replace('+' + str(old_build_num), '+' + str(old_build_num + 1))
+            m = re.search(r'TRAWL_BACKDECK_VERSION = \"(?P<TRAWL_BACKDECK_VERSION>[0-9]*\.[0-9]*\.[0-9]*\+[0-9]*)', line)
+            version_info = m.group('TRAWL_BACKDECK_VERSION')
+        sys.stdout.write(line)
+
+    return version_info
+
 
 PYTHON_DIR = sys.exec_prefix
 
@@ -100,7 +127,7 @@ if os.path.exists(deployed_path):
 
 setup(  
       name='Trawl Back Deck',
-      version='1.0',
+      version='1.0',  # Leaving as is to make build happy
       author='FRAM Data',
       description='Trawl Back Deck',
       options={'build_exe': build_exe_options},
@@ -108,4 +135,5 @@ setup(
 )
 
 # Zip up our creation
-buildzipper.create_zip_archive(base_folder=deployed_path, filedesc='trawl_backdeck')
+buildzipper.create_zip_archive(base_folder=deployed_path, filedesc=f'trawl_backdeck', version=TRAWL_BACKDECK_VERSION)
+increment_build_number()  # increment variable on TrawlBackdeckConfig.py every build
