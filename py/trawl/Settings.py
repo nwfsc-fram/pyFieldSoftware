@@ -15,6 +15,7 @@ from PyQt5.QtCore import pyqtProperty, QObject, QVariant, QThread, pyqtSignal, p
 from PyQt5.QtWidgets import QApplication
 from dateutil import parser
 from py.trawl.TrawlBackdeckDB import TrawlBackdeckDB
+from py.common.FramListModel import FramListModel
 # import win32print
 # from win32print import EnumPrinters, PRINTER_ENUM_NAME, PRINTER_ENUM_LOCAL
 from py.common.FramUtil import FramUtil
@@ -22,7 +23,18 @@ import logging
 import unittest
 import re
 
-# from py.observer.ObserverData import ObserverData
+
+class SettingsModel(FramListModel):
+    """
+    Model used in SettingsScreen TableView to expose settings params
+    """
+    def __init__(self):
+        super().__init__()
+        self.add_role_name(name="settingsId")
+        self.add_role_name(name="parameter")
+        self.add_role_name(name="type")
+        self.add_role_name(name="value")
+        self.add_role_name(name="is_active")
 
 
 class Settings(QObject):
@@ -40,6 +52,9 @@ class Settings(QObject):
         # TODO (todd.hay) Tie to the SETTINGS table values
         self._db = db
         self._settings = self._initialize_settings()
+        self._model = SettingsModel()
+        self._build_model()
+
         try:
             self._wheelhouse_ip_address = self._settings["Wheelhouse IP Address"]
             self._test_wheelhouse_ip_address = self._settings["Test Wheelhouse IP Address"]
@@ -60,17 +75,100 @@ class Settings(QObject):
         settings = {}
         for s in self._db.execute(query=sql):
             settings[s[1]] = s[3]
-
         return settings
 
-    def _update_db_parameter(self, parameter, value):
+    @pyqtProperty(QVariant)
+    def model(self):
+        return self._model
 
-        sql = "UPDATE SETTINGS SET VALUE = '?' WHERE PARAMETER = '?';"
+    def _build_model(self):
+        """
+        Load settings model using SETTINGS table
+        :return: None
+        """
+        sql = '''
+            select
+                        SETTINGS_ID
+                        ,PARAMETER
+                        ,VALUE
+            FROM        SETTINGS
+            WHERE       IS_ACTIVE = 'True'
+        '''
+        for row in self._db.execute(query=sql):
+            self._model.appendItem({'settingsId': row[0], 'parameter': row[1], 'value': row[2]})
+
+    @pyqtSlot(QVariant, name="restoreDefaultSettings")
+    def restore_default_settings(self, color):
+        """
+        Used to restore settings if you've messed them up or want to
+        revert to certain vessel (defined by color)
+
+        CREATE TABLE "DEFAULT_SETTINGS" (
+            "DEFAULT_SETTINGS_ID" INTEGER PRIMARY KEY AUTOINCREMENT,
+            "SETTINGS_ID" INTEGER,
+            "VESSEL_COLOR" INTEGER,
+            "PARAMETER" TEXT,
+            "TYPE" TEXT,
+            "VALUE" TEXT,
+            "IS_ACTIVE" TEXT
+        );
+
+        insert into default_settings
+        select
+            row_number() over (order by 1) as default_settings_id
+            ,settings_id
+            ,20 as vessel_id
+            ,parameter
+            ,type
+            ,value
+            ,is_active
+        FROM settings
+        ;
+
+        :param vessel_id:
+        :return: None
+        """
+        # clear out existing settings
+        del_sql = '''
+            delete from settings
+        '''
+        self._db.execute(query=del_sql)
+
+        # pull new settings from DEFAULT_SETTINGS
+        ins_sql = '''
+            insert into settings
+            select
+                        settings_id
+                        ,parameter
+                        ,type
+                        ,value
+                        ,is_active
+            from        default_settings
+            where       vessel_color = ?
+        '''
+        self._db.execute(query=ins_sql, parameters=[color])
+        self._model.clear()
+        self._build_model()
+
+    @pyqtSlot(QVariant, QVariant, name='updateDbParameter')
+    def updateDbParameter(self, parameter, value):
+        """
+        PyQt wrapper for _update_db_parameter private method
+        :param parameter: str; SETTINGS parameter value
+        :param value: str; value to set parameter in SETTINGS
+        :return: None
+        """
+        self._update_db_parameter(parameter, value)
+
+    def _update_db_parameter(self, parameter, value):
+        self._logger.info(f"Setting parameter {parameter} to {value}")
+        sql = "UPDATE SETTINGS SET VALUE = ? WHERE PARAMETER = ?;"
         params = [value, parameter]
 
         try:
             self._db.execute(query=sql, parameters=params)
         except Exception as ex:
+            self._logger.warning(f"Error while trying to update parameter {parameter} to {value}; {ex}")
             return False
         return True
 
