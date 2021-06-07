@@ -160,6 +160,9 @@ class SoundPlayer(QObject):
         elif sound_name == "hlCutterStationNextFish":
             sound_file = "resources/sounds/cutterstation_nextfish.wav"
 
+        elif sound_name == "cleanDB":
+            sound_file = "resources/sounds/aahhhh.wav"
+
         if sound_file == "" or sound_file is None:
             return
 
