@@ -14,8 +14,8 @@ __author__ = 'Todd.Hay'
 from PyQt5.QtCore import pyqtProperty, pyqtSlot, QVariant, pyqtSignal, QObject
 from PyQt5.QtQml import QJSValue
 from dateutil import parser
-from py.trawl.TrawlBackdeckDB_model import TypesLu, PrincipalInvestigatorLu
 from py.trawl.TrawlBackdeckConfig import TRAWL_BACKDECK_VERSION
+from py.trawl.TrawlBackdeckDB_model import TypesLu, PrincipalInvestigatorLu, Hauls, Catch, Specimen, Notes
 from peewee import *
 import logging
 
@@ -39,6 +39,7 @@ class StateMachine(QObject):
 
     def __init__(self, app=None, db=None):
         super().__init__()
+        self._logger = logging.getLogger(__name__)
         self._app = app
         self._db = db
         self._version = TRAWL_BACKDECK_VERSION
@@ -344,6 +345,51 @@ class StateMachine(QObject):
     @pyqtProperty(QVariant, notify=haulSelected)
     def haulId(self):
         return self._haul["haul_number"]
+
+    @pyqtSlot(name="cleanDB")
+    def clean_db(self):
+        """
+        Function to complete clear out db data colleciton tables
+        :return: None
+        """
+        try:
+            self._db.execute("delete from specimen")
+            self._logger.info("Deleting all records from SPECIMEN")
+            self._db.execute("delete from catch")
+            self._logger.info("Deleting all records from CATCH")
+            self._db.execute("delete from notes")
+            self._logger.info("Deleting all records from NOTES")
+            self._db.execute("delete from hauls")
+            self._logger.info("Deleting all records from HAULS")
+            self._db.execute("vacuum")
+        except Exception as e:
+            self._logger.debug(f"Unable to clean database; {e}")
+            raise e
+
+    @pyqtSlot(QVariant, name="countTableRows", result="int")
+    def count_table_rows(self, table_name):
+        """
+        Return number of rows in the main data collection tables
+        :param table_name: str; table name of
+        :return:
+        """
+        if table_name.lower() == 'hauls':
+            return Hauls.select(fn.COUNT(SQL('*'))).scalar()
+        elif table_name.lower() == 'catch':
+            return Catch.select(fn.COUNT(SQL('*'))).scalar()
+        elif table_name.lower() == 'specimen':
+            return Specimen.select(fn.COUNT(SQL('*'))).scalar()
+        elif table_name.lower() == 'notes':
+            return Notes.select(fn.COUNT(SQL('*'))).scalar()
+        else:
+            err_str = f"Table {table_name} not expected in count_table_rows method."
+            self._logger.info(err_str)
+            raise KeyError(err_str)
+
+    @pyqtProperty(QVariant)
+    def haulCount(self):
+        return Hauls.select(fn.COUNT(SQL('*'))).scalar()
+
 
 if __name__ == '__main__':
 
