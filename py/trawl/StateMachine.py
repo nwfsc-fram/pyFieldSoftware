@@ -14,6 +14,7 @@ __author__ = 'Todd.Hay'
 from PyQt5.QtCore import pyqtProperty, pyqtSlot, QVariant, pyqtSignal, QObject
 from PyQt5.QtQml import QJSValue
 from dateutil import parser
+from py.trawl.TrawlBackdeckConfig import TRAWL_BACKDECK_VERSION
 from py.trawl.TrawlBackdeckDB_model import TypesLu, PrincipalInvestigatorLu, Hauls, Catch, Specimen, Notes
 from peewee import *
 import logging
@@ -41,7 +42,7 @@ class StateMachine(QObject):
         self._logger = logging.getLogger(__name__)
         self._app = app
         self._db = db
-
+        self._version = TRAWL_BACKDECK_VERSION
         self._haul = self._initialize_selected_haul()
         self._species = {}
         self._initialize_selected_species()
@@ -56,6 +57,10 @@ class StateMachine(QObject):
                 .where(PrincipalInvestigatorLu.full_name == "FRAM Standard Survey").get().principal_investigator
         except DoesNotExist as ex:
             self._principal_investigator = None
+
+    @pyqtProperty(QVariant)
+    def version(self):
+        return self._version
 
     @pyqtProperty(QVariant, notify=principalInvestigatorSelected)
     def principalInvestigator(self):

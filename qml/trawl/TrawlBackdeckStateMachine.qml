@@ -49,6 +49,9 @@ DSM.StateMachine {
             stateMachine.screen = "home"
             // TODO (Todd Hay) Call the haulSelected signal
 //            settings.haul
+
+            // #213: Update home screen with app version whenever home state is entered
+            main.title = qsTr("Field Collector - Trawl Survey - Backdeck " + stateMachine.version + " - Home");
         }
 
         DSM.SignalTransition {

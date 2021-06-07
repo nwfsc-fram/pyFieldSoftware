@@ -22,7 +22,6 @@ Item {
 //        else
 //            btnProcessCatch.state = qsTr("disabled")
 
-        main.title = qsTr("Field Collector - Trawl Survey - Backdeck - Home");
 //        updateHaulDetails()
     }
 
