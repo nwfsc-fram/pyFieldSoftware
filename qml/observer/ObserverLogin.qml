@@ -524,7 +524,8 @@ ApplicationWindow {
     ObserverKeyboardDialog {
         id: framKeyboard
         placeholderText: ""
-
+        x: 150  // FIELD-2109: bump login over to left of screen
+        y: 150  // FIELD-2109: bump login over to left of screen
         onValueAccepted: {
             // console.log("Got value "+ accepted_value);
             textUser.save();

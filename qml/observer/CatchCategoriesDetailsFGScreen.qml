@@ -75,7 +75,7 @@ Item {
                 return "";
             }
 
-            if (discard_reason === '12' || discard_reason === 15)
+            if (discard_reason === '12' || discard_reason === '15') // FIELD-1910: DR vals should be strings
             {
                 console.log('DR is dropoff/pred, not warning about Biospecimens.');
                 return "";
