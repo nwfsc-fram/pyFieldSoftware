@@ -1011,7 +1011,7 @@ Item {
                 property string req_type: "requested/required"
                 function prompt_if_bio_needed() {
                     var discard_reason = gridDR.current_discard_id;
-                    if (discard_reason === '12' || discard_reason === 15)
+                    if (discard_reason === '12' || discard_reason === '15') // FIELD-1910: DR vals should be strings
                     {
                         console.log('DR is dropoff/pred, not warning about Biospecimens.')
                         return;
