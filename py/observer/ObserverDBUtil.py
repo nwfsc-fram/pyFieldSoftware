@@ -19,6 +19,7 @@ import socket
 import shutil
 import re
 
+from decimal import *
 from typing import Any, Dict, List, Type, Union
 
 from apsw import BusyError
@@ -610,6 +611,20 @@ class ObserverDBUtil:
         except SpeciesCompositionItems.DoesNotExist:
             logging.error(f'Could not delete species comp item ID {comp_item_id}')
 
+    @staticmethod
+    def round_up(val, precision='.01'):
+        """
+        https://stackoverflow.com/questions/56820/round-doesnt-seem-to-be-rounding-properly#56833
+        function to properly round up
+
+        TODO: replace the Decimal rounding functionality throughout the app, using this in Sets.
+        TODO: replace in CountsWeights.tallyTimesAvgWeight, CountsWeights._calculate_totals...
+        :return: rounded float (defaults to two points of precision)
+        """
+        try:
+            return float(Decimal(val).quantize(Decimal(precision), rounding=ROUND_HALF_UP))
+        except TypeError:
+            return None
 
 class TestObserverDBUtil(unittest.TestCase):
     """

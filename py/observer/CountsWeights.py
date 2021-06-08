@@ -87,9 +87,10 @@ class CountsWeights(QObject):
 
     def _clear_counts_and_weights(self):
         self._avg_weight = None
-        self.subsampleWeight = None  # use pyqtProperty to trigger setter
-        self.subsampleCount = None  # use pyqtProperty to trigger setter
-        self._subsample_avg_weight = None
+        if not self._is_fixed_gear:  # subsample funcs only on trawl
+            self.subsampleWeight = None  # use pyqtProperty to trigger setter
+            self.subsampleCount = None  # use pyqtProperty to trigger setter
+            self._subsample_avg_weight = None
         self._species_weight = None
         self._species_fish_count = None
         self._total_tally = None
@@ -516,8 +517,6 @@ class CountsWeights(QObject):
             self._species_weight = self._extrapolated_species_weight = self._actual_weight = self._avg_weight = None
             self.emit_calculated_weights()
             return
-        # elif self._weighted_baskets == 0 and self._observer_species.discardReason in ['12', '15']:
-
 
         self._species_weight = self._extrapolated_species_weight = self._actual_weight = species_weight
 
@@ -706,6 +705,7 @@ class CountsWeights(QObject):
 
     @pyqtProperty(QVariant, notify=tallyFGFishCountChanged)
     def tallyTimesAvgWeight(self):
+        # FIELD-1900: avoid nulling out weight for DR 12 and 15 with null avg (avg from retained will be used)
         if self._observer_species.discardReason in ['12', '15'] and self._weighted_baskets == 0:
             self._logger.info(f"DR12/15 without baskets, not calculating species weight with avg val = {self.avgWeight}")
             return self._current_species_comp_item.species_weight
