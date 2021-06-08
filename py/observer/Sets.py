@@ -175,11 +175,11 @@ class Sets(QObject):
         :return: None
         """
         self._logger.info(f"Checking for post-set calculations for current set id: {self._current_set.fishing_activity}")
-        # self._update_predated_do_basket_weights()
         self._update_predated_do_species_comps()
 
     def _calculate_retained_spp_avg(self, species_ids):
         """
+        FIELD-1900: Used to auto-calc DR12/15 weights
         Separate function to store retained average calculation
         Take all retained baskets with counts and weights for species id param and get avg fish wt
         :param species_ids: int[], list of species_ids for a given species_complex
@@ -202,6 +202,7 @@ class Sets(QObject):
                 (SpeciesCompositionBaskets.fish_number_itq.is_null(False)) & # baskets with actual counts
                 (SpeciesCompositionItems.species.in_(species_ids))  # species associated with CC
             ).scalar()
+            avg = ObserverDBUtil.round_up(avg)  # round here, precision will propagate to downstream vals
             self._logger.info(f"Retained avg for set {faid}, species_ids {species_ids} = {avg}")
             return avg
 
@@ -262,7 +263,7 @@ class Sets(QObject):
 
     def _update_predated_do_species_comps(self):
         """
-        Post-set function that calculates retained average of species and applies it to drop off or predated fish
+        FIELD-1900: Post-set func that calcs retained average of species and applies it to drop off or predated fish
         (discard reason 12, 15).  If manually entered baskets exist, this calc will ignore.  Retained avg may be
         calculated for single or related (see ObserverSpecies.get_related_species) retained species
         Steps
@@ -398,7 +399,6 @@ class Sets(QObject):
                 set_rec.total_hooks_lost = new_lost_hooks
                 self._logger.debug(f'Set {set_rec.fishing_activity_num} new total lost hooks {new_lost_hooks}')
                 set_rec.save()
-
 
     def _recalculate_catches_hooks_sampled(self, set_rec, avg_hook_count):
         catches_q = Catches.select().where(Catches.fishing_activity == set_rec.fishing_activity)
