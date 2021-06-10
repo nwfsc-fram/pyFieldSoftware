@@ -12,6 +12,7 @@ Dialog {
     width: 800
     height: 500
     title: "GPS Entry"
+
     property alias enable_audio: numPad.enable_audio
 
     // Capture datetime, lat/long, and depth.
@@ -605,7 +606,7 @@ Dialog {
                     RowLayout {
                         anchors.left: parent.left
                         FramButton {
-                            id: btnGenerateLatLon
+                            id: btnGetLatLon
                             text: "Tablet GPS Lat/Lon"
                             Layout.leftMargin: 20
                             implicitWidth: 100
@@ -613,6 +614,7 @@ Dialog {
                                 appstate.hauls.locations.tabletGPS.getGPSLatLon()
                             }
                         }
+                        Label {}  // spacer
                         Label {
                             id: labelGpsStatus
                             text: ""
@@ -621,12 +623,10 @@ Dialog {
                         Connections {
                             target: appstate.hauls.locations.tabletGPS
                             onStatusChanged: {
+                                // pass custom text from python signal
                                 labelGpsStatus.text = s
-                                if (s === 'Signal Acquired') {
-                                    labelGpsStatus.color = 'green'
-                                } else {
-                                    labelGpsStatus.color = 'red'
-                                }
+                                labelGpsStatus.color = color
+                                labelGpsStatus.font.pixelSize = size
                             }
                         }
                     }
@@ -1148,6 +1148,12 @@ Dialog {
                                     }
                                 }
                                 ****************************/
+                            }
+                            Connections {
+                                target: appstate.hauls.locations.tabletGPS
+                                onFocusDepthField: {
+                                    tfDepth.forceActiveFocus()
+                                }
                             }
                         }
                     }
