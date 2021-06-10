@@ -413,37 +413,6 @@ class ObserverSpecies(QObject):
 
         return species_sorted
 
-    @staticmethod
-    def get_related_species(species_id):
-        """
-        If species is one of a few where multiple need to be compared,
-        return a list of related species, else return that species only
-        TODO: Use table instead of hardcoding to make these relationships
-        :param species_id: species DB id (int)
-        :return: int[]
-        """
-        complexes = {
-            'thornyhead': [
-                10239,  # longspine
-                10492,  # shortspine / longspine
-                10491  # shortspine
-            ],
-            'shortraker': [
-                10254,  # shortraker
-                10427,  # shortraker/rougheye/blackspotted
-                10490  # rougheye/blackspotted
-            ],
-            'skate': [
-                10334,  # big skate
-                10337,  # longnose skate
-                10338  # sandpaper skate
-            ]
-        }
-        for species in complexes.values():
-            if species_id in species:
-                return species
-        return [species_id]
-
     def _load_full_list_model(self):
         """
         Stuff sorted list of species entries as dicts into view model.
@@ -1567,9 +1536,18 @@ class ObserverSpecies(QObject):
         """
         If species is one of a few where multiple need to be compared,
         return a list of related species, else return that species only
+        TODO: develop table relation ship for these groupings
         :param species_id: species DB id (int)
         :return: int[]
         """
+        if species_id == 10340:  # skate unid custom handle
+            return [
+                10334,  # big skate
+                10337,  # longnose skate
+                10338,  # sandpaper skate
+                10340   # skate unid, including here per FIELD-1900
+            ]
+
         complexes = {
             'thornyhead': [
                 10239,  # longspine
@@ -1581,12 +1559,6 @@ class ObserverSpecies(QObject):
                 10427,  # shortraker/rougheye/blackspotted
                 10490  # rougheye/blackspotted
             ],
-            'skate': [
-                10334,  # big skate
-                10337,  # longnose skate
-                10338,  # sandpaper skate
-                10340   # skate unid, including here per FIELD-1900
-            ]
         }
         for species in complexes.values():
             if species_id in species:
