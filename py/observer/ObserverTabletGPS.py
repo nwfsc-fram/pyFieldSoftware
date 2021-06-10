@@ -1,7 +1,7 @@
 
 # -----------------------------------------------------------------------------
 # Name:        ObserverTabletGPS.py
-# Purpose:     Coordinate pull from GPS with Powershell
+# Purpose:     Coordinate pull from GPS with Powershell/Serial Port
 #
 # Author:      Jim Fellows <james.fellows@noaa.gov>
 #
@@ -12,38 +12,54 @@ import arrow
 import logging
 import subprocess
 import threading
+import time
+import re
+from serial import Serial
+import serial
+import pynmea2
+from contextlib import suppress, contextmanager
+from datetime import datetime, timedelta
 
 from PyQt5.QtCore import pyqtProperty, QVariant, QObject, pyqtSignal, pyqtSlot
+from py.observer.ObserverDBUtil import ObserverDBUtil
 
 
 class TabletGPS(QObject):
     """
     Class used by ObserverFishingLocations.py and GPSEntryDialog.qml
-    Core function is _get_gps_lat_lon, which runs a powershell command to access tablets built-in GPS
+    Core function is _get_gps_lat_lon_serial, which pulls data over serial port from tablet GPS
+    Function is threaded to avoid UI freeze, and only one thread should be allowed to be alive at a time.
+    Setters trickle down to associated degrees, minutes and seconds properties and emit to UI.
+    Powershell was used, but changing between getting coords from Wifi/location service and actual GPS
+    cause inconsistent results:
     https://stackoverflow.com/questions/46287792/powershell-getting-gps-coordinates-in-windows-10-using-windows-location-api
-
-    GPS must first be enabled/started on Getac tablet using G-Manager app.
-    Powershell might need to have Set-ExecutionPolicy changed.
-
-    Function spins up on thread to avoid UI freeze while acquiring signal, then sets lat and long in decimal degrees.
-    Setters trickle down to associated degrees, minutes and seconds properties.
     """
     latitudeChanged = pyqtSignal()
     longitudeChanged = pyqtSignal()
     timestampChanged = pyqtSignal(QVariant, arguments=['ts'])
-    statusChanged = pyqtSignal(QVariant, arguments=['s'])  # emits to UI to display status
+    statusChanged = pyqtSignal(QVariant, QVariant, int, arguments=['s', 'color', 'size'])  # emits to UI to display status
+    focusDepthField = pyqtSignal()
     unusedSignal = pyqtSignal()
 
-    TIMEOUT = 10  # used in subprocess for powershell timeout when getting coordinates
-    TIMESTAMP_STR_FMT = '%a %b %d %H:%M:%S %Y'  # str date format that javascript likes
+    # create/set DB setting params
+    TIMEOUT = int(ObserverDBUtil.get_or_set_setting('gps_timeout_secs', default_value='10'))
+    COMPORT = ObserverDBUtil.get_or_set_setting('gps_comport', default_value='COM2')
 
-    # status / error handling for gps signal try
-    GPS_AVAILABLE = 'Signal Acquired'
-    ACCESS_DENIED_ERR = 'Tablet GPS access denied.'
-    TIMEOUT_ERR = f"{TIMEOUT}s timeout\nsignal not acquired."
-    UNKNOWN_ERR = "UNHANDLED ERROR: Unable to\nacquire GPS coordinates"
+    # status / error handling for gps signal try.  "Message", "Font Color", "Font Size"
+    SIGNAL_ACQUIRED = ('Signal Acquired!', "green", 18)
+    ACCESS_DENIED_ERR = ('Access denied.', 'red', 18)
+    TIMEOUT_ERR = (f"{TIMEOUT}s timeout.", 'red', 18)
+    UNKNOWN_ERR = ("UNHANDLED ERROR: Unable to\nacquire GPS coordinates", 'red', 18)
 
-    def __init__(self):
+    def __init__(
+            self,
+            comport=COMPORT,
+            baudrate='9600',
+            databits=8,
+            stopbits=1,
+            parity='N',
+            timeout=TIMEOUT  # reuse for comport timeout (also used for signal acquisition)
+    ):
         super().__init__()
         self._logger = logging.getLogger(__name__)
         self._lat_dd = None
@@ -56,6 +72,66 @@ class TabletGPS(QObject):
         self._lon_seconds = None
         self._timestamp = None
         self._status = None
+        self._signal_thread = threading.Thread()  # placeholder so we can call isAlive() on it to start
+
+        # serial port config; error handling wasn't working right unless I created a blank Serial() first...
+        self.serial_port = Serial()
+        self.serial_port.port = comport
+        self.serial_port.baudrate = baudrate
+        self.serial_port.bytesize = databits
+        self.serial_port.timeout = timeout
+        self.serial_port.stopbits = stopbits
+
+    @contextmanager
+    def open(self):
+        """
+        Not used, havent tested yet, using open_port and close_port in try except finally for now
+        :return: serial port
+        """
+        if self.serial_port.isOpen():
+            self._logger.warning(f"Serial port {self.serial_port.name} already open")
+            yield self.serial_port
+        try:
+            self.serial_port.open()
+            self._logger.info(f"Serial port {self.serial_port.name} opened")
+            yield self.serial_port
+        except serial.serialutil.SerialException as e:
+            self._logger.error(f"Cant open port: {str(e)}")
+            self.timestamp = datetime.now()
+            self.status = self.ACCESS_DENIED_ERR
+        finally:
+            if self.serial_port.isOpen():
+                self.serial_port.close()
+                self._logger.info(f"Serial port {self.serial_port.name} closed.")
+
+    def _open_port(self):
+        """
+        method to manually open port
+        I'll use with context manager for now instead
+        :return: None
+        """
+        self._logger.info("Trying to open port")
+        if not self.serial_port.isOpen():
+            try:
+                self.serial_port.open()
+                self._logger.info(f"Serial port {self.serial_port.name} opened")
+                return True
+            except serial.serialutil.SerialException as e:
+                self._logger.error(f"Cant open port: {str(e)}")
+                return False
+        else:
+            self._logger.warning(f"Serial port {self.serial_port.name} already open.")
+            return True
+
+    def _close_port(self):
+        """
+        method to manually close port
+        I'll use with context manager for now instead
+        :return:
+        """
+        if self.serial_port.isOpen():
+            self.serial_port.close()
+            self._logger.info(f"Serial port {self.serial_port.name} closed.")
 
     def _reset_data(self):
         """
@@ -65,7 +141,7 @@ class TabletGPS(QObject):
         self.latDD = None
         self.lonDD = None
         self.timestamp = None
-        self.status = None
+        self.status = "", "black", 18  # default text for status label in QML
 
     @pyqtProperty(QVariant, notify=unusedSignal)
     def status(self):
@@ -74,9 +150,7 @@ class TabletGPS(QObject):
     @status.setter
     def status(self, s):
         self._status = s
-        self.statusChanged.emit(self._status)
-        if self._status != self.GPS_AVAILABLE and self._status:
-            self._logger.warning(self._status.replace('\n', ' '))
+        self.statusChanged.emit(self._status[0], self._status[1], self._status[2])  # text, color, fontsize
 
     @pyqtProperty(QVariant, notify=timestampChanged)
     def timestamp(self):
@@ -93,15 +167,18 @@ class TabletGPS(QObject):
             self._timestamp = ts
             self._logger.info(f"timestamp updated to {self._timestamp}")
             if self._timestamp:
-                self.timestampChanged.emit(self._timestamp)
+                self.timestampChanged.emit(self._format_js_timestamp_str(ts))
 
-    def _generate_timestamp(self):
+    def _format_js_timestamp_str(self, ts):
         """
-        Format defined above is in a format the javascripts new Date(date_string) can handle
-        Do we need to specify timezone?
-        :return: set timestamp_str
+        format to string for QML GPSEntryDialog ingestion
+        :param ts: datetime object
+        :return: string
         """
-        self.timestamp = arrow.now().strftime(self.TIMESTAMP_STR_FMT)
+        try:
+            return ts.strftime('%a %b %d %H:%M:%S %Y')  # str date format that javascript likes
+        except AttributeError as e:
+            self._logger.error(f"Type {type(ts)} ({ts}) is not datetime, and doesnt have strftime method; {e}")
 
     @pyqtProperty(QVariant, notify=latitudeChanged)
     def latDD(self):
@@ -207,16 +284,104 @@ class TabletGPS(QObject):
         """
         Wrapper func to set values and signal UI.
         Thread avoids UI freezing and will kill when function returns, or when parent thread dies (daemon status)
-        :return: Object with lat/lon info
+        Recreates thread everytime and first checks if existing thread is still alive and running.  Prevents
+        multiple threads being launched at once (User can click button as much as they want)
         """
-        self.t = threading.Thread(name='gpsThread', target=self._get_gps_lat_lon, daemon=True)
-        self.t.start()
+        if self._signal_thread.isAlive():
+            self._logger.warning(f"Thread already running, please stop clicking.")
+            return
+        else:
+            self._signal_thread = threading.Thread(name='gpsThread', target=self._get_gps_lat_lon_serial, daemon=True)
+            self._logger.info(f"Starting new thread {self._signal_thread.name}...")
+            self._signal_thread.start()
 
-    def _get_gps_lat_lon(self):
+    @staticmethod
+    def generate_ellipsis(seconds_elapsed, max_dots=5, substr="."):
+        """
+        create dots based on how many seconds have gone by.
+        Use to animate UI when waiting on threaded process
+        :param seconds_elapsed: int; how many seconds have gone by?
+        :param max_dots: int; whats the max length of your elipses?
+        :return: string (e.g. ...)
+        """
+        return "".join([substr]*(seconds_elapsed % (max_dots+1)))
+
+    def _get_gps_lat_lon_serial(self):
+        """
+        Read lines over serial port. Break while loop when lat long datetime have been pulled, or timeout reached
+        1. Clear out vals (lat,lon,timestamp,status), open port, start timer
+        2. Read lines while values are incomplete, parse with pynmea and populate as needed
+        3. When parsed, use setters to populate values and signal to UI
+        4. Timer functionality emits ellipses while running, and stops func when timeout it reached
+        5. Finally statement should always close port and wrap things up
+        :return: None (sets properties)
+        """
+        self._logger.info(f"Starting GPS lat/long pull")
+        self._reset_data()
+        try:
+            opened = self._open_port()  # returns true if successful, or port already open (shouldnt be)
+            if not opened:
+                self.timestamp = datetime.now()
+                self.status = self.ACCESS_DENIED_ERR
+                return
+            else:
+                start = datetime.now()  # start time for timeout
+                secs = 0  # track seconds for ellipses
+                # Keep while loop open while params are not set, or timeout reached
+                while not self._lat_dd or not self._lon_dd or not self._timestamp:
+                    line = self.serial_port.readline().decode('ascii', errors='replace')
+                    self._logger.info("Reading line " + line.replace("\n", "").strip())
+
+                    elapsed = datetime.now() - start  # track elapsed time for timeout / ellipses
+                    if elapsed.seconds > self.TIMEOUT:
+                        self._logger.warning(f"GPS unable to acquire data after {self.TIMEOUT}s")
+                        self.status = self.TIMEOUT_ERR
+                        break  # get out of while loop, go to finally stmt
+
+                    elif elapsed.seconds > secs:  # have we advanced a full second?
+                        self.status = self.generate_ellipsis(elapsed.seconds, max_dots=3, substr=" ~ ><(((8>"), 'black', 13
+                    secs = elapsed.seconds
+
+                    # use pynmea2 to try and parse valid sentences
+                    try:
+                        pn = pynmea2.parse(line)
+                    except pynmea2.nmea.ParseError:
+                        continue
+
+                    # suppress KeyError/Attribute (we don't know which nmea sentences have which attributes)
+                    with suppress(KeyError, AttributeError):
+                        self.latDD = pn.latitude
+                        self.lonDD = pn.longitude
+
+                        # datestamp is only available in GPRMC, and must be combined with GPS time
+                        ds = pn.datestamp
+                        ts = pn.timestamp
+                        self.timestamp = datetime(
+                            year=ds.year,
+                            month=ds.month,
+                            day=ds.day,
+                            hour=ts.hour,
+                            minute=ts.minute
+                        ) - timedelta(hours=7)  # UTC offset, should this always be seven or seasonally 7/8?
+
+        # general exception here to make sure close_port is hit
+        except Exception as e:
+            self._logger.error(f"Error streaming data over GPS serial port; {e}")
+        finally:
+            self._close_port()
+            if self._lat_dd and self._lon_dd and self._timestamp:  # did we get everything?
+                self.status = self.SIGNAL_ACQUIRED
+                self.focusDepthField.emit()  # advance cursor to depth field if successful
+
+    def _get_gps_lat_lon_powershell(self):
         """
         Use powershell to access Getac tablet internal GPS
         Powershell permissionscheck Get-ExecutionPolicy/Set-ExecutionPolicy unrestricted) must be open,
         and GPS antenna must be active
+
+        NOTE: No longer using this due to confusion with WiFi location services. Serial Port direc access
+        to GPS is more consistent
+
         :return: tuple of floats (latitude, longitude); units = decimal degrees
         """
         self._reset_data()
@@ -266,4 +431,14 @@ class TabletGPS(QObject):
             self.timestamp = self._generate_timestamp()
             self.latDD = dds[0]
             self.lonDD = dds[1]
-            self.status = self.GPS_AVAILABLE
+            self.status = self.SIGNAL_ACQUIRED
+
+
+if __name__ == '__main__':
+    logging.basicConfig(
+        level=logging.DEBUG,
+        # format="%(asctime)s [%(levelname)8.8s] %(message)s",
+        format='%(asctime)s %(levelname)s %(filename)s(%(lineno)s) "%(message)s"'
+    )
+    gps = TabletGPS()
+    # gps._get_gps_lat_lon_serialtest()
