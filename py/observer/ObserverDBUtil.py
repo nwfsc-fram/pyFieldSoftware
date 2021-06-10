@@ -282,6 +282,17 @@ class ObserverDBUtil:
             return arrow_time.format(ObserverDBUtil.javascript_dateformat)
 
     @staticmethod
+    def convert_datestr(datestr, existing_fmt, desired_fmt):
+        """
+        pass in datestr, parse into datetime, then reformat back to string
+        :param datestr: str
+        :param existing_fmt: str (e.g. default_dateformat)
+        :param desired_fmt: str (e.g. oracle_date_format)
+        :return: str (new format)
+        """
+        return arrow.get(datestr, existing_fmt).format(desired_fmt)
+
+    @staticmethod
     def log_peewee_model_dependencies(logger, dependencies, context_message=None):
         """
         Log the non-null fields of records in the list of dependencies.
