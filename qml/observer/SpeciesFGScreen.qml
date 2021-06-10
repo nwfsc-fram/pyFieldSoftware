@@ -619,9 +619,11 @@ Item {
                 visible: appstate.trips.debrieferMode   // Make visible for debriefers
             }
 
-            function activate_recalc_all() {
+            function activate_recalc_all(reselect) {
+                if (reselect === undefined) reselect = false  // default value; default is to clear selected species
                 // intended only for use with WM15 (perf reasons)
                 console.warn("Recalculating weights for all " + rowCount + " rows.");
+                var startingRow = tvSelectedSpecies.currentRow
                 for (var i = 0; i < rowCount; i++) {
                     clear_selection();
                     currentRow = i;
@@ -629,6 +631,12 @@ Item {
                     activate_selected_species();
                     // delay needed?
                     clear_selection();
+                }
+                // FIELD-1900: if reselect, reselect/activate original row
+                if (reselect) {
+                    tvSelectedSpecies.currentRow = startingRow;
+                    tvSelectedSpecies.selection.select(startingRow)
+                    activate_selected_species()
                 }
             }
             function activate_selected_species() {
@@ -741,12 +749,12 @@ Item {
                 text: "Run Set Calcs"
                 onClicked: {
                     appstate.sets.updateCurrentSetCalcs()
-                    tvSelectedSpecies.activate_recalc_all()  // use to refresh weight shown in UI
+                    tvSelectedSpecies.activate_recalc_all(true)  // use to refresh weight shown in UI
+                    enable_remove_button(true);
                 }
             }
         }
     } // ListView
-
 
     FramSlidingKeyboard {
         id: slidingKeyboardSpecies
@@ -778,7 +786,6 @@ Item {
             visible = false;
         }
     }
-
     FramNoteDialog {
         id: dlgSpeciesAlreadyInSelected
         property string common_name

@@ -1011,7 +1011,7 @@ Item {
                 property string req_type: "requested/required"
                 function prompt_if_bio_needed() {
                     var discard_reason = gridDR.current_discard_id;
-                    if (discard_reason === '12' || discard_reason === 15)
+                    if (discard_reason === '12' || discard_reason === '15') // FIELD-1910: DR vals should be strings
                     {
                         console.log('DR is dropoff/pred, not warning about Biospecimens.')
                         return;
@@ -1139,10 +1139,15 @@ Item {
                         fontsize: 30
                         property bool enableAudio: ObserverSettings.enableAudio
                         onClicked: {
-                            appstate.catches.species.counts_weights.addToTallyFGCount(1)
-                            if (enableAudio) {
-                                soundPlayer.play_sound("keyInput", false)
+                            if (!gridDR.is_dr_set() && !appstate.catches.species.isRetained) {
+                                dlgSelectDRWarning.open();  // FIELD-1900: prevent tally if DR not set
+                            } else {
+                                appstate.catches.species.counts_weights.addToTallyFGCount(1)
+                                if (enableAudio) {
+                                    soundPlayer.play_sound("keyInput", false)
+                                }
                             }
+
                         }
 
                     }
@@ -1383,7 +1388,7 @@ Item {
     ////
     FramNoteDialog {
         id: dlgSelectDRWarning
-        message: "Select a discard reason\nprior to adding baskets."
+        message: "Select a discard reason\nprior to adding baskets or counts."
         font_size: 18
     }
 

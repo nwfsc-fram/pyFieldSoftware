@@ -44,7 +44,7 @@ Dialog {
 
     contentItem: Rectangle {
         id: contentLayout
-
+        anchors.fill: parent
         FramScalingKeyboard {
             id: keyPad
             anchors.fill: parent

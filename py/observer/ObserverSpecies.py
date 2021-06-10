@@ -580,6 +580,15 @@ class ObserverSpecies(QObject):
             self._logger.debug(f'FG Tally avg Weight {avg_weight}')
             idx = self._get_cur_species_comp_item_idx()
 
+            # FIELD-1900: reverse engineer avg for DO/PRED fish where no weights are taken
+            if self.discardReason in ['12', '15'] and not avg_weight:
+                try:
+                    avg_weight = ObserverDBUtil.round_up(
+                        self._current_speciescomp_item.species_weight / self._current_speciescomp_item.species_number
+                    )
+                except TypeError as e:  # if weight  or number is None, catch error, continue with None avg
+                    pass
+
             self._species_comp_items_model.setProperty(
                 idx, 'avg_weight', avg_weight)
             self._logger.debug(f'Avg Weight updated to {avg_weight}')
@@ -1575,7 +1584,8 @@ class ObserverSpecies(QObject):
             'skate': [
                 10334,  # big skate
                 10337,  # longnose skate
-                10338  # sandpaper skate
+                10338,  # sandpaper skate
+                10340   # skate unid, including here per FIELD-1900
             ]
         }
         for species in complexes.values():
