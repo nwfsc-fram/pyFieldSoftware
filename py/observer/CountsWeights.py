@@ -180,13 +180,13 @@ class CountsWeights(QObject):
             return
 
         try:
-
             new_basket = SpeciesCompositionBaskets.create(
                     species_comp_item=self._current_species_comp_item,
                     basket_weight_itq=weight,
                     fish_number_itq=count,
                     created_by=ObserverDBUtil.get_current_user_id(),
-                    created_date=ObserverDBUtil.get_arrow_datestr(date_format=ObserverDBUtil.oracle_date_format),
+                    # FIELD-2087: Using default dateformat for time display; reformat before sync later
+                    created_date=ObserverDBUtil.get_arrow_datestr(date_format=ObserverDBUtil.default_dateformat),
                     is_fg_tally_local=1 if self._is_fixed_gear else None,
                     is_subsample=None
             )
@@ -225,7 +225,8 @@ class CountsWeights(QObject):
                     catch=current_catch_id,
                     basket_weight=weight,
                     created_by=ObserverDBUtil.get_current_user_id(),
-                    created_date=ObserverDBUtil.get_arrow_datestr(date_format=ObserverDBUtil.oracle_date_format),
+                    # FIELD-2087: Using default dateformat for time display; reformat before sync later
+                    created_date=ObserverDBUtil.get_arrow_datestr(date_format=ObserverDBUtil.default_dateformat),
             )
             self._baskets_model.add_basket(new_basket)
             self._logger.info(f'Added addl basket wt: {weight}')
