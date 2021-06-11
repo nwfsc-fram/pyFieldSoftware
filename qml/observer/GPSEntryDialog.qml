@@ -535,6 +535,7 @@ Dialog {
         location_id = null;
         position_number = -1;
         depth = "";
+        labelGpsStatus.text = "";
         clearInProgress = false;
     }
 
