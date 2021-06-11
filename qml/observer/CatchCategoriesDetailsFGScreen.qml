@@ -913,7 +913,7 @@ Item {
                     FramLabel {  // FIELD-2060, added in label
                         text: "Protocol: " + appstate.catches.species.currentProtocols
                         + (appstate.catches.species.currentBiolist ? "(" + appstate.catches.species.currentBiolist + ")" : "")
-                        + "; Biolist: " + appstate.hauls.currentBiolistNum
+                        + "; Biolist: " + appstate.sets.currentBiolistNum
                         font.pixelSize: 18
                         font.italic: true
                         Layout.preferredHeight: 35
