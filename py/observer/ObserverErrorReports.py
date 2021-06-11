@@ -633,7 +633,7 @@ class TripChecksOptecsManager:
 
         trip_check_dict = TripChecksOptecsManager._build_trip_check_dictionary_from_trip_checks()
         counter = IntEnumCounter(TripCheckEvaluationStatus)
-        for check_id, (check_message, sql) in trip_check_dict.items():
+        for check_id, (check_message, sql, status_optecs) in trip_check_dict.items():
             replace_parameters = {  # Key value is parameter as contained in PL SQL (namely, a leading colon)
                 ':trip_id': trip_id,
                 ':trip_check_id': check_id,
@@ -642,7 +642,7 @@ class TripChecksOptecsManager:
             }
             # logger.info(f'---- CHECK_ID {check_id} ({check_message}):')
             execution_result = TripChecksOptecsManager._evaluate_one_check(
-                    check_message, sql, replace_parameters, logger)
+                    check_message, sql, replace_parameters, logger, status_optecs)
 
             # This may be running on a background thread. Allow for possibility
             # of concurrent UI thread DB access # by yielding after after every
@@ -687,10 +687,11 @@ class TripChecksOptecsManager:
         """
         check_dict = {}
         # noinspection SqlNoDataSourceInspection,SqlResolve
+        # FIELD-2100: Adding STATUS_OPTECS for TER disable from Oracle
         cursor = database.execute_sql(
-                'SELECT TRIP_CHECK_ID, CHECK_MESSAGE, CHECK_SQL FROM TRIP_CHECKS;')
-        for trip_check_id, check_message, plsql in cursor:
-            check_dict[trip_check_id] = (check_message, plsql)
+                'SELECT TRIP_CHECK_ID, CHECK_MESSAGE, CHECK_SQL, STATUS_OPTECS FROM TRIP_CHECKS;')
+        for trip_check_id, check_message, plsql, status_optecs in cursor:
+            check_dict[trip_check_id] = (check_message, plsql, status_optecs)
         return check_dict
 
     @staticmethod
@@ -698,7 +699,9 @@ class TripChecksOptecsManager:
             chk_msg: str,
             sql: str,
             replace_parameters: Dict[str, Any],
-            logger) -> TripCheckEvaluationStatus:
+            logger,
+            status_optecs
+    ) -> TripCheckEvaluationStatus:
         """
         Execute a single trip_check on a single trip. The trip id and the
         check id are included in replace_parameters.
@@ -709,6 +712,7 @@ class TripChecksOptecsManager:
         :param sql: the sql to execute. Return if empty string w/o attempting to run.
         :param replace_parameters: Replace query variables (dictionary key) with dictionary value.
             Using format of PL SQL: ':<variable>' (i.e. name preceded by colon).
+        :param status_optecs: flag set in database to disable TER (sync from Oracle, FIELD-2100) 
         :return: The categorization of the check: OK as-is, disabled, contains Oracle syntax, ...
         """
         check_id = replace_parameters[':trip_check_id']
@@ -738,7 +742,7 @@ class TripChecksOptecsManager:
             execution_result = TripCheckEvaluationStatus.NOT_RUN_UNRECOGNIZED_MACRO
             logger.debug(f"Check {check_id} not run - known problem - unrecognized macro")
             logger.debug(f"Check {check_id}: SQL w/unknown macro:\n{sql_formatted}")
-        elif TripChecksDisabledInOptecs.trip_check_is_disabled_in_optecs(check_id, logger):
+        elif TripChecksDisabledInOptecs.trip_check_is_disabled_in_optecs(check_id, logger) or status_optecs == 0:
             execution_result = TripCheckEvaluationStatus.NOT_RUN_DISABLED_IN_OPTECS
             logger.debug(f"Check {check_id} not run - known problem - disabled in OPTECS")
         else:

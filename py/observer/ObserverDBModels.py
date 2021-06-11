@@ -934,6 +934,7 @@ class TripChecks(BaseModel):
                                        to_field='trip_check_group')
     trip_check = PrimaryKeyField(db_column='TRIP_CHECK_ID')
     value_column = TextField(db_column='VALUE_COLUMN', null=True)
+    status_optecs = IntegerField(db_column='STATUS_OPTECS')  # FIELD-2100: Optecs TER disable from Oracle
 
     class Meta:
         db_table = 'TRIP_CHECKS'
