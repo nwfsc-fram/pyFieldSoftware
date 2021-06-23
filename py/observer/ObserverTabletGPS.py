@@ -362,7 +362,7 @@ class TabletGPS(QObject):
                             day=ds.day,
                             hour=ts.hour,
                             minute=ts.minute
-                        ) - timedelta(hours=7)  # UTC offset, should this always be seven or seasonally 7/8?
+                        ) + arrow.now().utcoffset()  # FIELD-2113: dynamically offset utc
 
         # general exception here to make sure close_port is hit
         except Exception as e:
