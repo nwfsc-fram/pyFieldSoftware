@@ -337,8 +337,7 @@ class CountsWeights(QObject):
         ).where(
             (Trips.trip == ObserverDBUtil.get_current_trip_id()) &
             (Species.species.in_(species_list)) &
-            # (fn.substr(FishingActivities.created_date, 1, 10) == fn.substr(ObserverDBUtil.get_arrow_datestr(), 1, 10)) &
-            (fn.substr(FishingActivities.created_date, 1, 10) == fn.substr(SpeciesCompositionItems.created_date, 1, 10)) &
+            (fn.substr(SpeciesCompositionItems.created_date, 1, 10) == fn.substr(ObserverDBUtil.get_arrow_datestr(), 1, 10)) &
             (SpeciesCompositionBaskets.is_subsample == 1)
         ).scalar()
 
@@ -367,8 +366,7 @@ class CountsWeights(QObject):
         ).where(
             (Trips.trip == ObserverDBUtil.get_current_trip_id()) &
             (Species.species.in_(species_list)) &
-            # (fn.substr(FishingActivities.created_date, 1, 10) == fn.substr(ObserverDBUtil.get_arrow_datestr(), 1, 10)) &
-            (fn.substr(FishingActivities.created_date, 1, 10) == fn.substr(SpeciesCompositionItems.created_date, 1, 10)) &
+            (fn.substr(SpeciesCompositionItems.created_date, 1, 10) == fn.substr(ObserverDBUtil.get_arrow_datestr(), 1, 10)) &
             (SpeciesCompositionBaskets.is_subsample == 1)
         ).scalar()
 
@@ -589,9 +587,9 @@ class CountsWeights(QObject):
             if self._subsample_avg_mode == 1:
                 note = f'SPECIES_NUMBER=WEIGHT/SUBSAMPLE_AVG={species_weight}/{round(self._subsample_avg_weight, 2)}'
                 self._observer_species.species_comp_item_notes = note
-            elif species_extrapolated_count:
+            elif self._extrapolated_species_fish_count:
                 note = f'SPECIES_NUMBER=(NO_COUNT_WEIGHT/FISH_AVG)+ACTUAL_COUNT=(' \
-                       f'{species_weight - species_counted_weight}/{self._avg_weight})+{species_fish_count}'
+                       f'{species_weight - species_counted_weight}/{ObserverDBUtil.round_up(self._avg_weight)})+{species_fish_count}'
                 self._observer_species.species_comp_item_notes = note
 
             if self._current_weight_method == '8' and self._total_tally is not None:
