@@ -30,6 +30,7 @@ from py.observer.ObserverDBModels import Settings, Programs, TripChecks, Species
 from playhouse.apsw_ext import APSWDatabase
 from playhouse.shortcuts import dict_to_model
 from playhouse.test_utils import test_database
+from py.observer.ObserverConfig import optecs_version
 
 import unittest
 
@@ -611,7 +612,7 @@ class ObserverDBUtil:
 
     @staticmethod
     def get_data_source() -> str:
-        return'optecs ' + socket.gethostname()
+        return f'optecs_{optecs_version} {socket.gethostname()}'  # FIELD-2114: adding version to data_source
 
     @staticmethod
     def del_species_comp_item(comp_item_id, delete_baskets=True):
