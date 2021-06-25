@@ -604,9 +604,15 @@ ColumnLayout {
                             dlgSelectBMWarning.open()
                         } else { // set phlb or non-phlb models
                             if (appstate.catches.isPHLB) {
-                                mtx.setModel(10)
+                                if (!mtx.setModel(10)) {
+                                    mtx.addModel(10, 10, 249)  // increment, lower bound, upper bound
+                                    mtx.setModel(10)
+                                }
                             } else {
-                                mtx.setModel(1)
+                                if (!mtx.setModel(1)) {
+                                    mtx.addModel(1, 1, 250)  // increment, lower bound, upper bound
+                                    mtx.setModel(1)
+                                }
                             }
                             dlgLengthMatrix.open()
                         }
@@ -635,9 +641,6 @@ ColumnLayout {
                                     id: mtx
                                     anchors.top: lblMtx.bottom
                                     enable_audio: true
-                                    lowerRange: 1
-                                    upperRange: 250
-                                    increment: 1
                                     columns: 5
                                     buttonHeight: 50
                                     precision: 0
@@ -684,9 +687,6 @@ ColumnLayout {
                                                 }
                                             }
                                         }
-                                    }
-                                    Component.onCompleted: {
-                                        mtx.addModel(10, 10, 249) // custom PHLB model
                                     }
                                 }
                             }
