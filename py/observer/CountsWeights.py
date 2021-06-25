@@ -305,21 +305,37 @@ class CountsWeights(QObject):
         Catch if dividing by zero, or numerator or denominator is None
         :return: None, set subsample avg
         """
-        self._logger.info(f"Calculating subsample avg: {self._subsample_weight}/{self._subsample_count}")
         try:
             self.subsampleAvgWeight = self._subsample_weight / self._subsample_count
+            self._logger.info(f"Calculating subsample avg: {self._subsample_weight}/{self._subsample_count}")
         except (TypeError, ZeroDivisionError) as e:
             self.subsampleAvgWeight = None
 
+    def _get_current_haulset_date(self):
+        """
+        Getting created_date for current selected haul/set
+        :return: date string from database in format MM/DD/YYYY HH:mm
+        """
+        current_faid = ObserverDBUtil.get_current_haulset_id()
+        if current_faid:
+            try:
+                return FishingActivities.get(FishingActivities.fishing_activity == current_faid).created_date
+            except FishingActivities.DoesNotExist:
+                self._logger.warning(f"Unable to get fishing_activity record with id {current_faid}")
+                return None
+        else:
+            return None
+
     def _calculate_subsample_weight(self):
         """
-        get rounded avg weight of fish in same day as haul
+        get rounded avg weight of fish in same day as haul (using created_date of current haul)
         species_list is usually single current species_id (except for hardcoded complexes in function def)
-        TODO: should this be avg in last 24hrs?
         :return: sets float val _todays_avg_weight (exposed as todaysAvgWeight property)
         """
         species_list = self._observer_species.get_related_species(self._observer_species.currentSpeciesItemSpeciesID)
-        self._logger.info(f"Calculating daily subsample weight for species {species_list}")
+        haulset_date = self._get_current_haulset_date()
+        self._logger.info(f"Calculating daily subsample weight for species {species_list} on day {haulset_date[:10]}")
+
         self.subsampleWeight = Trips.select(
             fn.sum(SpeciesCompositionBaskets.basket_weight_itq)
         ).join(
@@ -337,18 +353,18 @@ class CountsWeights(QObject):
         ).where(
             (Trips.trip == ObserverDBUtil.get_current_trip_id()) &
             (Species.species.in_(species_list)) &
-            (fn.substr(SpeciesCompositionItems.created_date, 1, 10) == fn.substr(ObserverDBUtil.get_arrow_datestr(), 1, 10)) &
+            (fn.substr(SpeciesCompositionBaskets.created_date, 1, 10) == fn.substr(haulset_date, 1, 10)) &
             (SpeciesCompositionBaskets.is_subsample == 1)
         ).scalar()
 
     def _calculate_subsample_count(self):
         """
-        get rounded avg weight of fish in same day as haul
-        TODO: should this be avg in last 24hrs?
+        get rounded avg weight of fish in same day as haul (using created_date of current haul)
         :return: sets float val _todays_avg_weight (exposed as todaysAvgWeight property)
         """
         species_list = self._observer_species.get_related_species(self._observer_species.currentSpeciesItemSpeciesID)
-        self._logger.info(f"Calculating daily subsample count for species {species_list}")
+        haulset_date = self._get_current_haulset_date()
+        self._logger.info(f"Calculating daily subsample count for species {species_list} on day {haulset_date[:10]}")
         self.subsampleCount = Trips.select(
             fn.sum(SpeciesCompositionBaskets.fish_number_itq)
         ).join(
@@ -366,7 +382,7 @@ class CountsWeights(QObject):
         ).where(
             (Trips.trip == ObserverDBUtil.get_current_trip_id()) &
             (Species.species.in_(species_list)) &
-            (fn.substr(SpeciesCompositionItems.created_date, 1, 10) == fn.substr(ObserverDBUtil.get_arrow_datestr(), 1, 10)) &
+            (fn.substr(SpeciesCompositionBaskets.created_date, 1, 10) == fn.substr(haulset_date, 1, 10)) &
             (SpeciesCompositionBaskets.is_subsample == 1)
         ).scalar()
 
@@ -854,3 +870,4 @@ class CountsWeights(QObject):
         self._current_species_comp_item.species_composition.species_weight_kp = total_weight
         self._current_species_comp_item.species_composition.species_number_kp = total_number
         self._current_species_comp_item.species_composition.save()
+
