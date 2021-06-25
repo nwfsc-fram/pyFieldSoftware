@@ -186,8 +186,12 @@ class Hauls(QObject):
     def currentHaulId(self, current_id):
         self._logger.debug('Set currentHaul using ID {}'.format(current_id))
         try:
-            self._current_haul = FishingActivities.get(FishingActivities.trip == self._trip_id,
-                                                       FishingActivities.fishing_activity_num == current_id)
+            self._current_haul = FishingActivities.get(
+                FishingActivities.trip == self._trip_id,
+                FishingActivities.fishing_activity_num == current_id
+            )
+            ObserverDBUtil.db_save_setting('current_haulset_id', current_id)
+            self._logger.info(f"Setting current_haulset_id to {current_id}")
             self._internal_haul_idx = self._hauls_model.get_item_index('fishing_activity_num',
                                                                        self._current_haul.fishing_activity_num)
             self._fishing_locations.load_fishing_locations(fishing_activity_id=self._current_haul.fishing_activity)

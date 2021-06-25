@@ -584,6 +584,13 @@ class ObserverDBUtil:
             return None
 
     @staticmethod
+    def get_current_haulset_id():
+        try:
+            return int(ObserverDBUtil.get_setting('current_haulset_id'))
+        except (TypeError, ValueError):
+            return None
+
+    @staticmethod
     def get_current_debriefer_mode() -> bool:
         try:
             debriefer_mode = ObserverDBUtil.get_setting('current_debriefer_mode', fallback_value=False)
