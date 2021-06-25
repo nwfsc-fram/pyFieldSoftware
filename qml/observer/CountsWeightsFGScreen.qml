@@ -539,11 +539,11 @@ Item {
                                 numPadStack.currentIndex = 1
                                 btnEditBasket.visible = false
                                 NBSM.isEnteringMatrixBasket()
+                                btnQuartersMatrix.checked = true  // defaults to 0.25 increments
                             } else {
                                 modeSC.reset();  // revert back to ready for basket wt state
                                 btnEditBasket.visible = true
                             }
-
                         }
                     }
                     // FIELD-1698: allow matrix increment toggle
@@ -561,23 +561,28 @@ Item {
                             exclusiveGroup: egMatrixToggle
                             Layout.preferredWidth: idEntry.default_width / 8
                             Layout.preferredHeight: buttonLogin.height / 2
-                            onCheckedChanged: {
+                            onCheckedChanged: { // FIELD-2115: only addModel if it doesn't exist
                                 if (checked) { // changing vals should change matrix dynamically
-                                    wtMatrix.setModel(0.1)
+                                    if (!wtMatrix.setModel(0.10)) {
+                                        wtMatrix.addModel(0.10, 0.10, 40.1)  // 40.1 allows 40 button to populate
+                                        wtMatrix.setModel(0.10)
+                                    }
                                 }
                             }
                         }
                         ObserverGroupButton {
                             id: btnQuartersMatrix
                             text: "0.25"
-                            checked: true  // default to 0.25
                             font_size: 13
                             exclusiveGroup: egMatrixToggle
                             Layout.preferredWidth: idEntry.default_width / 8
                             Layout.preferredHeight: buttonLogin.height / 2
                             onCheckedChanged: {
-                                if(checked) { // changing vals should change matrix dynamically
-                                    wtMatrix.setModel(0.25)
+                                if (checked) {  // FIELD-2115: only addModel if it doesn't exist
+                                    if (!wtMatrix.setModel(0.25)) {
+                                        wtMatrix.addModel(0.25, 0.25, 40.0)  // increment, lower bound, upper bound
+                                        wtMatrix.setModel(0.25)
+                                    }
                                 }
                             }
                         }
@@ -793,26 +798,19 @@ Item {
                                 }
                             }
                         }
-                        ObserverWeightMatrix { // FIELD-1698: Allow matrix weight selection
+                        ObserverMatrix { // FIELD-1698: Allow matrix weight selection
                             id: wtMatrix
                             y: 73
                             x: 2
-                            // setting model defaults here just to be explicit
-                            increment: 0.25
-                            lowerRange: 0.25
-                            upperRange: 40.0
                             enable_audio: true
-                            onWeightClicked: {
+                            onValClicked: {
                                 if (!gridDR.is_dr_set() && !appstate.catches.species.isRetained && !is_mix) {  // FIELD-2028
-                                        dlgSelectDRWarning.open();
-                                        return;
-                                    }
-                                modeSC.addNewBasket(weight, 1)  // matrix weight always has count of 1
+                                    dlgSelectDRWarning.open();
+                                    return;
+                                }
+                                modeSC.addNewBasket(val, 1)  // matrix weight always has count of 1
                                 warnIfAvgWeightShowsAsZero();
                                 modeSC.selectNewestRow()  // select newly added wt
-                            }
-                            Component.onCompleted: {
-                                wtMatrix.addModel(0.10, 0.10, 40.1) // for later toggling; for some reason 40.0 is not inclusive...
                             }
                         }
                     }

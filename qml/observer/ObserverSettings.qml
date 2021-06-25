@@ -21,7 +21,7 @@ Item {
 
     // For various stuff for testing
     property bool test_mode: true
-    property bool startup_small_window: true // Non-maximized window etc - false for prod build
+    property bool startup_small_window: false // Non-maximized window etc - false for prod build
     property bool allow_bad_password: appstate.isTestMode
 
     property string default_bgcolor: "#CCCCCC"

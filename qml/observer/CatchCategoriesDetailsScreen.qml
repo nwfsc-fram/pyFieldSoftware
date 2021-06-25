@@ -211,7 +211,7 @@ Item {
                     Label {
                         Layout.alignment: Qt.AlignLeft
                         id: labelRequiredFields
-                        Layout.preferredWidth: layoutCCFGDetails.itemwidth
+                        Layout.preferredWidth: layoutCCDetails.itemwidth
                         text: "Please complete all fields."
                         color: "red"
                         font.bold: true
