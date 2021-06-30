@@ -1142,8 +1142,11 @@ Item {
                     ////
                     FramNoteDialog {
                         id: dlgNumerAndDenomAreEqual
-                        message: "If weighted portion is 100%," +
-                                "\nplease use Weight Method 1."
+                        width: 420
+                        height: 350
+                        message: "If weighted portion is 100%, use WM 20.\n\nIf numerator and denominator" +
+                            "\nstart with same digit,\nenter denominator first." +
+                            "\n\n(ex: 1/10, enter the 10 first)"
                     }
                     FramNoteDialog {
                         id: dlgNumerGreaterThanDenom
