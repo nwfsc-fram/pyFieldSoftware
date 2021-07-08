@@ -16,8 +16,9 @@ from PyQt5.QtQml import QJSValue
 import logging
 import arrow
 
+from py.hookandline_hookmatrix.HookMatrixConfig import HOOKMATRIX_VERSION
+
 APP_NAME = 'HookMatrix'
-SW_VERSION = '1.0.4'
 
 class StateMachine(QObject):
     """
@@ -61,7 +62,7 @@ class StateMachine(QObject):
         self._db = db
 
         self._app_name = APP_NAME
-        self._software_version = SW_VERSION
+        self._software_version = HOOKMATRIX_VERSION
 
         logging.info(f"{self._app_name} v{self._software_version}")
         logging.info(f"Starting date/time: {arrow.now()}")

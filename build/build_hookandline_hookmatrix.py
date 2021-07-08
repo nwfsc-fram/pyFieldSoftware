@@ -15,6 +15,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from build_config import increment_build_number
+
 # Useful library. http://click.pocoo.org/5/api/#click.confirm
 import click
 
@@ -34,6 +36,9 @@ QRC_PATH = str(Path(os.path.join(os.path.dirname(os.path.realpath(__file__)), '.
 QRCPY_PATH = str(Path(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../py/hookandline_hookmatrix/hookandline_hookmatrix_qrc.py')).resolve())
 print('\npyrcc: ' + PYRCC_DIR + '\nqrc: ' + QRC_PATH + '\nqrcpy: ' + QRCPY_PATH + '\n')
 subprocess.check_output([PYRCC_DIR, QRC_PATH, '-o', QRCPY_PATH])
+
+# increment build number
+version = increment_build_number('../py/hookandline_hookmatrix/HookMatrixConfig.py', 'HOOKMATRIX_VERSION')
 
 includefiles = [
 		path_sqlite_dll,  # for some reason this went away in cx_freeze 5.0		
@@ -96,4 +101,4 @@ setup(
 )
 
 # Zip up our creation
-buildzipper.create_zip_archive(base_folder=deployed_path, filedesc='hookandline_hookmatrix')
+buildzipper.create_zip_archive(base_folder=deployed_path, filedesc=f'hookandline_hookmatrix_{version}')
