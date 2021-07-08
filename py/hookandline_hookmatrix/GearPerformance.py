@@ -32,37 +32,22 @@ class GearPerformance(QObject):
     @pyqtSlot(str, name="addGearPerformance")
     def add_gear_performance(self, gear_performance: str):
         """
-        Method to add a gear performance problem
-        :param problem:
-        :return:
+        #239: Revamp of gp button relationships.  Removing delete all when "No Problems" selected
+        Upsert gear performance record for existing operation id
+        :param gear_performance: str
+        :return: None (inserts to db)
         """
         op_id = self.get_angler_op_id()
-
-        # Delete the existing No Problems gear performance
         try:
-            if gear_performance == "No Problems":
-                sql = """
-                    DELETE FROM OPERATION_ATTRIBUTES WHERE OPERATION_ID = ? AND ATTRIBUTE_TYPE_LU_ID IN
-                        (SELECT LOOKUP_ID FROM LOOKUPS WHERE TYPE = 'Angler Gear Performance');
-                """
-            else:
-                sql = """
-                    DELETE FROM OPERATION_ATTRIBUTES WHERE OPERATION_ID = ? AND ATTRIBUTE_TYPE_LU_ID IN
-                        (SELECT LOOKUP_ID FROM LOOKUPS WHERE TYPE = 'Angler Gear Performance' AND
-                                                             VALUE = 'No Problems');
-                """
-            params = [op_id, ]
-            self._rpc.execute_query(sql=sql, params=params)
-
-        except Exception as ex:
-
-            logging.error(f"Error deleting the gear performances: {ex}")
-
-        try:
-            self._app.drops.upsert_operation_attribute(operation_id=op_id, lu_type="Angler Gear Performance",
-                                                     lu_value=gear_performance, value_type="alpha",
-                                                       value=None, indicator=None)
-
+            self._app.drops.upsert_operation_attribute(
+                operation_id=op_id,
+                lu_type="Angler Gear Performance",
+                lu_value=gear_performance,
+                value_type="alpha",
+                value=None,
+                indicator=None
+            )
+            logging.debug(f"Upserting gear performance {gear_performance} with operation_id {op_id}")
         except Exception as ex:
             logging.error(f"Error adding the no problems gear performances: {ex}")
 
@@ -75,7 +60,6 @@ class GearPerformance(QObject):
         :return:
         """
         op_id = self.get_angler_op_id()
-
         try:
             sql = """
                 DELETE FROM OPERATION_ATTRIBUTES WHERE OPERATION_ID = ? AND ATTRIBUTE_TYPE_LU_ID IN
@@ -86,7 +70,6 @@ class GearPerformance(QObject):
             self._rpc.execute_query(sql=sql, params=params)
 
         except Exception as ex:
-
             logging.error(f"Error deleting the gear performance: {ex}")
 
     @pyqtSlot(name="selectGearPerformance", result=QVariant)
