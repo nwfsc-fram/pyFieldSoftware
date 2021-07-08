@@ -62,6 +62,29 @@ class Hooks(QObject):
         self._rpc = self._app.rpc
 
         self._full_species_list_model = FullSpeciesListModel(self._app)
+        self._non_fish_items = self._get_non_fish_items()  # added for issue #82
+
+    def _get_non_fish_items(self):
+        """
+        Get list of hook items that are not fish/taxonomic
+        e.g. Bait Back, No Bait, No Hook, Multiple Hook, Undeployed (subject to change going forward)
+        :return: str[]
+        """
+        sql = '''
+            select  display_name
+            from    catch_content_lu
+            where   taxonomy_id is null
+        '''
+        return [i[0] for i in self._rpc.execute_query(sql=sql)]
+
+    @pyqtSlot(QVariant, name='isFish', result=bool)
+    def is_fish(self, hooked_item):
+        """
+        Used for hook text styling (see #82)
+        :param hooked_item: string from UI
+        :return: bool
+        """
+        return hooked_item not in self._non_fish_items
 
     @pyqtProperty(FramListModel, notify=fullSpeciesListModelChanged)
     def fullSpeciesListModel(self):
