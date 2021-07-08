@@ -18,9 +18,11 @@ Item {
         Label {
             text: "Hook " + hookNumber
             font.pixelSize: 24
+            font.underline: true
             horizontalAlignment: Text.AlignHCenter
-            Layout.preferredWidth: 260
+            Layout.preferredWidth: 200
             Layout.preferredHeight: 40
+            Layout.alignment: Qt.AlignRight
         }
         RowLayout {
             spacing: 10
@@ -40,6 +42,7 @@ Item {
                 id: tfHook
 //                placeholderText: "Hook " + hookNumber
                 font.pixelSize: 24
+                font.bold: hooks.isFish(tfHook.text)  // #82: bold fish items
                 Layout.preferredWidth: 200
                 Layout.preferredHeight: 60
                 property string color: "white"
@@ -56,7 +59,7 @@ Item {
                     }
                 }
                 style: TextFieldStyle {
-//                    textColor: "black"
+                    textColor: hooks.isFish(tfHook.text) ? "green" : "black"  // #82: highlight fish green
                     background: Rectangle {
 //                        radius: 2
 //                        implicitWidth: 100
