@@ -291,7 +291,7 @@ Item {
     function padZeros(value) { return (value < 10) ? "0" + value : value; }
     function formatTime(value) {
         var minutes = padZeros(Math.floor(value/60))
-        var seconds = padZeros(Math.round(value%60))
+        var seconds = padZeros(Math.floor(value%60))  // #42: Round seconds down to avoid 60 as a value
         return minutes + ":" + seconds;
     }
     function getHeaderTitle() {
