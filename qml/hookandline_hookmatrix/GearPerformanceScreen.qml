@@ -114,11 +114,13 @@ Item {
             onClicked: {
                 btnNoProblems.checked = false;
 
-                if (checked)
+                if (checked) {
                     gearPerformance.addGearPerformance("Lost Gangion");
-                else
+                    // #145: auto-select lost sinker whenever lost gangion is selected
+                    btnLostSinker.checked = true
+                    gearPerfomance.addGearPerformance("Lost Sinker");
+                } else
                     gearPerformance.deleteGearPerformance("Lost Gangion");
-
             }
         } // btnLostGangion
         BackdeckButton {
@@ -133,8 +135,12 @@ Item {
 
                 if (checked)
                     gearPerformance.addGearPerformance("Lost Sinker");
-                else
+                else {
+                    // #145: auto-unselect lost gangion whenever lost sinker is unselected
+                    btnLostGangion.checked = false
                     gearPerformance.deleteGearPerformance("Lost Sinker");
+                    gearPerformance.deleteGearPerformance("Lost Gangion");
+                }
             }
         } // btnLostSinker
         BackdeckButton {
