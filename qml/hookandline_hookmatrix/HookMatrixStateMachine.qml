@@ -55,15 +55,6 @@ DSM.StateMachine {
                 screens.push(Qt.resolvedUrl("DropsScreen.qml"));
                 drops.selectOperationAttributes(stateMachine.setId)
             } else if ((stateMachine.previousScreen === "hooks") || (stateMachine.previousScreen === "gear_performance")) {
-
-                // Update the gear performance label for the given Angler
-                if (stateMachine.previousScreen === "gear_performance") {
-                    stateMachine.createGearPerformanceLabel();
-                }
-
-                if (stateMachine.previousScreen === "hooks") {
-
-                }
                 screens.pop();
             }
             stateMachine.angler = null;

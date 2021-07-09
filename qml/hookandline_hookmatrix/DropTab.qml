@@ -10,6 +10,7 @@ Item {
 
     // TODO Todd Hay - if reopening a site, need to ensure that rtA, rtB, and rtC are enabled
     property string dropNumber: "1"
+    property variant dropOpId: drops.getDropIdFromNumber(dropNumber)  // dropNumber var above changes with each tab
     property int buttonWidth: 140
     property string sinkerWeight: "Sinker\nlb";
 
