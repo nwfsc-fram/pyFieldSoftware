@@ -201,6 +201,7 @@ Item {
                     btnMinorTangle.checked = false;
                     btnMajorTangle.checked = false;
                     btnExclude.checked = true;  // #239: Auto-select exclude when undeployed selected
+                    dlgUndeployed.open()  // #144: dialog to ask to undeploy all hooks
                     }
             }
             onCheckedChanged: {  // add to DB anytime checked, remove anytime unchecked
@@ -238,7 +239,18 @@ Item {
 //	-- Lost Hook(s) -- Lost Gangion  -- Lost Sinker  -- Minor Tangle  -- Major Tangle  -- Undeployed
 
     } // clPerformances
-
+    OkayCancelDialog {
+        // #144: auto-populate hooks 1-5 as Undeployed when undeployed option clicked
+        id: dlgUndeployed
+        message: '"Undeployed" gear perf. selected.'
+        action: 'Set all Angler ' + stateMachine.angler + ' hooks to "Undeployed"?'
+        btnOkay.text: "Yes"
+        btnCancel.text: "No"
+        onAccepted: {
+            gearPerformance.upsertHooksToUndeployed()
+        }
+        onRejected: {}
+    }
     Footer {
         id: framFooter
         height: 50
