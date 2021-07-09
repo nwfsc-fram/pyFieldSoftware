@@ -422,7 +422,7 @@ Item {
                 color: "transparent"
                 Text {
                     id: txtGearPerformance
-                    text: drops.getAnglerGearPerfsLabel(anglerOpId)  // #241: query perfs by angler ID
+                    text: anglerOpId ? drops.getAnglerGearPerfsLabel(anglerOpId) : "Gear\nPerf."  // #241: query perfs by angler ID
                     font.pixelSize: 24
                     anchors.verticalCenter: parent.verticalCenter
                     Connections { // #241: receive signal from GearPerformance whenever record is added/deleted
@@ -459,9 +459,17 @@ Item {
                 enabled: false
                 Text {
                     id: txtHooks
-                    text: qsTr("Hooks")
+                    text: anglerOpId ? drops.getAnglerHooksLabel(anglerOpId) : "Hooks<br>\n_,_,_,_,_"
                     font.pixelSize: 24
                     anchors.verticalCenter: parent.verticalCenter
+                    Connections {
+                        target: hooks
+                        onHooksChanged: {
+                            if (angler_op_id == anglerOpId) {
+                                txtHooks.text = drops.getAnglerHooksLabel(angler_op_id)
+                            }
+                        }
+                    }
                 }
                 Image {
                     id: imgHooks
