@@ -54,6 +54,7 @@ class Hooks(QObject):
 
     fullSpeciesListModelChanged = pyqtSignal()
     hooksSelected = pyqtSignal(QVariant, arguments=["results", ])
+    hooksChanged = pyqtSignal(QVariant, arguments=["angler_op_id"])  # signal to update hooks label in DropAngler.qml
 
     def __init__(self, app=None, db=None):
         super().__init__()
@@ -204,6 +205,8 @@ class Hooks(QObject):
             adh = f"{self._app.state_machine.angler}{self._app.state_machine.drop}{self._app.state_machine.hook}"
             notify = {"speciesUpdate": {"station": "HookMatrix", "set_id": self._app.state_machine.setId, "adh": adh}}
             self._rpc.execute_query(sql=sql, params=params, notify=notify)
+            logging.info(f"Hooks changed for angler op id {angler_op_id}")
+            self.hooksChanged.emit(angler_op_id)  # received by DropAngler.qml
 
         except Exception as ex:
 
@@ -298,6 +301,8 @@ class Hooks(QObject):
                 notify = {"speciesUpdate": {"station": "HookMatrix", "set_id": self._app.state_machine.setId, "adh": adh}}
                 self._rpc.execute_query(sql=sql, params=params, notify=notify)
                 logging.info(f"hook deletion completed, params = {params}")
+                self.hooksChanged.emit(angler_op_id)  # received by DropAngler.qml
+                logging.info(f"Hooks changed for angler op id {angler_op_id}")
 
         except Exception as ex:
 

@@ -438,8 +438,8 @@ class Drops(QObject):
                 ''',
                 params=[self._app.state_machine.siteOpId, drop_num]
             )[0][0]
-        except (IndexError, Exception) as ex:
-            logging.error(f"Unable to get drop op id with drop num {drop_num}; {ex}")
+        except (IndexError, Exception) as ex:  # above query will return nothing if data has yet to be entered
+            logging.debug(f"Unable to get drop op id with drop num {drop_num}; {ex}")
             return None
 
     @pyqtSlot(QVariant, str, name="getAnglerOpId", result=QVariant)
@@ -460,8 +460,8 @@ class Drops(QObject):
                             ''',
                 params=[drop_op_id, angler_letter]
             )[0][0]
-        except (IndexError, Exception) as ex:
-            logging.error(f"Unable to get angler id with drop op id {drop_op_id} angler {angler_letter}; {ex}")
+        except (IndexError, Exception) as ex:  # above query will return nothing if data has yet to be entered
+            logging.debug(f"Unable to get angler id with drop op id {drop_op_id} angler {angler_letter}; {ex}")
             return None
 
     @pyqtSlot(int, name="getAnglerGearPerfsLabel", result=QVariant)
@@ -496,3 +496,103 @@ class Drops(QObject):
         except IndexError as ex:
             logging.error(f"Unable to parse gear perfs {perfs}; {ex}")
             return default
+
+    @pyqtSlot(int, name="getAnglerHooksLabel", result=QVariant)
+    def get_angler_hooks_label(self, angler_op_id):
+        """
+        Select hooks per op_id aka angler from DB.
+        Left join to CTE ensures result will always have 5 rows,
+        unpopulated hooks shown as null
+        :param angler_op_id: int, operations DB id
+        :return: dict[], one per db row. E.g. [{hookNum: "1", hookContent: "Boccacio", isFish: True}...]
+        """
+        try:
+            hooks = self._rpc.execute_query(
+                sql="""
+                    with hooks as (--cartesian join CTE creates 5 records per angler
+                        select
+                                    o.operation_id as angler_op_id
+                                    ,h.hook_num
+                        FROM		operations o
+                        JOIN		(
+                                        select '1' as hook_num
+                                        union all
+                                        select '2'
+                                        union all
+                                        select '3'
+                                        union all
+                                        select '4'
+                                        union all
+                                        select '5'
+                                    ) h
+                                    on 1 = 1
+                        WHERE		o.operation_id = ?
+                        )
+                    select
+                                h.hook_num
+                                ,cc.display_name
+                                ,case
+                                    when cc.content_type_lu_id = 129 then 'Fish Hooked'
+                                    when cc.content_type_lu_id = 130 then 'Other'
+                                    else null
+                                end as content_type
+                    from        hooks h
+                    left join	catch c  --left join ensures 5 rows always returned per angler
+                                on h.angler_op_id = c.operation_id
+                                and h.hook_num = c.receptacle_seq
+                    left join   catch_content_lu cc
+                                on c.hm_catch_content_id = cc.catch_content_id
+                    left JOIN	lookups l
+                                on c.receptacle_type_id = l.lookup_id
+                                and l.value = 'Hook'
+                    order by    h.hook_num desc
+                    """,
+                params=[angler_op_id, ]
+            )
+        except Exception as ex:
+            logging.error(f"Unable to query hooks with angler op id {angler_op_id}; {ex}")
+            return []
+
+        if len(hooks) > 0:
+            hooks_list = [
+                {
+                    'hookNum': h[0],
+                    'hookContent': h[1],
+                    'isFish': self._app.hooks.is_fish(h[1])  # tie in function from hooks
+                }
+                for h in hooks
+            ]
+            return self.format_hooks_label(hooks_list)
+        else:
+            return []
+
+    @staticmethod
+    def format_hooks_label(hooks_list):
+        """
+        format hooks text for RichText QML text object
+        :param hooks_list: list of dicts (e.g. [{'hookNum': 1, 'hookContent': 'Yelloweye', 'isFish': True}]
+        :return: string, rich text
+        """
+        hooks_lbl = 'Hooks<br>'
+
+        if not hooks_list:
+            return hooks_lbl + "\n_,_,_,_,_"
+        elif all(h['hookContent'] == 'Undeployed' for h in hooks_list):  # if all undeployed, set label to UN
+            return hooks_lbl + 'UN'
+        else:
+            for hook in hooks_list:
+                hook_num = hook['hookNum']
+                content = hook['hookContent']
+                is_fish = hook['isFish']
+
+                # label uses rich text to color diff chars differently
+                if not content:
+                    hooks_lbl += f"<font color=\"#000000\">_,</font>"  # black underscore
+                elif is_fish:
+                    hooks_lbl += f"<font color=\"#008000\">{hook_num},</font>"  # green
+                elif not is_fish:
+                    hooks_lbl += f"<font color=\"#000000\">{hook_num},</font>"  # black
+                else:
+                    logging.error(f"Unexpected value {content} for hook {hook_num}")
+
+        return ''.join(hooks_lbl.rsplit(",", 1))  # splits on last comma and joins with empty str (remove last comma)
