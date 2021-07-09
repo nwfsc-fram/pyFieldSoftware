@@ -9,6 +9,7 @@ class GearPerformance(QObject):
 
     gearPerformanceSelected = pyqtSignal(QVariant, arguments=["results", ])
     gearPerformanceChanged = pyqtSignal(QVariant, arguments=['angler_op_id'])
+    hooksUndeployed = pyqtSignal(QVariant, arguments=['angler_op_id'])
 
     def __init__(self, app=None, db=None):
         super().__init__()
@@ -124,3 +125,64 @@ class GearPerformance(QObject):
             return "Gear\n" + lbl_str[:-1]
         else:
             return "Gear\n" + lbl_str
+
+    @pyqtSlot(name="upsertHooksToUndeployed")
+    def upsert_hooks_to_undeployed(self):
+        """
+        Loop through 1-5 and query hook records for current angler for that iteration
+        Record found --> update catch to Undeployed
+        Record not found --> insert catch with angler_op_id, hook_number, and undeployed
+        :return: None (emit op_id to DropAngler.qml for updating hooks label on Drops screen)
+        """
+        op_id = self.get_angler_op_id()
+        for hook_num in range(1, 6):
+            hook_records = self._rpc.execute_query(
+                sql='''
+                    select  c.catch_id
+                    from    catch c
+                    join    lookups l
+                            on c.receptacle_type_id = l.lookup_id
+                    where   c.operation_id = ?
+                            and l.type = 'Receptacle Type'
+                            and l.value = 'Hook'
+                            and c.receptacle_seq = ?
+                ''',
+                params=[op_id, hook_num]
+            )
+            if len(hook_records) > 1:
+                logging.error(f"Multiple records returned for angler op id {op_id} hook {hook_num}")
+                continue
+            elif len(hook_records) == 1:
+                self._rpc.execute_query(
+                    sql="""
+                        update  catch
+                        set     hm_catch_content_id = (
+                                    select  catch_content_id 
+                                    from    catch_content_lu 
+                                    where   display_name = 'Undeployed'
+                                )
+                        where   catch_id = ?
+                        """,
+                    params=[hook_records[0][0], ]
+                )
+                logging.info(f"Angler op id {op_id} hook {hook_num} updated to 'Undeployed'")
+            else:
+                self._rpc.execute_query(
+                    sql="""
+                        insert into catch (
+                            operation_id
+                            ,hm_catch_content_id
+                            ,receptacle_type_id
+                            ,receptacle_seq
+                        )
+                        values (
+                            ?
+                            ,(select catch_content_id from catch_content_lu where display_name = 'Undeployed')
+                            ,(select lookup_id from lookups where value = 'Hook' and type = 'Receptacle Type')
+                            ,?
+                        )
+                    """,
+                    params=[op_id, hook_num]
+                )
+                logging.info(f"Undeployed hook {hook_num} for angler op id {op_id} inserted.")
+        self.hooksUndeployed.emit(op_id)

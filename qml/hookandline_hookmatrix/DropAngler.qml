@@ -470,6 +470,14 @@ Item {
                             }
                         }
                     }
+                    Connections {
+                        target: gearPerformance
+                        onHooksUndeployed: {
+                            if (angler_op_id == anglerOpId) {
+                                txtHooks.text = drops.getAnglerHooksLabel(angler_op_id)
+                            }
+                        }
+                    }
                 }
                 Image {
                     id: imgHooks
