@@ -88,34 +88,6 @@ class StateMachine(QObject):
 
         self._drop_time_state = "enter"
 
-
-    @pyqtSlot(name="createGearPerformanceLabel")
-    def create_gear_performance_label(self):
-        """
-        Method to create the new gear performance label for the stateMachine
-        drop and angler
-        :return:
-        """
-        gear_perf_results = self._app.gear_performance.selectGearPerformance()
-        logging.info('gear performance: {gearPerfResults}')
-        gfMap = {
-            "No Problems": "NP", "Lost Hooks": "LH", "Lost Gangion": "LG", "Minor Tangle": "MI",
-            "Major Tangle": "MA", "Undeployed": "UN", "Exclude": "EX", "Lost Sinker": "LS"
-        }
-        label = ""
-
-        for x in gear_perf_results:
-            label += gfMap[x] + ","
-
-        if len(label) > 6:
-            label = label[0:5] + '...'
-        elif len(label) > 0 and label[-1] == ",":
-            label = label[:-1]
-
-        logging.info(f"gear performance label: {label}")
-        self.gearPerformanceLabelCreated.emit(self._drop, self._angler, label)
-
-
     @pyqtProperty(str, notify=swVersionChanged)
     def swVersion(self):
         """

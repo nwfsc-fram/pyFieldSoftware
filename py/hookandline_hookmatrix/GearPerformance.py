@@ -8,6 +8,7 @@ from PyQt5.QtCore import QVariant, pyqtSlot, pyqtSignal, QObject
 class GearPerformance(QObject):
 
     gearPerformanceSelected = pyqtSignal(QVariant, arguments=["results", ])
+    gearPerformanceChanged = pyqtSignal(QVariant, arguments=['angler_op_id'])
 
     def __init__(self, app=None, db=None):
         super().__init__()
@@ -34,8 +35,8 @@ class GearPerformance(QObject):
         """
         #239: Revamp of gp button relationships.  Removing delete all when "No Problems" selected
         Upsert gear performance record for existing operation id
-        :param gear_performance: str
-        :return: None (inserts to db)
+        :param gear_performance: str (select value from  lookups where type = 'Angler Gear Performance')
+        :return: None (inserts to db, emits for GP Label update (DropAngler.qml)
         """
         op_id = self.get_angler_op_id()
         try:
@@ -48,6 +49,7 @@ class GearPerformance(QObject):
                 indicator=None
             )
             logging.debug(f"Upserting gear performance {gear_performance} with operation_id {op_id}")
+            self.gearPerformanceChanged.emit(op_id)
         except Exception as ex:
             logging.error(f"Error adding the no problems gear performances: {ex}")
 
@@ -55,9 +57,8 @@ class GearPerformance(QObject):
     def delete_gear_performance(self, gear_performance: str):
         """
         Method to delete a gear performance issue for the angler operation ID from OPERATION_ATTRIBUTES
-        :param gear_performance:
-        :param str:
-        :return:
+        :param gear_performance: str (select value from  lookups where type = 'Angler Gear Performance')
+        :return: None (inserts to db, emits for GP Label update (DropAngler.qml)
         """
         op_id = self.get_angler_op_id()
         try:
@@ -68,7 +69,7 @@ class GearPerformance(QObject):
             """
             params = [op_id, gear_performance]
             self._rpc.execute_query(sql=sql, params=params)
-
+            self.gearPerformanceChanged.emit(op_id)
         except Exception as ex:
             logging.error(f"Error deleting the gear performance: {ex}")
 
@@ -92,3 +93,34 @@ class GearPerformance(QObject):
         self.gearPerformanceSelected.emit(results)
 
         return results
+
+    @staticmethod
+    def abbreviate_gear_perfs(gear_list):
+        """
+        Map gear to abbrev. string and abbreviate to format for Drops label
+        :param gear_list: list of gear names
+        :return: concat. string of abbreviations
+        """
+        if not gear_list:
+            return "Gear\nPerf."
+
+        gfMap = {
+            "No Problems": "NP",
+            "Lost Hooks": "LH",
+            "Lost Gangion": "LG",
+            "Minor Tangle": "MI",
+            "Major Tangle": "MA",
+            "Undeployed": "UN",
+            "Exclude": "EX",
+            "Lost Sinker": "LS"
+        }
+        lbl_str = ''
+        for lbl in gear_list:
+            lbl_str += gfMap[lbl] + ','
+
+        if len(lbl_str) > 6:
+            return "Gear\n" + lbl_str[0:5] + '...'
+        elif len(lbl_str) > 0 and lbl_str[-1] == ",":
+            return "Gear\n" + lbl_str[:-1]
+        else:
+            return "Gear\n" + lbl_str

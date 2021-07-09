@@ -419,3 +419,79 @@ class Drops(QObject):
             logging.error(f"Error getting the play sound time: {ex}")
 
         return "04:45"
+
+    @pyqtSlot(QVariant, name="getDropIdFromNumber", result=QVariant)
+    def get_drop_id_from_number(self, drop_num):
+        """
+        Return operation database ID for drop based on site operation id and the drop number
+        :param drop_num: int 1-5
+        :return: int, operation database id
+        """
+        try:
+            return self._rpc.execute_query(
+                sql='''
+                    select  operation_id
+                    from    operations
+                    where   parent_operation_id = ?
+                            and operation_number = ?
+                ''',
+                params=[self._app.state_machine.siteOpId, drop_num]
+            )[0][0]
+        except (IndexError, Exception) as ex:
+            logging.error(f"Unable to get drop op id with drop num {drop_num}; {ex}")
+            return None
+
+    @pyqtSlot(QVariant, str, name="getAnglerOpId", result=QVariant)
+    def get_angler_op_id(self, drop_op_id, angler_letter):
+        """
+        Get angler operation DB ID using the parent drop and angler letter
+        :param drop_op_id: database ID from OPERATIONS for parent drop record
+        :param angler_letter: str, A B or C
+        :return: int, DB ID
+        """
+        try:
+            return self._rpc.execute_query(
+                sql='''
+                                select  operation_id
+                                from    operations
+                                where   parent_operation_id = ?
+                                        and operation_number = ?
+                            ''',
+                params=[drop_op_id, angler_letter]
+            )[0][0]
+        except (IndexError, Exception) as ex:
+            logging.error(f"Unable to get angler id with drop op id {drop_op_id} angler {angler_letter}; {ex}")
+            return None
+
+    @pyqtSlot(int, name="getAnglerGearPerfsLabel", result=QVariant)
+    def get_angler_gear_perfs_label(self, angler_op_id):
+        """
+        Gets gear perfs per angler operation_id, then abbreviates for UI label
+        :param angler_op_id: int; operations table id for angler record
+        :return: emits drop#, angler letter, and Gear Perf label to DropAngler.qml updateGearPerformanceLabel
+        """
+        default = "Gear\nPerf."  # use if all else fails
+        try:
+            # query gets drop and angler info, and group_concats gear perfs
+            perfs = self._rpc.execute_query(
+                sql='''
+                    select  group_concat(l.value) as perfs
+                    from    operation_attributes oa
+                    join    lookups l
+                            on oa.attribute_type_lu_id = l.lookup_id
+                    where   oa.operation_id = ?
+                            and l.type = 'Angler Gear Performance'
+                ''',
+                params=[angler_op_id, ]
+            )
+        except Exception as ex:
+            logging.error(f"Unable to get gear perfs with angler op id {angler_op_id}; {ex}")
+            return default
+        try:
+            if perfs and perfs[0][0]:  # did query return results, and were there gear perfs?
+                return self._app.gear_performance.abbreviate_gear_perfs(perfs[0][0].split(","))  # split comma sep string and abbreviate
+            else:
+                return default
+        except IndexError as ex:
+            logging.error(f"Unable to parse gear perfs {perfs}; {ex}")
+            return default

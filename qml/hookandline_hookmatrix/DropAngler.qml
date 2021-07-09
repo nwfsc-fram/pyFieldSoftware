@@ -10,6 +10,7 @@ Item {
 
     property string anglerPosition: "Bow";
     property string anglerLetter: "A";
+    property variant anglerOpId: drops.getAnglerOpId(itmDropTab.dropOpId, anglerLetter) // letter changes on each angler
     property string anglerName: "Bob Jones";
     property double startSeconds;
     property bool isRunning: false;
@@ -92,22 +93,6 @@ Item {
                 break;
             case "swap":
                 break;
-        }
-    }
-
-    Connections {
-        target: stateMachine //hmSM
-        onGearPerformanceLabelCreated: updateGearPerformanceLabel(drop, angler, label)
-    }
-    function updateGearPerformanceLabel(drop, angler, label) {
-        if (drop === itmDropTab.dropNumber && angler === anglerLetter) {
-            console.info('drop = ' + drop + ', angler = ' + angler + ' vs. drop = ' +
-                itmDropTab.dropNumber + ', anglerLetter: ' + anglerLetter);
-            if (label !== null && label !== "") {
-                txtGearPerformance.text = "Gear\n" + label;
-            } else {
-                txtGearPerformance.text = "Gear\nPerf."
-            }
         }
     }
 
@@ -437,9 +422,17 @@ Item {
                 color: "transparent"
                 Text {
                     id: txtGearPerformance
-                    text: qsTr("Gear\nPerf.")
+                    text: drops.getAnglerGearPerfsLabel(anglerOpId)  // #241: query perfs by angler ID
                     font.pixelSize: 24
                     anchors.verticalCenter: parent.verticalCenter
+                    Connections { // #241: receive signal from GearPerformance whenever record is added/deleted
+                        target: gearPerformance
+                        onGearPerformanceChanged: {
+                            if(angler_op_id == anglerOpId) {  // only query if DB Ids match
+                                txtGearPerformance.text = drops.getAnglerGearPerfsLabel(anglerOpId)
+                            }
+                        }
+                    }
                 }
                 Image {
                     id: imgGearPerformance
