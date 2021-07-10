@@ -211,6 +211,10 @@ Item {
         title: "Drop " + stateMachine.drop + " - Angler " + stateMachine.angler + " - " +
                         stateMachine.anglerName + " - Hooks"
         height: 50
+        backwardTitle: "Drops"
+        forwardTitle: drops.getAnglerGearPerfsLabel(hooks.getAnglerOpId())
+        forwardEnabled: true
+        forwardVisible: true
     }
     ColumnLayout {
         id: clHooks

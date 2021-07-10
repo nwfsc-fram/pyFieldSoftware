@@ -12,17 +12,14 @@ BorderImage {
     height: 45
 
     property alias backButton: backButton
-//    property alias textLeftBanner: textLeftBanner
-//    property alias textRightBanner: textRightBanner
-    property string title: "Title"
-    property string backwardTitle: ""
-    property string forwardTitle: ""
-    property variant forwardAction: null;
-
-
-    // width of toolbar area that can be clicked to nav back/fwd
-    property int nav_click_width: 100
-    property bool forward_enabled: true
+    property alias forwardButton: forwardButton
+    property string forwardTitle: ""  // sets text label for forward nav
+    property string backwardTitle: ""  // sets text label for backward nav
+    property string title: "Title"  // center title text
+    property int nav_click_width: 100 // width of toolbar area that can be clicked to nav back/fwd
+    property bool forwardEnabled: false  // allow disabling of forward nav
+    property bool forwardVisible: false  // allow hiding of forward nav
+    property variant forwardAction: null;  // do we need this???
 
     signal backClicked();
     onBackClicked: {
@@ -49,7 +46,23 @@ BorderImage {
         forward_enabled = enable;
         console.debug("Forward button enable: " + forward_enabled);
     }
-
+    signal forwardClicked()
+    onForwardClicked: {
+        // #143: refactored for nav between gear perf and hooks screens
+        var current_screen = stateMachine.screen
+        if (forwardEnabled) {
+            console.log("Clicked forward from " + stateMachine.screen)
+            switch(current_screen) {
+                case "gear_performance":
+                    smHookMatrix.to_hooks_state()
+                    break;
+                case "hooks":
+                    smHookMatrix.to_gear_performance_state()
+                    break;
+            }
+        }
+    }
+/*  #143: commenting out but leaving for reference, see onForwardClicked above for current functionality
     signal forwardClicked(string to_state, string text_clicked);
     onForwardClicked: {
         if (stackView.busy || !forward_enabled)
@@ -71,7 +84,7 @@ BorderImage {
         }
 
     }
-
+*/
     function show_buttons(show) {
         // Keeping this here in case we want to add buttons again
         quickButtonRow.visible = show;
@@ -131,7 +144,7 @@ BorderImage {
         x: backButton.x + backButton.width + 20
         anchors.verticalCenter: parent.verticalCenter
         color: "black"
-        text: "" //obsSM.bannerLeftText
+        text: backwardTitle
 
     } // textLeftBanner
     Text {
@@ -141,7 +154,7 @@ BorderImage {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.verticalCenter: parent.verticalCenter
         color: "black"
-        text: title//obsSM.titleText
+        text: title
     } // textTitle
     Text {
         id: textRightBanner
@@ -150,8 +163,8 @@ BorderImage {
         x: forwardButton.x - this.width - 20
         anchors.verticalCenter: parent.verticalCenter
         color: "black"
-        text: forwardTitle //obsSM.bannerRightText
-        visible: false
+        text: forwardTitle
+        visible: forwardVisible
     } // textRightBanner
     Rectangle {
         id: forwardButton
@@ -160,7 +173,7 @@ BorderImage {
         anchors.rightMargin: 20
         anchors.verticalCenter: parent.verticalCenter
         antialiasing: true
-        visible: false
+        visible: forwardVisible
         height: 40
         radius: 4
         color: "transparent"
@@ -177,12 +190,8 @@ BorderImage {
             width: nav_click_width
 
             onClicked: {
-                forwardAction;
-                console.info('forward')
-//                forwardClicked(obsSM.rightButtonStateName, textRightBanner.text);
+                forwardClicked()
             }
         }
     } // forwardButton
-
-
 }

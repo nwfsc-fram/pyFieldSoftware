@@ -17,6 +17,7 @@ class GearPerformance(QObject):
         self._db = db
         self._rpc = self._app.rpc
 
+    @pyqtSlot(name="getAnglerOpId", result=int)  # 143: expose as pyqtSlot
     def get_angler_op_id(self):
         """
         Method to return the angler operation id from the given state machine angler letter.  The Angler Operation ID

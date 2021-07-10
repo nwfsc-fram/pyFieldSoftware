@@ -305,6 +305,7 @@ Item {
     Header {
         id: framHeader
         title: getHeaderTitle();
+        backwardTitle: "Sites"
         height: 50
     }
     TabView {

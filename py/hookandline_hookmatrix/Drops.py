@@ -596,3 +596,30 @@ class Drops(QObject):
                     logging.error(f"Unexpected value {content} for hook {hook_num}")
 
         return ''.join(hooks_lbl.rsplit(",", 1))  # splits on last comma and joins with empty str (remove last comma)
+
+    @pyqtSlot(QVariant, name='isAnglerDoneFishing', result=bool)
+    def is_angler_done_fishing(self, angler_op_id):
+        """
+        check if "At Surface" record exists for angler, used for forward nav purposes
+        Coding function in Drops.py so it can be used independent of hooks/gear perf being filled out
+        TODO: Add as property, for Angler class???
+        :param angler_op_id: int, angler Operation DB id
+        :return: boolean
+        """
+        try:
+            results = self._rpc.execute_query(
+                sql='''
+                    select  operation_attribute_id
+                    from    operation_attributes oa
+                    join    lookups l
+                            on oa.attribute_type_lu_id = l.lookup_id
+                    where   oa.operation_id = ?
+                            and l.type = 'Angler Time'
+                            and l.value = 'At Surface'
+                ''',
+                params=[angler_op_id, ]
+            )
+            return len(results) > 0
+        except Exception as ex:
+            logging.error(f"Unable to query if angler {angler_op_id} is done fishing; {ex}")
+            return None
