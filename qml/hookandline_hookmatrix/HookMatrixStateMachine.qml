@@ -77,6 +77,9 @@ DSM.StateMachine {
     DSM.State {
         id: gear_performance_state
         onEntered: {
+            if (stateMachine.screen == "hooks") {
+                screens.pop()  // #143: pop hooks off stack so Drops stays second in line
+            }
             stateMachine.previousScreen = stateMachine.screen;
             stateMachine.screen = "gear_performance"
 //            stateMachine.angler = null;
@@ -87,19 +90,29 @@ DSM.StateMachine {
             targetState: drops_state
             signal: to_drops_state
         } // to_drops_state
+        DSM.SignalTransition {  // #143: enable transition to hooks from gp
+            targetState: hooks_state
+            signal: to_hooks_state
+        } // to_hooks_state
     } // gear_performance_state
     DSM.State {
         id: hooks_state
         onEntered: {
+            if (stateMachine.screen === "gear_performance") {
+                screens.pop()  // #143: pop gp off stack so Drops stays second in line
+            }
             stateMachine.previousScreen = stateMachine.screen;
             stateMachine.screen = "hooks"
             screens.push(Qt.resolvedUrl("HooksScreen.qml"));
             hooks.selectHooks();
         }
-
         DSM.SignalTransition {
             targetState: drops_state
             signal: to_drops_state
+        } // to_drops_state
+        DSM.SignalTransition {  // #143: enable transition to gp from hooks
+            targetState: gear_performance_state
+            signal: to_gear_performance_state
         } // to_drops_state
     } // hook_state
 }

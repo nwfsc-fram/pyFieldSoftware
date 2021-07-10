@@ -95,6 +95,7 @@ class Hooks(QObject):
         """
         return self._full_species_list_model
 
+    @pyqtSlot(name="getAnglerOpId", result=int)  # 143: expose as pyqtSlot
     def get_angler_op_id(self):
         """
         Method to return the angler operation id from the given state machine angler letter.  The Angler Operation ID

@@ -6,6 +6,7 @@ Item {
 
     property int buttonHeight: 80;
     property int buttonWidth: 2 * buttonHeight;
+    property variant isAnglerDoneFishing: drops.isAnglerDoneFishing(gearPerformance.getAnglerOpId())
 
     Connections {
         target: gearPerformance
@@ -44,11 +45,22 @@ Item {
             if (stop_processing) break;
         }
     }
-
     Header {
         id: framHeader
         title: "Gear Performance: Drop " + stateMachine.drop + " - Angler " + stateMachine.angler
         height: 50
+        backwardTitle: "Drops"
+        forwardTitle: drops.getAnglerHooksLabel(gearPerformance.getAnglerOpId())
+        forwardEnabled: isAnglerDoneFishing
+        forwardVisible: isAnglerDoneFishing
+        Connections {
+            target: gearPerformance
+            onHooksUndeployed: {
+                if (gearPerformance.getAnglerOpId() == angler_op_id) {
+                    framHeader.forwardTitle = drops.getAnglerHooksLabel(gearPerformance.getAnglerOpId())
+                }
+            }
+        }
     }
     ColumnLayout {
         id: clNoProblems
