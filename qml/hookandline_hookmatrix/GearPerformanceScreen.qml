@@ -213,8 +213,10 @@ Item {
                     btnMinorTangle.checked = false;
                     btnMajorTangle.checked = false;
                     btnExclude.checked = true;  // #239: Auto-select exclude when undeployed selected
-                    dlgUndeployed.open()  // #144: dialog to ask to undeploy all hooks
+                    if (isAnglerDoneFishing) {  // don't do this if angler isn't at surface
+                        dlgUndeployed.open()  // #144: dialog to ask to undeploy all hooks
                     }
+                }
             }
             onCheckedChanged: {  // add to DB anytime checked, remove anytime unchecked
                 if (checked) gearPerformance.addGearPerformance(text)
