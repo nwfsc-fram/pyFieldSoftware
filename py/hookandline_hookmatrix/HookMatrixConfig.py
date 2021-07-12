@@ -38,4 +38,4 @@ that each build has a unique version string which could be used to bring up the 
 as it stood for that particular build.
 """
 
-HOOKMATRIX_VERSION = "2021.0.0+3"
+HOOKMATRIX_VERSION = "2021.0.0+4"
