@@ -9,8 +9,6 @@ __author__ = 'Todd.Hay'
 # License:     MIT
 # ------------------------------------------------------------------------------
 
-SOFTWARE_VERSION = '1.10'
-
 import time
 
 from PyQt5.QtCore import pyqtProperty, QObject, QVariant, QThread, pyqtSignal, pyqtSlot
@@ -21,10 +19,12 @@ import unittest
 
 from py.common.FramListModel import FramListModel
 from py.hookandline.HookandlineFpcDB_model import Settings as SettingsTable, Personnel, Lookups
+from py.hookandline.HookandlineFPCConfig import HOOKLOGGER_VERSION
 from peewee import DoesNotExist
 from playhouse.shortcuts import model_to_dict, dict_to_model
 from py.hookandline.DataConverter import DataConverter
 
+SOFTWARE_VERSION = HOOKLOGGER_VERSION
 
 class ComPortsModel(FramListModel):
 
