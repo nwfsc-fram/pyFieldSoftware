@@ -26,7 +26,7 @@ from apsw import BusyError
 from peewee import Model, BigIntegerField, BooleanField, DoubleField, FloatField, ForeignKeyField, IntegerField, \
     PrimaryKeyField, SmallIntegerField, TextField, TimestampField
 from py.observer.ObserverDBBaseModel import BaseModel, database
-from py.observer.ObserverDBModels import Settings, Programs, TripChecks, SpeciesCompositionItems
+from py.observer.ObserverDBModels import Settings, Programs, TripChecks, SpeciesCompositionItems, FishingActivities
 from playhouse.apsw_ext import APSWDatabase
 from playhouse.shortcuts import dict_to_model
 from playhouse.test_utils import test_database
@@ -588,6 +588,21 @@ class ObserverDBUtil:
         try:
             return int(ObserverDBUtil.get_setting('current_haulset_id'))
         except (TypeError, ValueError):
+            return None
+
+    @staticmethod
+    def get_current_haulset_createddate():
+        """
+        Getting created_date for current selected haul/set.
+        :return: date string from database in format MM/DD/YYYY HH:mm
+        """
+        current_faid = ObserverDBUtil.get_current_haulset_id()  # database ID set when haul is selected
+        if current_faid:
+            try:
+                return FishingActivities.get(FishingActivities.fishing_activity == current_faid).created_date
+            except FishingActivities.DoesNotExist:
+                return None
+        else:
             return None
 
     @staticmethod
