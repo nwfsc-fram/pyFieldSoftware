@@ -324,7 +324,11 @@ class ObserverState(QObject):
         if trip_id is None:
             self._logger.info('Current trip ID is not set.')
             return
-
+        # this is also being set in ObserverTrips.tripId.setter, but fails if in debriefer mode (user mismatch).
+        # adding here to ensure trip_number param is definitely set when selecting trip
+        # TODO: consolidate logic for setting trip_number here, or rework ObserverTrip.tripId setter
+        ObserverDBUtil.db_save_setting('trip_number', trip_id)
+        self._logger.debug(f"setting SETTINGS parameter trip_number to {trip_id}")
         trip_id = int(trip_id)  # ensure integer key
         self._trips.tripId = trip_id
         self._hauls.reset()

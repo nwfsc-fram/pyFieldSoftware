@@ -425,14 +425,19 @@ class Sets(QObject):
 
     @currentSetId.setter
     def currentSetId(self, current_id):
+        """
+        Assigned in SetsScreen.  Also sets current_haulset_id with dbid here
+        :param current_id: set number (not DB ID)
+        :return: None
+        """
         self._logger.debug('Set currentSet using ID {}'.format(current_id))
         try:
             self._current_set = FishingActivities.get(
                 FishingActivities.trip == self._trip_id,
                 FishingActivities.fishing_activity_num == current_id
             )
-            ObserverDBUtil.db_save_setting('current_haulset_id', current_id)
-            self._logger.info(f"Setting current_haulset_id to {current_id}")
+            ObserverDBUtil.db_save_setting('current_haulset_id', self._current_set.fishing_activity)
+            self._logger.debug(f"Setting current_haulset_id to {self._current_set.fishing_activity}")
             self._internal_set_idx = self._sets_model.get_item_index('fishing_activity_num',
                                                                      self._current_set.fishing_activity_num)
             self._fishing_locations.load_fishing_locations(fishing_activity_id=self._current_set.fishing_activity)

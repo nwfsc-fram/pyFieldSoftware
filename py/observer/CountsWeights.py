@@ -250,11 +250,19 @@ class CountsWeights(QObject):
 
     @pyqtProperty(QVariant, notify=subsampleWeightChanged)
     def subsampleWeight(self):
+        """
+        FIELD-1471: sum weight of actual fish weighed from baskets flagged as subsample (trawl only)
+        :return: int
+        """
         return self._subsample_weight
 
     @subsampleWeight.setter
     def subsampleWeight(self, wt):
-        # emit if changed, recalc avg
+        """
+        FIELD-1471: if changed, set var, recalculate avg, and emit val
+        :param wt: float
+        :return: None (emit float)
+        """
         if self._subsample_weight != wt or not self._subsample_weight:
             self._subsample_weight = wt
             self._calculate_subsample_avg()
@@ -263,11 +271,19 @@ class CountsWeights(QObject):
 
     @pyqtProperty(QVariant, notify=subsampleCountChanged)
     def subsampleCount(self):
+        """
+        FIELD-1471: Count of actual fish counted from baskets flagged as subsample (trawl only)
+        :return: int
+        """
         return self._subsample_count
 
     @subsampleCount.setter
     def subsampleCount(self, ct):
-        # emit if changed
+        """
+        FIELD-1471: If changed, set var, recalculate avg, and emit val
+        :param ct: count of fish from subsample baskets
+        :return: None (emit int)
+        """
         if self._subsample_count != ct or not self._subsample_count:
             self._subsample_count = ct
             self._calculate_subsample_avg()
@@ -277,13 +293,18 @@ class CountsWeights(QObject):
     @pyqtProperty(QVariant, notify=subsampleAvgChanged)
     def subsampleAvgWeight(self):
         """
-        See _calculate_subsample_avg; divides _subsample_weight by _subsample_count
+        FIELD-1471: See _calculate_subsample_avg; divides _subsample_weight by _subsample_count
         :return: float
         """
         return self._subsample_avg_weight
 
     @subsampleAvgWeight.setter
     def subsampleAvgWeight(self, avg):
+        """
+        FIELD-1471: if changed, set var amd emit val
+        :param avg: float
+        :return: None (emit float)
+        """
         if self._subsample_avg_weight != avg or not self._subsample_avg_weight:
             self._subsample_avg_weight = avg
             self.subsampleAvgChanged.emit(self._subsample_avg_weight)
@@ -291,19 +312,33 @@ class CountsWeights(QObject):
 
     @pyqtProperty(QVariant, notify=subsampleAvgModeChanged)
     def subsampleAvgMode(self):
+        """
+        FIELD-1471: Set to true IF (trawl only)
+            subsample count > trawl_subsample_count_threshold (param in SETTINGS) 75 by default &
+            No actual fish counts have been entered &
+            A daily subsample avg for the relevant species is available
+        IF true, count of basket is extrapolated using the daily subsample avg
+        :return: bool
+        """
         return self._subsample_avg_mode
 
     @subsampleAvgMode.setter
     def subsampleAvgMode(self, mode):
+        """
+        FIELD-1471: set during _calculate_totals.
+        If changed, emit bool
+        :param mode: bool
+        :return: None (emit bool)
+        """
         if self._subsample_avg_mode != mode:
             self._subsample_avg_mode = mode
             self.subsampleAvgModeChanged.emit(mode)
 
     def _calculate_subsample_avg(self):
         """
-        get subsample avg fish weight
+        FIELD-1471: get subsample avg fish weight
         Catch if dividing by zero, or numerator or denominator is None
-        :return: None, set subsample avg
+        :return: None, set subsample avg (val is then emitted)
         """
         try:
             self.subsampleAvgWeight = self._subsample_weight / self._subsample_count
@@ -311,30 +346,20 @@ class CountsWeights(QObject):
         except (TypeError, ZeroDivisionError) as e:
             self.subsampleAvgWeight = None
 
-    def _get_current_haulset_date(self):
-        """
-        Getting created_date for current selected haul/set
-        :return: date string from database in format MM/DD/YYYY HH:mm
-        """
-        current_faid = ObserverDBUtil.get_current_haulset_id()
-        if current_faid:
-            try:
-                return FishingActivities.get(FishingActivities.fishing_activity == current_faid).created_date
-            except FishingActivities.DoesNotExist:
-                self._logger.warning(f"Unable to get fishing_activity record with id {current_faid}")
-                return None
-        else:
-            return None
-
     def _calculate_subsample_weight(self):
         """
-        get rounded avg weight of fish in same day as haul (using created_date of current haul)
+        FIELD-1471: get rounded avg weight of fish in same day as haul (using created_date of current haul)
         species_list is usually single current species_id (except for hardcoded complexes in function def)
         :return: sets float val _todays_avg_weight (exposed as todaysAvgWeight property)
         """
+        trip_id = ObserverDBUtil.get_current_trip_id()
         species_list = self._observer_species.get_related_species(self._observer_species.currentSpeciesItemSpeciesID)
-        haulset_date = self._get_current_haulset_date()
-        self._logger.info(f"Calculating daily subsample weight for species {species_list} on day {haulset_date[:10]}")
+        haulset_date = ObserverDBUtil.get_current_haulset_createddate()
+
+        if not haulset_date or not species_list or not trip_id:
+            self.logger.error(f"haulset_date/species/trip list not retrieved, can't calculate subsample weight")
+
+        self._logger.info(f"Daily subsample weight calc'd, species {species_list} day {haulset_date[:10]} trip {trip_id}")
 
         self.subsampleWeight = Trips.select(
             fn.sum(SpeciesCompositionBaskets.basket_weight_itq)
@@ -351,7 +376,7 @@ class CountsWeights(QObject):
         ).join(
             Species, on=SpeciesCompositionItems.species == Species.species  # no rel_model in model def...
         ).where(
-            (Trips.trip == ObserverDBUtil.get_current_trip_id()) &
+            (Trips.trip == trip_id) &
             (Species.species.in_(species_list)) &
             (fn.substr(SpeciesCompositionBaskets.created_date, 1, 10) == fn.substr(haulset_date, 1, 10)) &
             (SpeciesCompositionBaskets.is_subsample == 1)
@@ -359,12 +384,18 @@ class CountsWeights(QObject):
 
     def _calculate_subsample_count(self):
         """
-        get rounded avg weight of fish in same day as haul (using created_date of current haul)
+        FIELD-1471: get rounded avg weight of fish in same day as haul (using created_date of current haul)
         :return: sets float val _todays_avg_weight (exposed as todaysAvgWeight property)
         """
+        trip_id = ObserverDBUtil.get_current_trip_id()
         species_list = self._observer_species.get_related_species(self._observer_species.currentSpeciesItemSpeciesID)
-        haulset_date = self._get_current_haulset_date()
-        self._logger.info(f"Calculating daily subsample count for species {species_list} on day {haulset_date[:10]}")
+        haulset_date = ObserverDBUtil.get_current_haulset_createddate()
+
+        if not haulset_date or not species_list or not trip_id:
+            self.logger.error(f"haulset_date/species/trip list not retrieved, can't calculate subsample count")
+
+        self._logger.info(f"Daily subsample count calc'd, species {species_list} day {haulset_date[:10]} trip {trip_id}")
+
         self.subsampleCount = Trips.select(
             fn.sum(SpeciesCompositionBaskets.fish_number_itq)
         ).join(
@@ -380,7 +411,7 @@ class CountsWeights(QObject):
         ).join(
             Species, on=SpeciesCompositionItems.species == Species.species  # no rel_model in model def...
         ).where(
-            (Trips.trip == ObserverDBUtil.get_current_trip_id()) &
+            (Trips.trip == trip_id) &
             (Species.species.in_(species_list)) &
             (fn.substr(SpeciesCompositionBaskets.created_date, 1, 10) == fn.substr(haulset_date, 1, 10)) &
             (SpeciesCompositionBaskets.is_subsample == 1)

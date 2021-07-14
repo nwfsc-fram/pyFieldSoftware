@@ -184,14 +184,20 @@ class Hauls(QObject):
 
     @currentHaulId.setter
     def currentHaulId(self, current_id):
+        """
+        Assigned in HaulsScreen.  Also sets current_haulset_id with dbid here
+        :param current_id: haul number (not DB ID)
+        :return: None
+        """
         self._logger.debug('Set currentHaul using ID {}'.format(current_id))
         try:
             self._current_haul = FishingActivities.get(
                 FishingActivities.trip == self._trip_id,
                 FishingActivities.fishing_activity_num == current_id
             )
-            ObserverDBUtil.db_save_setting('current_haulset_id', current_id)
-            self._logger.info(f"Setting current_haulset_id to {current_id}")
+            # FIELD-1471: setting db id for downstream use in baskets
+            ObserverDBUtil.db_save_setting('current_haulset_id', self._current_haul.fishing_activity)
+            self._logger.debug(f"Setting current_haulset_id to {self._current_haul.fishing_activity}")
             self._internal_haul_idx = self._hauls_model.get_item_index('fishing_activity_num',
                                                                        self._current_haul.fishing_activity_num)
             self._fishing_locations.load_fishing_locations(fishing_activity_id=self._current_haul.fishing_activity)
