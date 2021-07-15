@@ -10,7 +10,6 @@ Item {
 
     property string anglerPosition: "Bow";
     property string anglerLetter: "A";
-    property variant anglerOpId: drops.getAnglerOpId(itmDropTab.dropOpId, anglerLetter) // letter changes on each angler
     property string anglerName: "Bob Jones";
     property double startSeconds;
     property bool isRunning: false;
@@ -25,7 +24,7 @@ Item {
     property alias btnAtSurface: btnAtSurface;
     property alias rtHooks: rtHooks;
 
-    property variant operationId: -1
+    property variant operationId;  // #251: angler op id set to null on init, populated as DB records are created
     property string luType: "Angler Time"
     property string luValue: ""
     property string valueType: "alpha"
@@ -143,6 +142,7 @@ Item {
         startTimer();
     }
     function getOperationId() {
+        // #251: No longer used in favor of assigning opId directly to DropAngler object
         switch (anglerLetter) {
             case "A":
                 operationId = stateMachine.anglerAOpId;
@@ -177,7 +177,6 @@ Item {
                         btnBeginFishing.text = "Begin Fishing\n" + elapsedTime;
 //                        btnStart.enabled = false;
                         updateButtonStatus("Begin Fishing");
-                        getOperationId();
                         drops.upsertOperationAttribute(operationId, luType, "Begin Fishing", valueType, elapsedTime,
                                                         "Angler " + anglerLetter);
                         break;
@@ -185,7 +184,6 @@ Item {
                         var newTime = (new Date()).getTime();
                         var elapsedTime = formatTime((newTime - startSeconds)/1000);
                         btnFirstBite.text = "First Bite\n" + elapsedTime;
-                        getOperationId();
                         if (btnBeginFishing.text == "Begin Fishing\n") {
                             btnBeginFishing.text = "Begin Fishing\n" + elapsedTime;
                             drops.upsertOperationAttribute(operationId, luType, "Begin Fishing", valueType, elapsedTime,
@@ -200,7 +198,6 @@ Item {
                         var elapsedTime = formatTime((newTime - startSeconds)/1000);
                         btnRetrieval.text = "Retrieval\n" + elapsedTime;
                         updateButtonStatus("Retrieval");
-                        getOperationId();
                         drops.upsertOperationAttribute(operationId, luType, "Retrieval", valueType, elapsedTime,
                                                         "Angler " + anglerLetter);
                         break;
@@ -212,7 +209,6 @@ Item {
                         rtHooks.enabled = true;
                         isRunning = false;
                         updateButtonStatus("At Surface");
-                        getOperationId();
                         drops.upsertOperationAttribute(operationId, luType, "At Surface", valueType, elapsedTime,
                                                         "Angler " + anglerLetter);
                         break;
@@ -420,16 +416,17 @@ Item {
                 radius: 4
                 implicitWidth:  txtGearPerformance.implicitWidth + imgGearPerformance.implicitWidth
                 color: "transparent"
+
                 Text {
                     id: txtGearPerformance
-                    text: anglerOpId ? drops.getAnglerGearPerfsLabel(anglerOpId) : "Gear\nPerf."  // #241: query perfs by angler ID
+                    text: operationId ? drops.getAnglerGearPerfsLabel(operationId) : "Gear\nPerf."  // #241: query perfs by angler ID
                     font.pixelSize: 24
                     anchors.verticalCenter: parent.verticalCenter
                     Connections { // #241: receive signal from GearPerformance whenever record is added/deleted
                         target: gearPerformance
                         onGearPerformanceChanged: {
-                            if(angler_op_id == anglerOpId) {  // only query if DB Ids match
-                                txtGearPerformance.text = drops.getAnglerGearPerfsLabel(anglerOpId)
+                            if(angler_op_id == operationId) {  // only query if DB Ids match
+                                txtGearPerformance.text = drops.getAnglerGearPerfsLabel(operationId)
                             }
                         }
                     }
@@ -459,22 +456,22 @@ Item {
                 enabled: false
                 Text {
                     id: txtHooks
-                    text: anglerOpId ? drops.getAnglerHooksLabel(anglerOpId) : "Hooks<br>\n_,_,_,_,_"
+                    text: operationId ? drops.getAnglerHooksLabel(operationId) : "Hooks<br>\n_,_,_,_,_"
                     font.pixelSize: 24
                     anchors.verticalCenter: parent.verticalCenter
                     Connections {
                         target: hooks
                         onHooksChanged: {
-                            if (angler_op_id == anglerOpId) {
-                                txtHooks.text = drops.getAnglerHooksLabel(angler_op_id)
+                            if (angler_op_id == operationId) {
+                                txtHooks.text = drops.getAnglerHooksLabel(operationId)
                             }
                         }
                     }
                     Connections {
                         target: gearPerformance
                         onHooksUndeployed: {
-                            if (angler_op_id == anglerOpId) {
-                                txtHooks.text = drops.getAnglerHooksLabel(angler_op_id)
+                            if (angler_op_id == operationId) {
+                                txtHooks.text = drops.getAnglerHooksLabel(operationId)
                             }
                         }
                     }
@@ -513,7 +510,6 @@ Item {
                     var btnStr = btn.text.split("\n")[0];
                     var previousBtnStr = previousButtons[btnStr];
                     btn.text = btnStr + "\n";
-                    getOperationId()
                     drops.deleteOperationAttribute(operationId, "Angler Time", btnStr);
                     updateButtonStatus(previousBtnStr);
 
@@ -552,7 +548,6 @@ Item {
             var newTime = numPad.tfMinutes.text + ":" + numPad.tfSeconds.text;
             var buttonType = editedButton.text.split("\n")[0]
             editedButton.text = buttonType + "\n" + newTime;
-            getOperationId();
             drops.upsertOperationAttribute(operationId, luType, buttonType, valueType, newTime, "Angler " + anglerLetter);
             stateMachine.dropTimeState = "enter";
         }

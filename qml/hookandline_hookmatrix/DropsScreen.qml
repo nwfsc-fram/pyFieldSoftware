@@ -84,6 +84,7 @@ Item {
 
                         // Get the JSON angler elements, used to populate the various QML widgets
                         anglerResult = results[drop]["Anglers"][angler];
+                        anglerItem.operationId = anglerResult['id']  // #251: set op id for each angler
                         for (var value in anglerResult) {
                             switch (value) {
                                 case "Angler Time Start":
