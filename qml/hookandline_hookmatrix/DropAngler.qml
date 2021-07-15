@@ -415,6 +415,7 @@ Item {
                 height: 40
                 radius: 4
                 implicitWidth:  txtGearPerformance.implicitWidth + imgGearPerformance.implicitWidth
+                enabled: operationId ? true : false  // # 247: only allow nav to GP after angler id created
                 color: "transparent"
 
                 Text {
