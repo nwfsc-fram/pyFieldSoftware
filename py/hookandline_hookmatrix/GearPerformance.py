@@ -10,6 +10,7 @@ class GearPerformance(QObject):
     gearPerformanceSelected = pyqtSignal(QVariant, arguments=["results", ])
     gearPerformanceChanged = pyqtSignal(QVariant, arguments=['angler_op_id'])
     hooksUndeployed = pyqtSignal(QVariant, arguments=['angler_op_id'])
+    anglerTimeUndeployed = pyqtSignal(QVariant, QVariant, QVariant, arguments=['angler_op_id', 'time_type', 'undeployed_str'])
 
     def __init__(self, app=None, db=None):
         super().__init__()
@@ -187,3 +188,47 @@ class GearPerformance(QObject):
                 )
                 logging.info(f"Undeployed hook {hook_num} for angler op id {op_id} inserted.")
         self.hooksUndeployed.emit(op_id)
+
+    @pyqtSlot(name="undeployAnglerTimes")
+    def undeploy_angler_times(self):
+        """
+        #144: Get Start, Begin Fishing, First Bite, Retrieval, and At Surface time values for angler op id
+        For those that do not exist, insert as UN for angler
+        :return: None (emit angler and time type set for UI update)
+        """
+        op_id = self.get_angler_op_id()
+        logging.warning(f"Trying to undeploy angler times for anglerOpId {op_id}")
+        undeployed_str = 'UN'  # this var gets set in DB and is passed to UI
+        times = self._rpc.execute_query(
+            # left join attributes to lookups to get 5 rows regardless of times entered
+            sql='''
+                select
+                            l.lookup_id
+                            ,l.value as time_type
+                            ,oa.ATTRIBUTE_ALPHA as time
+                FROM		lookups l
+                left JOIN	operation_attributes oa
+                            on l.lookup_id = oa.attribute_type_lu_id
+                            and oa.operation_id = ?
+                where		l.type = 'Angler Time'
+            ''',
+            params=[op_id, ]
+        )
+        # loop through query results.  For every null time, insert UN
+        for t in times:
+            if not t[2]:  # time value has not been populated yet
+                try:
+                    self._rpc.execute_query(
+                        sql='''
+                            insert into operation_attributes (operation_id, attribute_alpha, attribute_type_lu_id) values (
+                                ?
+                                ,?
+                                ,?
+                            )
+                        ''',
+                        params=[op_id, undeployed_str, t[0]]
+                    )
+                    logging.info(f"Inserting {undeployed_str} time for angler_op_id {op_id} time {t[1]}")
+                    self.anglerTimeUndeployed.emit(op_id, t[1], undeployed_str)
+                except Exception as ex:
+                    logging.error(f"Unable to insert {undeployed_str} time for angler op id {op_id}; {ex}")

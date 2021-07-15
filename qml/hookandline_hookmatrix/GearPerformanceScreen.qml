@@ -6,7 +6,8 @@ Item {
 
     property int buttonHeight: 80;
     property int buttonWidth: 2 * buttonHeight;
-    property variant isAnglerDoneFishing: drops.isAnglerDoneFishing(gearPerformance.getAnglerOpId())
+    property variant anglerOpId: gearPerformance.getAnglerOpId()
+    property variant isAnglerDoneFishing: drops.isAnglerDoneFishing(anglerOpId)
 
     Connections {
         target: gearPerformance
@@ -50,17 +51,9 @@ Item {
         title: "Gear Performance: Drop " + stateMachine.drop + " - Angler " + stateMachine.angler
         height: 50
         backwardTitle: "Drops"
-        forwardTitle: drops.getAnglerHooksLabel(gearPerformance.getAnglerOpId())
-        forwardEnabled: isAnglerDoneFishing
-        forwardVisible: isAnglerDoneFishing
-        Connections {
-            target: gearPerformance
-            onHooksUndeployed: {
-                if (gearPerformance.getAnglerOpId() == angler_op_id) {
-                    framHeader.forwardTitle = drops.getAnglerHooksLabel(gearPerformance.getAnglerOpId())
-                }
-            }
-        }
+        forwardTitle: drops.getAnglerHooksLabel(anglerOpId)
+        forwardEnabled: drops.isAnglerDoneFishing(anglerOpId)
+        forwardVisible: drops.isAnglerDoneFishing(anglerOpId)
     }
     ColumnLayout {
         id: clNoProblems
@@ -213,9 +206,7 @@ Item {
                     btnMinorTangle.checked = false;
                     btnMajorTangle.checked = false;
                     btnExclude.checked = true;  // #239: Auto-select exclude when undeployed selected
-                    if (isAnglerDoneFishing) {  // don't do this if angler isn't at surface
-                        dlgUndeployed.open()  // #144: dialog to ask to undeploy all hooks
-                    }
+                    dlgUndeployed.open()  // #144: ask to autopop hooks and times to Undeployed
                 }
             }
             onCheckedChanged: {  // add to DB anytime checked, remove anytime unchecked
@@ -257,11 +248,15 @@ Item {
         // #144: auto-populate hooks 1-5 as Undeployed when undeployed option clicked
         id: dlgUndeployed
         message: '"Undeployed" gear perf. selected.'
-        action: 'Set all Angler ' + stateMachine.angler + ' hooks to "Undeployed"?'
+        action: 'Set all Angler ' + stateMachine.angler + ' hooks and times to "Undeployed"?'
         btnOkay.text: "Yes"
         btnCancel.text: "No"
         onAccepted: {
-            gearPerformance.upsertHooksToUndeployed()
+            gearPerformance.upsertHooksToUndeployed()  // set all hooks to undeployed
+            gearPerformance.undeployAnglerTimes()  // set all empty time values to 'UN'
+            framHeader.forwardTitle = drops.getAnglerHooksLabel(anglerOpId)  // update Hooks header text
+            framHeader.forwardVisible = true  // make nav to hooks visible
+            framHeader.forwardEnabled = true  // enable nav to hooks
         }
         onRejected: {}
     }

@@ -492,6 +492,36 @@ Item {
                     }
                 }
             } // rtHooks
+            Connections {
+            	target: gearPerformance
+            	onAnglerTimeUndeployed: {
+            	    // #144: receive signal from gp when undeployed is selected, set times to undeployed str
+            		if (angler_op_id == operationId) {
+            			switch(time_type) {
+            				case "Start":
+            					btnStart.text = "Start\n" + undeployed_str;
+            					break;
+            				case "Begin Fishing":
+            					btnBeginFishing.text = "Begin Fishing\n" + undeployed_str;
+            					break;
+            				case "First Bite":
+            					btnFirstBite.text = "First Bite\n" + undeployed_str;
+            					break;
+            				case "Retrieval":
+            					btnRetrieval.text = "Retrieval\n" + undeployed_str;
+            					break;
+            				case "At Surface":
+            				    // mimic ending of time recording for normal deployed fishing
+            					btnAtSurface.text = "At Surface\n" + undeployed_str;
+            					lblElapsedTime.text = btnAtSurface.text.replace("At Surface\n", "");
+            					rtHooks.enabled = true;
+            					isRunning = false;
+            					updateButtonStatus("At Surface");
+            					break;
+            			}
+            		}
+            	}
+            }
         } // Buttons
     }
     OkayCancelDialog {
