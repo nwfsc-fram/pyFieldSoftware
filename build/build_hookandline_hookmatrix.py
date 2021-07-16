@@ -78,10 +78,10 @@ if sys.platform == 'win32':
     exe = Executable(
       script='../main_hookandline_hookmatrix.py',
       initScript=None,
-      # base='Console',  # useful for debugging
-      base='Win32GUI',  # use this to hide console output (releases)
+      base='Console',  # useful for debugging
+      # base='Win32GUI',  # use this to hide console output (releases)
       targetName='HookMatrix.exe',
-      icon='../resources/ico/hooklogger.ico'
+      icon='../resources/ico/hookmatrix.ico'
     )
 
 # Prompt to nuke existing directory
