@@ -65,6 +65,34 @@ class Hooks(QObject):
         self._full_species_list_model = FullSpeciesListModel(self._app)
         self._non_fish_items = self._get_non_fish_items()  # added for issue #82
 
+    @pyqtProperty(bool)
+    def isGearUndeployed(self):
+        """
+        #144: Check if Undeployed has been populated for current angler
+        Used to see if we're changing hook to something other than undeployed when undeployed gear perf is entered
+        TODO: move this to a statemachine property?  Tried but it was annoying, left as is for now - jf
+        :return: boolean
+        """
+        op_id = self.get_angler_op_id()
+        try:
+            undeployed = self._rpc.execute_query(
+                sql='''
+                    select  oa.operation_attribute_id
+                    from    operation_attributes oa
+                    join    lookups l
+                            on oa.attribute_type_lu_id = l.lookup_id
+                    where   oa.operation_id = ?
+                            and l.type = 'Angler Gear Performance'
+                            and l.value = 'Undeployed'
+                ''',
+                params=[op_id, ]
+            )
+        except Exception as e:
+            logging.error(f"Unable to query undeployed gear perfs for angler op id {op_id}")
+            return False
+
+        return len(undeployed) > 0
+
     def _get_non_fish_items(self):
         """
         Get list of hook items that are not fish/taxonomic
@@ -85,7 +113,7 @@ class Hooks(QObject):
         :param hooked_item: string from UI
         :return: bool
         """
-        return hooked_item not in self._non_fish_items
+        return hooked_item not in self._non_fish_items if hooked_item else False
 
     @pyqtProperty(FramListModel, notify=fullSpeciesListModelChanged)
     def fullSpeciesListModel(self):

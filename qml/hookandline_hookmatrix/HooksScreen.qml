@@ -122,55 +122,71 @@ Item {
         }
         stateMachine.hook = value;
     }
+    function highlightCurrentHook() {
+        // consolidate highlighting logic here
+        currentHook.tfHook.focus = true;
+        currentHook.tfHook.cursorPosition = 0
+        currentHook.tfHook.color = clickedColor
+    }
     function populateHook(species) {
-
     //    if (currentHook == "") return;
-        if (currentHook === null) return;
-
+        if (currentHook === null) {
+            return;
+        }
+        // #144: ask first when gear is undeployed and something other than undeployed is selected
+        if (hooks.isGearUndeployed & species !== 'Undeployed' & currentHook.tfHook.text === 'Undeployed') {
+            dlgGpUndeployed.hookToReview = currentHook;  // hack so dlg can recall this function if we reset to Und
+            dlgGpUndeployed.suggestedSpecies = species;  // passed for info purposes in dlg UI
+            dlgGpUndeployed.open();  // calls back populateHook to reset to Undeployed if rejected
+        }
         hooks.saveHook(currentHook.hookNumber, species);
         switch (currentHook) {
             case hook5:
                 hook5.tfHook.text = species;
                 hook5.tfHook.cursorPosition = 0;
-
-                hook4.tfHook.focus = true;
-                hook4.tfHook.cursorPosition = 0;
-                hook4.tfHook.color = clickedColor;
-
-                currentHook = hook4;
+                currentHook = hook4;  // set current hook to next, then highlight
+                highlightCurrentHook()
                 break;
             case hook4:
                 hook4.tfHook.text = species;
                 hook4.tfHook.cursorPosition = 0;
-
-                hook3.tfHook.focus = true;
-                hook3.tfHook.cursorPosition = 0;
-                hook3.tfHook.color = clickedColor;
                 currentHook = hook3;
+                highlightCurrentHook()
                 break;
             case hook3:
                 hook3.tfHook.text = species;
                 hook3.tfHook.cursorPosition = 0;
-
-                hook2.tfHook.focus = true;
-                hook2.tfHook.cursorPosition = 0;
-                hook2.tfHook.color = clickedColor;
                 currentHook = hook2;
+                highlightCurrentHook()
                 break;
             case hook2:
                 hook2.tfHook.text = species;
                 hook2.tfHook.cursorPosition = 0;
-                hook1.tfHook.focus = true;
-//                hook1.tfHook.selectAll();
-                hook1.tfHook.cursorPosition = 0;
-                hook1.tfHook.color = clickedColor;
                 currentHook = hook1;
+                highlightCurrentHook()
                 break;
             case hook1:
                 hook1.tfHook.text = species;
                 hook1.tfHook.cursorPosition = 0;
                 hook1.tfHook.color = clickedColor;
                 break;
+        }
+    }
+    OkayCancelDialog {
+        // #144: Ask to change to something other than undeployed if GP = undeployed
+        id: dlgGpUndeployed
+        message: '"Undeployed" gear perf. selected.'
+        action: 'Change hook ' + hookToReview.hookNumber + ' from "Undeployed" to "' + suggestedSpecies + '"?'
+        btnOkay.text: "Yes"
+        btnCancel.text: "No"
+        property variant hookToReview;
+        property string suggestedSpecies
+        onAccepted: { // UI seems to unfocus next tf, so re-highlighting next current hook
+            highlightCurrentHook()
+        }
+        onRejected: {  // go back to previous hook and reset to undeployed
+            currentHook = hookToReview  // do this so populateHook write to the correct hook
+            populateHook('Undeployed')
         }
     }
     function getModelSubset(index) {

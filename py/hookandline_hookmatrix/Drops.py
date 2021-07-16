@@ -497,13 +497,15 @@ class Drops(QObject):
             logging.error(f"Unable to parse gear perfs {perfs}; {ex}")
             return default
 
-    @pyqtSlot(int, name="getAnglerHooksLabel", result=QVariant)
-    def get_angler_hooks_label(self, angler_op_id):
+    @pyqtSlot(int, bool, name="getAnglerHooksLabel", result=QVariant)
+    def get_angler_hooks_label(self, angler_op_id, hooks_enabled):
         """
         Select hooks per op_id aka angler from DB.
         Left join to CTE ensures result will always have 5 rows,
         unpopulated hooks shown as null
+        TODO: make this function return a list, not a string then make wrapper for pyQtSlot
         :param angler_op_id: int, operations DB id
+        :param hooks_enabled: bool, passes thru to format hooks label
         :return: dict[], one per db row. E.g. [{hookNum: "1", hookContent: "Boccacio", isFish: True}...]
         """
         try:
@@ -529,13 +531,9 @@ class Drops(QObject):
                         WHERE		o.operation_id = ?
                         )
                     select
-                                h.hook_num
+                                h.hook_num  --using hook_num_lbl instead
+                                ,case when l.lookup_id is null then '_' else h.hook_num end as hook_num_lbl
                                 ,cc.display_name
-                                ,case
-                                    when cc.content_type_lu_id = 129 then 'Fish Hooked'
-                                    when cc.content_type_lu_id = 130 then 'Other'
-                                    else null
-                                end as content_type
                     from        hooks h
                     left join	catch c  --left join ensures 5 rows always returned per angler
                                 on h.angler_op_id = c.operation_id
@@ -551,51 +549,57 @@ class Drops(QObject):
             )
         except Exception as ex:
             logging.error(f"Unable to query hooks with angler op id {angler_op_id}; {ex}")
-            return []
+            return ''
 
         if len(hooks) > 0:
             hooks_list = [
                 {
                     'hookNum': h[0],
-                    'hookContent': h[1],
-                    'isFish': self._app.hooks.is_fish(h[1])  # tie in function from hooks
+                    'hookNumLbl': h[1],
+                    'hookContent': h[2],
+                    'isFish': self._app.hooks.is_fish(h[2])  # tie in function from hooks
                 }
                 for h in hooks
             ]
-            return self.format_hooks_label(hooks_list)
+            return self.format_hooks_label(hooks_list, hooks_enabled)
         else:
-            return []
+            return self.format_hooks_label([], hooks_enabled)
 
     @staticmethod
-    def format_hooks_label(hooks_list):
+    def format_hooks_label(hooks_list, hooks_enabled):
         """
         format hooks text for RichText QML text object
         :param hooks_list: list of dicts (e.g. [{'hookNum': 1, 'hookContent': 'Yelloweye', 'isFish': True}]
+        :param hooks_enabled: allow italic string if disabled
         :return: string, rich text
         """
-        hooks_lbl = 'Hooks<br>'
+        gray = '#808080'
+        black = '#000000'
+        green = '#008000'
+        undeployed = all(h['hookContent'] == 'Undeployed' for h in hooks_list)
 
-        if not hooks_list:
-            return hooks_lbl + "\n_,_,_,_,_"
-        elif all(h['hookContent'] == 'Undeployed' for h in hooks_list):  # if all undeployed, set label to UN
-            return hooks_lbl + 'UN'
+        if not hooks_list and hooks_enabled:
+            return f'<font color=\"{black}\">Hooks<br>_,_,_,_,_</font>'
+        elif not hooks_list and not hooks_enabled:
+            return f'<i><font color=\"{gray}\">Hooks<br>_,_,_,_,_</font></i>'
+        elif undeployed and hooks_enabled:  # if all undeployed, set label to UN
+            return 'Hooks<br>UN'
+        elif undeployed and not hooks_enabled:
+            return f'<i><font color=\"{gray}\">Hooks<br>UN</font></i>'
+        elif not hooks_enabled:
+            joined_hooks = ','.join(h['hookNumLbl'] for h in hooks_list)
+            return f'<i><font color=\"{gray}\">Hooks<br>{joined_hooks}</font></i>'
         else:
+            hooks_lbl = 'Hooks<br>'
             for hook in hooks_list:
-                hook_num = hook['hookNum']
-                content = hook['hookContent']
+                hook_num_lbl = hook['hookNumLbl']
                 is_fish = hook['isFish']
-
-                # label uses rich text to color diff chars differently
-                if not content:
-                    hooks_lbl += f"<font color=\"#000000\">_,</font>"  # black underscore
-                elif is_fish:
-                    hooks_lbl += f"<font color=\"#008000\">{hook_num},</font>"  # green
-                elif not is_fish:
-                    hooks_lbl += f"<font color=\"#000000\">{hook_num},</font>"  # black
+                if is_fish:
+                    hooks_lbl += f"<font color=\"{green}\">{hook_num_lbl},</font>"
                 else:
-                    logging.error(f"Unexpected value {content} for hook {hook_num}")
+                    hooks_lbl += f"<font color=\"{black}\">{hook_num_lbl},</font>"
 
-        return ''.join(hooks_lbl.rsplit(",", 1))  # splits on last comma and joins with empty str (remove last comma)
+            return ''.join(hooks_lbl.rsplit(",", 1))  # split last comma, joins with empty str (remove last comma)
 
     @pyqtSlot(QVariant, name='isAnglerDoneFishing', result=bool)
     def is_angler_done_fishing(self, angler_op_id):

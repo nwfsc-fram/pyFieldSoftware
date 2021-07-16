@@ -60,6 +60,7 @@ Item {
 
             // Insert new OPERATION_ATTRIBUTES records
             operationId = op_ids["Angler A"];
+            anglerA.operationId = operationId  // #251: set op id for angler QML item, this wont change
             drops.upsertOperationAttribute(operationId, luType, luValue, valueType, value, "Angler A");
             console.info('insert Angler A');
         }
@@ -70,6 +71,7 @@ Item {
 
             // Insert new OPERATION_ATTRIBUTES records
             operationId = op_ids["Angler B"];
+            anglerB.operationId = operationId  // #251: set op id for angler QML item, this wont change
             drops.upsertOperationAttribute(operationId, luType, luValue, valueType, value, "Angler B");
             console.info('insert Angler B');
 
@@ -81,6 +83,7 @@ Item {
 
             // Insert new OPERATION_ATTRIBUTES records
             operationId = op_ids["Angler C"];
+            anglerC.operationId = operationId  // #251: set op id for angler QML item, this wont change
             drops.upsertOperationAttribute(operationId, luType, luValue, valueType, value, "Angler C");
             console.info('insert Angler C');
 
@@ -122,12 +125,21 @@ Item {
         }
 
         // TODO - Todd Hay - Update database with new angler name information
-        if (personA !== "")
+        if (personA !== "") {
             drops.upsertOperationAttribute(stateMachine.anglerAOpId, "Angler Attribute", "Angler Name", "alpha", personA, "Angler A");
-        if (personB !== "")
+            anglerA.operationId = stateMachine.anglerAOpId  // #251: setting static op id for angler upon row creation
+            console.debug("Updating operationIDs, angler A: " + stateMachine.anglerAOpId)
+        }
+        if (personB !== "") {
             drops.upsertOperationAttribute(stateMachine.anglerBOpId, "Angler Attribute", "Angler Name", "alpha", personB, "Angler B");
-        if (personC !== "")
+            anglerB.operationId = stateMachine.anglerBOpId  // #251: setting static op id for angler upon row creation
+            console.debug("Updating operationIDs, angler B: " + stateMachine.anglerBOpId)
+        }
+        if (personC !== "") {
             drops.upsertOperationAttribute(stateMachine.anglerCOpId, "Angler Attribute", "Angler Name", "alpha", personC, "Angler C");
+            anglerC.operationId = stateMachine.anglerCOpId  // #251: setting static op id for angler upon row creation
+            console.debug("Updating operationIDs, angler C: " + stateMachine.anglerCOpId)
+        }
         if (personRecorder !== "")
             drops.upsertOperationAttribute(stateMachine.dropOpId, "Drop Attribute", "Recorder Name", "alpha", personRecorder, "Drop " + dropNumber);
     }
