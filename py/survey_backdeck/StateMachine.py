@@ -16,8 +16,10 @@ from PyQt5.QtQml import QJSValue
 import logging
 import arrow
 
+from py.survey_backdeck.CutterConfig import CUTTER_VERSION
+
 APP_NAME = 'Cutter'
-SW_VERSION = '1.0.8'
+SW_VERSION = CUTTER_VERSION  # 248: adding in year versioning (see CutterConfig.py)
 
 class StateMachine(QObject):
     """
