@@ -113,7 +113,7 @@ class Hooks(QObject):
         :param hooked_item: string from UI
         :return: bool
         """
-        return hooked_item not in self._non_fish_items
+        return hooked_item not in self._non_fish_items if hooked_item else False
 
     @pyqtProperty(FramListModel, notify=fullSpeciesListModelChanged)
     def fullSpeciesListModel(self):

@@ -51,7 +51,7 @@ Item {
         title: "Gear Performance: Drop " + stateMachine.drop + " - Angler " + stateMachine.angler
         height: 50
         backwardTitle: "Drops"
-        forwardTitle: drops.getAnglerHooksLabel(anglerOpId)
+        forwardTitle: drops.getAnglerHooksLabel(anglerOpId, true)
         forwardEnabled: drops.isAnglerDoneFishing(anglerOpId)
         forwardVisible: drops.isAnglerDoneFishing(anglerOpId)
     }
@@ -252,9 +252,9 @@ Item {
         btnOkay.text: "Yes"
         btnCancel.text: "No"
         onAccepted: {
+            gearPerformance.undeployAnglerTimes()  // empty time vals to 'UN'; do this first for enabling hooks nav race
             gearPerformance.upsertHooksToUndeployed()  // set all hooks to undeployed
-            gearPerformance.undeployAnglerTimes()  // set all empty time values to 'UN'
-            framHeader.forwardTitle = drops.getAnglerHooksLabel(anglerOpId)  // update Hooks header text
+            framHeader.forwardTitle = drops.getAnglerHooksLabel(anglerOpId, true)  // update Hooks header text
             framHeader.forwardVisible = true  // make nav to hooks visible
             framHeader.forwardEnabled = true  // enable nav to hooks
         }

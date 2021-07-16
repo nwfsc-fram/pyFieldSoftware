@@ -422,6 +422,8 @@ Item {
                     id: txtGearPerformance
                     text: operationId ? drops.getAnglerGearPerfsLabel(operationId) : "Gear\nPerf."  // #241: query perfs by angler ID
                     font.pixelSize: 24
+                    color: rtGearPerformance.enabled ? 'black' : 'gray'  // #246: gray if disabled
+                    font.italic: !rtGearPerformance.enabled  // #246: italic if disabled
                     anchors.verticalCenter: parent.verticalCenter
                     Connections { // #241: receive signal from GearPerformance whenever record is added/deleted
                         target: gearPerformance
@@ -434,6 +436,7 @@ Item {
                 }
                 Image {
                     id: imgGearPerformance
+                    opacity: rtGearPerformance.enabled ? 1.0 : 0.25  // #246: set image opaque if disabled
                     anchors.left: txtGearPerformance.right
                     anchors.verticalCenter: parent.verticalCenter
                     source: Qt.resolvedUrl("/resources/images/navigation_next_item_dark.png")
@@ -457,14 +460,14 @@ Item {
                 enabled: false
                 Text {
                     id: txtHooks
-                    text: operationId ? drops.getAnglerHooksLabel(operationId) : "Hooks<br>\n_,_,_,_,_"
+                    text: drops.getAnglerHooksLabel(operationId, rtHooks.enabled)
                     font.pixelSize: 24
                     anchors.verticalCenter: parent.verticalCenter
                     Connections {
                         target: hooks
                         onHooksChanged: {
                             if (angler_op_id == operationId) {
-                                txtHooks.text = drops.getAnglerHooksLabel(operationId)
+                                txtHooks.text = drops.getAnglerHooksLabel(operationId, rtHooks.enabled)
                             }
                         }
                     }
@@ -472,7 +475,7 @@ Item {
                         target: gearPerformance
                         onHooksUndeployed: {
                             if (angler_op_id == operationId) {
-                                txtHooks.text = drops.getAnglerHooksLabel(operationId)
+                                txtHooks.text = drops.getAnglerHooksLabel(operationId, rtHooks.enabled)
                             }
                         }
                     }
@@ -480,6 +483,7 @@ Item {
                 Image {
                     id: imgHooks
                     anchors.left: txtHooks.right
+                    opacity: rtHooks.enabled ? 1.0 : 0.25  // #246: set image opaque if disabled
                     anchors.verticalCenter: parent.verticalCenter
                     source: Qt.resolvedUrl("/resources/images/navigation_next_item_dark.png")
                 }
