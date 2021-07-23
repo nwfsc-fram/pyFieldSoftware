@@ -403,6 +403,15 @@ class TripChecksOptecsManager:
     TRIP_CHECK_JSON_FILEPATH = 'data/OBSPROD_TRIP_CHECKS.json'
 
     @staticmethod
+    def get_debriefer_checks():
+        """
+        trip checks only visible in debriefer mode
+        FIELD-2101: use to hide TERs from non-debriefers
+        :return: list of trip_check_ids; int[]
+        """
+        return [t.trip_check for t in TripChecks.select().where(TripChecks.debriefer_only == 1)]
+
+    @staticmethod
     def get_unrecognized_macros():
         if not TripChecksOptecsManager.unrecognized_macros:
             TripChecksOptecsManager.unrecognized_macros = TripChecksOptecsManager._build_list_of_all_unknown_macros()
@@ -1175,8 +1184,17 @@ class ObserverErrorReports(QObject):
             self._trip_issues_view_model.clear()
             return
 
+        # FIELD-2101: Hide debriefer_only TERs if not a debriefer
+        is_debriefer = ObserverDBUtil.get_current_debriefer_mode()
+        debriefer_checks = TripChecksOptecsManager.get_debriefer_checks()
+
         for issue in issues:
-            self._trip_issues_view_model.add_trip_issue(issue)  # TODO: speed up by group append.
+            trip_check_id = issue.trip_check.trip_check
+            if not is_debriefer and trip_check_id in debriefer_checks:
+                self._logger.debug(f"Hiding debriefer TER {trip_check_id}")
+                continue
+            else:
+                self._trip_issues_view_model.add_trip_issue(issue)  # TODO: speed up by group append.
 
         self._logger.info(f"Loading {len(issues)} TER issues for Trip {self._current_trip_id}.")
 
