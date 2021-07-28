@@ -104,6 +104,7 @@ class ObserverDBMigrations(QObject):
 
         #TER flags TODO: remove this migration once all DB files used have these flags
         self.migrate_debriefer_only()  # FIELD-2101
+        self.migrate_status_optecs()  # FIELD-2100
 
         # COMMENTS
         self.migrate_comments()
@@ -259,6 +260,22 @@ class ObserverDBMigrations(QObject):
             self._logger.info(f"Adding column TRIP_CHECKS.DEBRIEFER_ONLY")
         except SQLError as e:
             self._logger.debug(f"TRIP_CHECKS.DEBRIEFER_ONLY col not added; {e}")
+
+    def migrate_status_optecs(self):
+        """
+        FIELD-2100: This column will be in the new versions 2.2, but old databases may be loaded in without
+        This function will add it if missing
+        """
+        try:
+            """
+            NOTE: migrator.add_column not working properly, throws
+                SQLError: table TRIP_CHECKS__tmp__ has no column named CONSTRAINT"
+            migrate(self.migrator.add_column('TRIP_CHECKS', 'STATUS_OPTECS', IntegerField(default=1, null=False)))
+            """
+            database.execute_sql('ALTER TABLE TRIP_CHECKS ADD COLUMN STATUS_OPTECS INTEGER NOT NULL DEFAULT 1')
+            self._logger.info(f"Adding column TRIP_CHECKS.STATUS_OPTECS")
+        except SQLError as e:
+            self._logger.debug(f"TRIP_CHECKS.STATUS_OPTECS col not added; {e}")
 
     def create_hook_counts(self) -> None:
         """
