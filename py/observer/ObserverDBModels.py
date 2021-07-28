@@ -934,7 +934,7 @@ class TripChecks(BaseModel):
                                        to_field='trip_check_group')
     trip_check = PrimaryKeyField(db_column='TRIP_CHECK_ID')
     value_column = TextField(db_column='VALUE_COLUMN', null=True)
-    debriefer_only = IntegerField(db_column='DEBRIEFER_ONLY', null=True)  # FIELD-2101: adding for TER filtering
+    debriefer_only = IntegerField(db_column='DEBRIEFER_ONLY', default=0, null=False)  # FIELD-2101: for TER filtering
 
     class Meta:
         db_table = 'TRIP_CHECKS'

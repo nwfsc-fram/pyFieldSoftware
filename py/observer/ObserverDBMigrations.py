@@ -102,6 +102,9 @@ class ObserverDBMigrations(QObject):
         self.migrate_speciescompbaskets_is_tally()
         self.migrate_speciescompbaskets_is_subsample()
 
+        #TER flags TODO: remove this migration once all DB files used have these flags
+        self.migrate_debriefer_only()  # FIELD-2101
+
         # COMMENTS
         self.migrate_comments()
 
@@ -240,6 +243,22 @@ class ObserverDBMigrations(QObject):
             self._logger.info('Added column FISHING_ACTIVITY_ID to COMMENTS')
         except SQLError:
             pass
+
+    def migrate_debriefer_only(self):
+        """
+        FIELD-2101: This column will be in the new versions 2.2, but old databases may be loaded in without
+        This function will add it if missing.
+        """
+        try:
+            """
+            NOTE: migrator.add_column not working properly, throws
+                SQLError: table TRIP_CHECKS__tmp__ has no column named CONSTRAINT", but still adds col
+            migrate(self.migrator.add_column('TRIP_CHECKS', 'DEBRIEFER_ONLY', IntegerField(default=0, null=False)))
+            """
+            database.execute_sql('ALTER TABLE TRIP_CHECKS ADD COLUMN DEBRIEFER_ONLY INTEGER NOT NULL DEFAULT 0')
+            self._logger.info(f"Adding column TRIP_CHECKS.DEBRIEFER_ONLY")
+        except SQLError as e:
+            self._logger.debug(f"TRIP_CHECKS.DEBRIEFER_ONLY col not added; {e}")
 
     def create_hook_counts(self) -> None:
         """
