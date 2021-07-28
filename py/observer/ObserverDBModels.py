@@ -927,6 +927,7 @@ class TripChecks(BaseModel):
     modified_date = TextField(db_column='MODIFIED_DATE', null=True)
     program = IntegerField(db_column='PROGRAM_ID', null=True)
     status = IntegerField(db_column='STATUS')
+    status_optecs = IntegerField(db_column='STATUS_OPTECS', default=1, null=False)  # FIELD-2100: to disable in optecs
     testing_notes = TextField(db_column='TESTING_NOTES', null=True)
     testing_status = TextField(db_column='TESTING_STATUS', null=True)
     trawl_gear_type = IntegerField(db_column='TRAWL_GEAR_TYPE', null=True)
