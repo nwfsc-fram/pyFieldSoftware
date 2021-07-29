@@ -1182,6 +1182,7 @@ class ObserverErrorReports(QObject):
         self._current_user_valid_trip_ids = None
         self._current_debriefer_mode = None
         self._thread_TER = None
+        self._debriefer_checks = TripChecksOptecsManager.get_debriefer_checks()
 
         # The TRIP_CHECKS table exists in the initial Observer.db and is updated as part of DB sync download.
 
@@ -1225,11 +1226,10 @@ class ObserverErrorReports(QObject):
 
         # FIELD-2101: Hide debriefer_only TERs if not a debriefer
         is_debriefer = ObserverDBUtil.get_current_debriefer_mode()
-        debriefer_checks = TripChecksOptecsManager.get_debriefer_checks()
 
         for issue in issues:
             trip_check_id = issue.trip_check.trip_check
-            if not is_debriefer and trip_check_id in debriefer_checks:
+            if not is_debriefer and trip_check_id in self._debriefer_checks:
                 self._logger.debug(f"Hiding debriefer TER {trip_check_id}")
                 continue
             else:
@@ -1255,6 +1255,7 @@ class ObserverErrorReports(QObject):
 
         # Get all the current user's trips, or if in debriefer mode, get all users' trips
         debriefer_mode = ObserverDBUtil.get_current_debriefer_mode()
+
         self._logger.info(f'Debriefer mode = {debriefer_mode}.')
         checkable_trips = ObserverTrip.get_user_valid_trips(debriefer_mode=debriefer_mode)
         completed_trip_ids = ObserverDBSyncController.get_completed_trip_ids()
@@ -1280,6 +1281,7 @@ class ObserverErrorReports(QObject):
 
                 issues, last_run_date = TripChecksOptecsManager.get_issues_from_last_ter_run(
                         checkable_trip.trip, self._logger)
+
                 if not issues:  # TER not yet run, or last run was without error
                     error_free_run_date: str = ErrorFreeRunTracker.lookup(
                             checkable_trip.trip, self._logger)
@@ -1290,7 +1292,13 @@ class ObserverErrorReports(QObject):
                         trip_dict['n_errors'] = None
                         trip_dict['last_run_date'] = None
                 else:
-                    trip_dict['n_errors'] = len(issues)
+                    # FIELD-2101: dont count debriefer TERs when not in debriefer mode
+                    if not debriefer_mode:
+                        err_ct = len([i for i in issues if i.trip_check.trip_check not in self._debriefer_checks])
+                    else:
+                        err_ct = len(issues)
+
+                    trip_dict['n_errors'] = err_ct
                     trip_dict['last_run_date'] = last_run_date
 
                 self._trip_error_reports_view_model.add_trip_ter(trip_dict)
