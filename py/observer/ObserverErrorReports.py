@@ -193,6 +193,19 @@ class ThreadTER(QThread):
         self._logger.debug(f"Cancel request received - TER run canceled.")
         self.cancel_requested_signal.emit()
 
+'''
+FIELD-2100: Class no longer needed. Removing hardcoded list of disabled TERs and the usage of the 
+'trawl_error_reports_disabled_checks' param stored in SETTTINGS table.  
+Code now finds disabled TERs using STATUS_OPTECS flag in table, value synced from Oracle.
+
+Steps to disable TERs now, instead of using this class:
+1. Mark TER with STATUS_OPTECS = 0 flag in OBSPROD.TRIP_CHECKS oracle table
+2. T_TRIP_CHECKS trigger pushes change to SYNC_UPLOAD.APPLIED_TRANSACTIONS
+3. Optecs pulls change and applied new flag to TRIP_CHECKS table in SQLite
+4. ObserverDBUtil.checksum_peewee_model(TripChecks, logger) registers change to this field
+5. TripChecksOptecsManager.get_disabled_optecs_ters() returns list of disabled TERs
+6. During TER evaluation TER assigned status = 1 (NOT_RUN_DISABLED_IN_OPTECS) in TRIP_CHECKS_OPTECS if in this list
+
 class TripChecksDisabledInOptecs:
     """
     There are three categories of trip checks disabled in OPTECS
@@ -303,7 +316,7 @@ class TripChecksDisabledInOptecs:
         disabled_checks = ObserverDBUtil.db_load_setting_as_json(
             TripChecksDisabledInOptecs.TRAWL_ERROR_REPORTS_DISABLED_CHECKS_SETTING)
         return disabled_checks
-
+'''
 
 class ErrorFreeRunTracker:
     """
@@ -395,6 +408,7 @@ class TripChecksOptecsManager:
     """
     TRIP_CHECKS_TABLE_CHECKSUM_SETTING = 'last_trip_checks_table_checksum'
     unrecognized_macros = None
+    ters_flagged_for_disable = None  # FIELD-2100: build list w/ set_ters_flagged_for_disable_list() on TER evaluation
 
     # Obsolete, but left as backstop in case TRIP_CHECKS empty.
     # Created using Navicat Export in JSON format:
@@ -403,10 +417,35 @@ class TripChecksOptecsManager:
     TRIP_CHECK_JSON_FILEPATH = 'data/OBSPROD_TRIP_CHECKS.json'
 
     @staticmethod
+    def get_debriefer_checks():
+        """
+        trip checks only visible in debriefer mode
+        FIELD-2101: use to hide TERs from non-debriefers
+        :return: list of trip_check_ids; int[]
+        """
+        return [t.trip_check for t in TripChecks.select().where(TripChecks.debriefer_only == 1)]
+
+    @staticmethod
     def get_unrecognized_macros():
         if not TripChecksOptecsManager.unrecognized_macros:
             TripChecksOptecsManager.unrecognized_macros = TripChecksOptecsManager._build_list_of_all_unknown_macros()
         return TripChecksOptecsManager.unrecognized_macros
+
+    @staticmethod
+    def set_ters_flagged_for_disable_list():
+        """
+        FIELD-2100: method used to populate list of TERs flagged for disabling from synced oracle field.
+        List used during TER evaluation.  TER in list to be flagged as NOT_RUN_DISABLED_IN_OPTECS (1)
+        :return: None, sets var in TripChecksOptecsManager, and param in SETTINGS table
+        """
+        TripChecksOptecsManager.ters_flagged_for_disable = [
+            t.trip_check for t in TripChecks.select().where(TripChecks.status_optecs == 0)
+        ]
+        # maintaining this parameter so I don't break anything, but can likely be removed - JF
+        ObserverDBUtil.db_save_setting_as_json(
+            'trawl_error_reports_disabled_checks',
+            TripChecksOptecsManager.ters_flagged_for_disable
+        )
 
     @staticmethod
     def _build_list_of_all_unknown_macros():
@@ -548,12 +587,18 @@ class TripChecksOptecsManager:
                     f"but only {n_distinct_trips_ids} distinct TRIP_CHECKS IDs.")
             return False
 
+        '''
+        FIELD-2100: Removing usage of "trawl_error_reports_disabled_checks" SETTINGS value
+        in favor of just pulling disabled TERs based on STATUS_OPTECS flag.  sha1 checksum value
+        will kick off TER analysis if STATUS_OPTECS flag changes instead of tracking TERs in this settings param
+        
         settings_key = TripChecksDisabledInOptecs.TRAWL_ERROR_REPORTS_DISABLED_CHECKS_SETTING
         disabled_checks = ObserverDBUtil.db_load_setting_as_json(settings_key)
         if disabled_checks:  # verify count is identical to stored in DB
             if disabled_checks != TripChecksDisabledInOptecs.TRAWL_ERROR_REPORTS_DISABLED_CHECKS_DEFAULT:
                 logger.info('Default disabled checks changed. Need to re-run TER analysis.')
                 return False
+        '''
 
         logger.info("TRIP_CHECKS_OPTECS is loaded.")
         return True
@@ -630,6 +675,9 @@ class TripChecksOptecsManager:
 
         created_date = TripChecksOptecsManager._get_current_datetime_for_ter_rundate()
         logger.info(f"Run datetime for this check of Trip#{trip_id}: {created_date}")
+
+        TripChecksOptecsManager.set_ters_flagged_for_disable_list()  # FIELD-2100: init list of TERs to disable
+        logger.info(f"Disabled TERs from STATUS_OPTECS=0 set to {TripChecksOptecsManager.ters_flagged_for_disable}")
 
         trip_check_dict = TripChecksOptecsManager._build_trip_check_dictionary_from_trip_checks()
         counter = IntEnumCounter(TripCheckEvaluationStatus)
@@ -738,9 +786,9 @@ class TripChecksOptecsManager:
             execution_result = TripCheckEvaluationStatus.NOT_RUN_UNRECOGNIZED_MACRO
             logger.debug(f"Check {check_id} not run - known problem - unrecognized macro")
             logger.debug(f"Check {check_id}: SQL w/unknown macro:\n{sql_formatted}")
-        elif TripChecksDisabledInOptecs.trip_check_is_disabled_in_optecs(check_id, logger):
+        elif check_id in TripChecksOptecsManager.ters_flagged_for_disable:  # FIELD-2100: TERs where STATUS_OPTECS=0
             execution_result = TripCheckEvaluationStatus.NOT_RUN_DISABLED_IN_OPTECS
-            logger.debug(f"Check {check_id} not run - known problem - disabled in OPTECS")
+            logger.debug(f"Check {check_id} not run - known problem - flagged as disabled in OPTECS")
         else:
             try:
                 n_trip_issues_before = TripIssues.select().count()
@@ -1134,6 +1182,7 @@ class ObserverErrorReports(QObject):
         self._current_user_valid_trip_ids = None
         self._current_debriefer_mode = None
         self._thread_TER = None
+        self._debriefer_checks = TripChecksOptecsManager.get_debriefer_checks()
 
         # The TRIP_CHECKS table exists in the initial Observer.db and is updated as part of DB sync download.
 
@@ -1175,8 +1224,16 @@ class ObserverErrorReports(QObject):
             self._trip_issues_view_model.clear()
             return
 
+        # FIELD-2101: Hide debriefer_only TERs if not a debriefer
+        is_debriefer = ObserverDBUtil.get_current_debriefer_mode()
+
         for issue in issues:
-            self._trip_issues_view_model.add_trip_issue(issue)  # TODO: speed up by group append.
+            trip_check_id = issue.trip_check.trip_check
+            if not is_debriefer and trip_check_id in self._debriefer_checks:
+                self._logger.debug(f"Hiding debriefer TER {trip_check_id}")
+                continue
+            else:
+                self._trip_issues_view_model.add_trip_issue(issue)  # TODO: speed up by group append.
 
         self._logger.info(f"Loading {len(issues)} TER issues for Trip {self._current_trip_id}.")
 
@@ -1198,6 +1255,7 @@ class ObserverErrorReports(QObject):
 
         # Get all the current user's trips, or if in debriefer mode, get all users' trips
         debriefer_mode = ObserverDBUtil.get_current_debriefer_mode()
+
         self._logger.info(f'Debriefer mode = {debriefer_mode}.')
         checkable_trips = ObserverTrip.get_user_valid_trips(debriefer_mode=debriefer_mode)
         completed_trip_ids = ObserverDBSyncController.get_completed_trip_ids()
@@ -1223,6 +1281,7 @@ class ObserverErrorReports(QObject):
 
                 issues, last_run_date = TripChecksOptecsManager.get_issues_from_last_ter_run(
                         checkable_trip.trip, self._logger)
+
                 if not issues:  # TER not yet run, or last run was without error
                     error_free_run_date: str = ErrorFreeRunTracker.lookup(
                             checkable_trip.trip, self._logger)
@@ -1233,7 +1292,13 @@ class ObserverErrorReports(QObject):
                         trip_dict['n_errors'] = None
                         trip_dict['last_run_date'] = None
                 else:
-                    trip_dict['n_errors'] = len(issues)
+                    # FIELD-2101: dont count debriefer TERs when not in debriefer mode
+                    if not debriefer_mode:
+                        err_ct = len([i for i in issues if i.trip_check.trip_check not in self._debriefer_checks])
+                    else:
+                        err_ct = len(issues)
+
+                    trip_dict['n_errors'] = err_ct
                     trip_dict['last_run_date'] = last_run_date
 
                 self._trip_error_reports_view_model.add_trip_ter(trip_dict)
