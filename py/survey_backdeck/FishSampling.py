@@ -529,6 +529,7 @@ class FishSampling(QObject):
         self._specials_model = SpecialsModel(app=self._app, db=self._db)
         self._species_full_list_model = SpeciesFullListModel(app=self._app)
         self._personnel_model = PersonnelModel(app=self._app)
+        self._current_specimen_model = None  # use to track selected specimen vals
 
         self._random_drops = None
 
@@ -557,6 +558,15 @@ class FishSampling(QObject):
         :return:
         """
         return self._specimens_model
+
+    @pyqtProperty(QVariant)
+    def currentSpecimenModel(self):
+        return self._current_specimen_model
+
+    @currentSpecimenModel.setter
+    def currentSpecimenModel(self, model):
+        #  96: use current specimen set when row is selected in FishSamplingScreen.qml
+        self._current_specimen_model = model.toVariant()
 
     @pyqtProperty(FramListModel, notify=specialsModelChanged)
     def specialsModel(self):
