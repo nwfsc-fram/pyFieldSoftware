@@ -16,7 +16,7 @@ Dialog {
     width: 580
     height: 580
     modality: Qt.ApplicationModal  // force acknowledgement here before going elsewhere
-    title: "L-W Relationship Warning"
+    title: "LW Relationship Warning"
 
     property string message: ""
 

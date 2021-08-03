@@ -535,7 +535,8 @@ class FishSampling(QObject):
         self._specials_model = SpecialsModel(app=self._app, db=self._db)
         self._species_full_list_model = SpeciesFullListModel(app=self._app)
         self._personnel_model = PersonnelModel(app=self._app)
-        self._current_specimen_model = None  # use to track selected specimen vals
+        self._current_specimen_index = None
+        self._current_specimen = None  # use to track selected specimen vals
 
         self._random_drops = None
 
@@ -565,14 +566,27 @@ class FishSampling(QObject):
         """
         return self._specimens_model
 
-    @pyqtProperty(QVariant)
-    def currentSpecimenModel(self):
-        return self._current_specimen_model
+    @pyqtProperty(int)
+    def currentSpecimenIndex(self):
+        return self._current_model_index
 
-    @currentSpecimenModel.setter
-    def currentSpecimenModel(self, model):
-        #  96: use current specimen set when row is selected in FishSamplingScreen.qml
-        self._current_specimen_model = model.toVariant()
+    @currentSpecimenIndex.setter
+    def currentSpecimenIndex(self, ix):
+        """
+        Set when user selects row from FishSampling tableview.
+        Use to set current specimen model so we get most updated data from self._specimens_model
+        :param ix: int, model index
+        """
+        self._current_specimen_index = ix
+        # borrowed from FramListModel.get b/c slot IndexError suppressed
+        if ix < 0 or ix >= self._specimens_model.count:
+            self._current_specimen = None
+        else:
+            self._current_specimen = self._specimens_model.get(ix)
+
+    @property
+    def current_specimen(self):
+        return self._current_specimen
 
     @pyqtProperty(FramListModel, notify=specialsModelChanged)
     def specialsModel(self):
@@ -1338,9 +1352,9 @@ class FishSampling(QObject):
         :return: None; Emit message for display in FishSamplingEntryDialog.qml
         """
         # no current specimen, no calculation
-        if not self._current_specimen_model:
+        if not self._current_specimen:
             return
-        specimen = self._current_specimen_model
+        specimen = self._current_specimen
         lw_params = self._get_lw_relationship_params(specimen['taxonomyID'], specimen['sex'])
 
         # parse and convert all values to float, catch and return if any fail
@@ -1357,26 +1371,26 @@ class FishSampling(QObject):
         logging.info(f"Weight Entered: {w}. Length Entered: {l}, a: {a}, b: {b}")
 
         # calc expected values
-        expected_wt = self._get_expected_wt_from_len(l, a, b)
+        expected_wt = self.get_expected_wt_from_len(l, a, b)
         logging.info(f"Expected Weight using Length {l} = {expected_wt}")
-        expected_len = self._get_expected_len_from_wt(w, a, b)
+        expected_len = self.get_expected_len_from_wt(w, a, b)
         logging.info(f"Expected Length Using Weight {w} = {expected_len}")
 
         # get ranges
-        exp_wt_lower, exp_wt_upper = self._get_tolerated_range(expected_wt, t)
-        exp_len_lower, exp_len_upper = self._get_tolerated_range(expected_len, t)
+        exp_wt_lower, exp_wt_upper = self.get_tolerated_range(expected_wt, t)
+        exp_len_lower, exp_len_upper = self.get_tolerated_range(expected_len, t)
 
         # check if either is not between
         if not exp_wt_lower <= w <= exp_wt_upper or not exp_len_lower <= l <= exp_len_upper:
-            logging.info(f"exp_wt {expected_wt} not between {exp_wt_lower} and {exp_wt_upper} based on len {l}")
-
+            logging.info(f"wt {w} not between {exp_wt_lower} and {exp_wt_upper} based on len {l}")
+            logging.info(f"l {l} not between {exp_len_lower} and {exp_len_upper} based on len {l}")
             msg = f'''
                     Warning: Length-Weight Outlier!
-                    
+                    ------------------------------------------
                     Species:\t\t{specimen['species']}
                     Sex:\t\t\t{self.unabbreviate_sex(specimen['sex'])}
                     Entered Weight:\t{w} kg
-                    Entered Length:\t\t{l} cm
+                    Entered Length:\t{l} cm
                     
                     Expected length at {w} kg: 
     
@@ -1385,12 +1399,13 @@ class FishSampling(QObject):
                     Expected weight at {l} cm:
     
                         {round(exp_wt_lower, 2)} - {round(exp_wt_upper, 2)} kg
+                    ------------------------------------------
                 '''
 
             self.lwRelationshipOutlier.emit(msg)
 
     @staticmethod
-    def _get_expected_wt_from_len(length, coeff, expon):
+    def get_expected_wt_from_len(length, coeff, expon):
         """
         #94: calculate expected weight from entered length
         https://www2.dnr.state.mi.us/publications/pdfs/ifr/manual/smii%20chapter17.pdf
@@ -1402,14 +1417,14 @@ class FishSampling(QObject):
         :param expon: logarithmic exponent stored in LENGHTH_WEIGHT_RELATIONSHIP_LU per taxon and sex
         :return: float, expected fish weight
         """
-        logging.debug(f"Calculating exp. fish weight w/ W = aL^b --> {coeff}*{length}^{expon})")
+        logging.debug(f"Calculating exp. fish weight w/ W = aL^b --> {coeff}*{length}^{expon}")
         try:
             return float(coeff) * float(length)**float(expon)
         except TypeError:  # if param of None is passed in
             return None
 
     @staticmethod
-    def _get_expected_len_from_wt(weight, coeff, expon):
+    def get_expected_len_from_wt(weight, coeff, expon):
         """
         #94: calculate expected length from entered weight
         https://www2.dnr.state.mi.us/publications/pdfs/ifr/manual/smii%20chapter17.pdf
@@ -1427,7 +1442,8 @@ class FishSampling(QObject):
         except TypeError:  # if param of None is passed in
             return None
 
-    def _get_tolerated_range(self, val, tolerance):
+    @staticmethod
+    def get_tolerated_range(val, tolerance):
         """
         apply tolerance to value to get upper and lower bounds
         :param val: number

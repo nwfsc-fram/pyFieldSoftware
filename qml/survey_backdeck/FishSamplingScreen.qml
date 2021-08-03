@@ -343,7 +343,7 @@ Item {
             selection.onSelectionChanged: {
                 if (currentRow != -1) {
                     if (tvSpecimens.selection.contains(currentRow)) {
-                        fishSampling.currentSpecimenModel = model.get(currentRow)  //  #96: use current specimen
+                        fishSampling.currentSpecimenIndex = currentRow  // #94: pass index, grab selected specimen
                         var currentAdh = fishSampling.specimensModel.get(currentRow).adh;
                         if ((currentAdh !== undefined) && (currentAdh.length === 3)) {
                             stateMachine.angler = currentAdh.charAt(0);
