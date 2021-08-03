@@ -42,6 +42,7 @@
         <file>../qml/survey_backdeck/DrawingNotesDialog.qml</file>
         <file>../qml/survey_backdeck/SpeciesConflictDialog.qml</file>
         <file>../qml/survey_backdeck/RecordedByDialog.qml</file>
+        <file>../qml/survey_backdeck/LengthWeightDialog.qml</file>
 
         <!-- Images -->
         <file>../resources/images/navigation_previous_item_dark.png</file>
