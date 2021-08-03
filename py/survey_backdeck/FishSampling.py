@@ -205,6 +205,7 @@ class SpecimensModel(FramListModel):
         self.add_role_name(name="ID")
         self.add_role_name(name="specimenID")
         self.add_role_name(name="species")
+        self.add_role_name(name="taxonomyID")  # 96: added for LW relationship check
         self.add_role_name(name="adh")
         self.add_role_name(name="weight")
         self.add_role_name(name="length")
@@ -246,8 +247,8 @@ class SpecimensModel(FramListModel):
 
         # self.add_role_name(name="samplingStatus")
 
-        self.keys = ["specimenID", "adh", "species", "catchContentID", "sex", "sexRecID", "length", "lengthRecID",
-                 "weight", "weightRecID", "ageID", "ageRecID", "ageType", "stomachID", "stomachRecID",
+        self.keys = ["specimenID", "adh", "species", "taxonomyID", "catchContentID", "sex", "sexRecID", "length",
+                "lengthRecID", "weight", "weightRecID", "ageID", "ageRecID", "ageType", "stomachID", "stomachRecID",
                  "tissueID", "tissueRecID", "ovaryID", "ovaryRecID", "finclipID", "finclipRecID",
                  "intestineID", "intestineRecID", "disposition", "dispositionRecID", "tagID", "tagRecID",
                      "wholeSpecimenID", "wholeSpecimenRecID", "dispositionType", "speciesSamplingPlanID",
@@ -257,6 +258,7 @@ class SpecimensModel(FramListModel):
     def populate_model(self):
         """
         Method to populate the model when the FishSamplingScreen is opened
+        # 96: adding in taxonomyID to select statement for LW relationship check
         :return:
         """
         self.clear()
@@ -270,7 +272,7 @@ class SpecimensModel(FramListModel):
                         SELECT o.OPERATION_ID FROM OPERATIONS o, ops_children
                                 WHERE o.PARENT_OPERATION_ID = ops_children.n
                     ),
-                    parent_specimen(SPECIMEN_ID, adh, cs_catch_content_id, species) as (
+                    parent_specimen(SPECIMEN_ID, adh, cs_catch_content_id, species, taxonomy_id) as (
                         SELECT 
                                 s.SPECIMEN_ID,
                                 o.OPERATION_NUMBER ||
@@ -279,7 +281,9 @@ class SpecimensModel(FramListModel):
                                 c.RECEPTACLE_SEQ as "adh",
                                 c.CS_CATCH_CONTENT_ID,
                                 (SELECT cc.DISPLAY_NAME from CATCH_CONTENT_LU cc 
-                                    WHERE cc.CATCH_CONTENT_ID = c.CS_CATCH_CONTENT_ID) as Species
+                                    WHERE cc.CATCH_CONTENT_ID = c.CS_CATCH_CONTENT_ID) as Species,
+                                (SELECT cc.taxonomy_id from CATCH_CONTENT_LU cc 
+                                    WHERE cc.CATCH_CONTENT_ID = c.CS_CATCH_CONTENT_ID) as taxonomy_id
                         FROM OPERATIONS o
                         INNER JOIN LOOKUPS ot ON ot.LOOKUP_ID = o.OPERATION_TYPE_LU_ID
                         LEFT JOIN CATCH c ON c.OPERATION_ID = o.OPERATION_ID
@@ -294,6 +298,7 @@ class SpecimensModel(FramListModel):
                     SELECT ps.SPECIMEN_ID as specimenID
                         , ps.adh as adh
                         , ps.species as species
+                        , ps.taxonomy_id as taxonomyID
                         , ps.cs_catch_content_id as catchContentID
                         , MAX(CASE WHEN l.VALUE = 'Sex' THEN s.ALPHA_VALUE END) AS sex
                         , MAX(CASE WHEN l.VALUE = 'Sex' THEN s.SPECIMEN_ID END) AS sexRecID
@@ -1576,7 +1581,7 @@ class FishSampling(QObject):
                         SELECT o.OPERATION_ID FROM OPERATIONS o, ops_children
                                                 WHERE o.PARENT_OPERATION_ID = ops_children.n
                     ),
-                    parent_specimen(SPECIMEN_ID, adh, cs_catch_content_id, species) as (
+                    parent_specimen(SPECIMEN_ID, adh, cs_catch_content_id, species, taxonomy_id) as (
                         SELECT 
                             s.SPECIMEN_ID,
                             o.OPERATION_NUMBER ||
@@ -1585,8 +1590,10 @@ class FishSampling(QObject):
                             c.RECEPTACLE_SEQ as "adh",
                             c.CS_CATCH_CONTENT_ID,
                             (SELECT cc.DISPLAY_NAME from CATCH_CONTENT_LU cc 
-                                WHERE cc.CATCH_CONTENT_ID = c.CS_CATCH_CONTENT_ID) as Species
-                            -- c.DISPLAY_NAME as Species
+                                WHERE cc.CATCH_CONTENT_ID = c.CS_CATCH_CONTENT_ID) as Species,
+                            -- c.DISPLAY_NAME as Species,
+                            (SELECT cc.taxonomy_id from CATCH_CONTENT_LU cc 
+                                WHERE cc.CATCH_CONTENT_ID = c.CS_CATCH_CONTENT_ID) as taxonomy_id
                         FROM OPERATIONS o
                         INNER JOIN LOOKUPS ot ON ot.LOOKUP_ID = o.OPERATION_TYPE_LU_ID
                         LEFT JOIN CATCH c ON c.OPERATION_ID = o.OPERATION_ID
@@ -1600,6 +1607,7 @@ class FishSampling(QObject):
                     SELECT ps.SPECIMEN_ID as specimenID
                         , ps.adh as adh
                         , ps.species as species
+                        , ps.taxonomy_id as taxonomyID
                         , ps.cs_catch_content_id as catchContentID
                         , MAX(CASE WHEN l.VALUE = 'Sex' THEN s.ALPHA_VALUE END) AS sex
                         , MAX(CASE WHEN l.VALUE = 'Sex' THEN s.SPECIMEN_ID END) AS sexRecID
@@ -1680,7 +1688,7 @@ class FishSampling(QObject):
                         SELECT o.OPERATION_ID FROM OPERATIONS o, ops_children
                                                 WHERE o.PARENT_OPERATION_ID = ops_children.n
                     ),
-                    parent_specimen(SPECIMEN_ID, adh, cs_catch_content_id, species) as (
+                    parent_specimen(SPECIMEN_ID, adh, cs_catch_content_id, species, taxonomy_id) as (
                         SELECT 
                             s.SPECIMEN_ID,
                             o.OPERATION_NUMBER ||
@@ -1689,8 +1697,10 @@ class FishSampling(QObject):
                             c.RECEPTACLE_SEQ as "adh",
                             c.CS_CATCH_CONTENT_ID,
                             (SELECT cc.DISPLAY_NAME from CATCH_CONTENT_LU cc 
-                                WHERE cc.CATCH_CONTENT_ID = c.CS_CATCH_CONTENT_ID) as Species
-                            -- c.DISPLAY_NAME as Species
+                                WHERE cc.CATCH_CONTENT_ID = c.CS_CATCH_CONTENT_ID) as Species,
+                            -- c.DISPLAY_NAME as Species,
+                            (SELECT cc.taxonomy_id from CATCH_CONTENT_LU cc 
+                                WHERE cc.CATCH_CONTENT_ID = c.CS_CATCH_CONTENT_ID) as taxonomy_id
                         FROM OPERATIONS o
                             INNER JOIN LOOKUPS ot ON ot.LOOKUP_ID = o.OPERATION_TYPE_LU_ID
                                 LEFT JOIN CATCH c ON c.OPERATION_ID = o.OPERATION_ID
@@ -1704,6 +1714,7 @@ class FishSampling(QObject):
                 SELECT ps.SPECIMEN_ID as specimenID
                     , ps.adh as adh
                     , ps.species as species
+                    , ps.taxonomy_id as taxonomyID
                     , ps.cs_catch_content_id as catchContentID
                     , MAX(CASE WHEN l.VALUE = 'Sex' THEN s.ALPHA_VALUE END) AS sex
                     , MAX(CASE WHEN l.VALUE = 'Sex' THEN s.SPECIMEN_ID END) AS sexRecID
