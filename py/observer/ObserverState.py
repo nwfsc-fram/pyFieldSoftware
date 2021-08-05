@@ -599,6 +599,46 @@ class ObserverState(QObject):
             logging.info(f"CatchNum {c.catch_num} (ID: {c.catch}) WM5 weight updated to {new_wt}")
             self.wm5WeightChanged.emit(c.catch, new_wt)  # tell CC QML page to update too
 
+    @pyqtSlot(str, str, str, name='upsertComment')
+    def upsert_comment(self, comment_prefix, comment, appstate):
+        """
+        Use for comment update/insert oustide of Comment dialog box.
+        Find comment with prefix, if exists, replace, else insert
+        :param comment_prefix: str, e.g. CollectionMethod=
+        :param comment: str, e.g. string after prefix
+        :param appstate: str, e.g. state of app + title of current screen
+        :return: None
+        """
+        new_comment_date = ObserverDBUtil.get_arrow_datestr()
+        new_comment = f"{comment_prefix}{comment}"
+
+        # try to get comment model and update
+        try:
+            c = Comment.get(Comment.comment.contains(comment_prefix), Comment.trip == self.currentTripId)
+            Comment.update(
+                comment=new_comment,
+                comment_date=new_comment_date,
+                username=self.currentObserver
+            ).where(
+                Comment.comment_id == c.comment_id
+            ).execute()
+
+        except ValueError:  # trip id is not defined yet
+            return
+
+        # if existing comment not found, create a new one
+        except Comment.DoesNotExist:
+            Comment.create(
+                comment=new_comment,
+                comment_date=new_comment_date,
+                username=self.currentObserver,
+                trip=self.currentTripId,
+                appstateinfo=appstate
+            )
+
+        # parse comments to trips/fishing_activities
+        self.update_comments()
+
     @pyqtSlot(str, str, name='addComment')
     def add_comment(self, comment, appstate):
         """
