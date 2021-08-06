@@ -44,6 +44,7 @@ class ObserverTrip(QObject):
     currentVesselNameChanged = pyqtSignal(str, name='currentVesselNameChanged')
     tripDataChanged = pyqtSignal()  # catch-all
     collectionMethodChanged = pyqtSignal(str, arguments=['method'])
+    submittedFormsChanged = pyqtSignal(str, arguments=['forms'])
 
     def __init__(self):
         super().__init__()
@@ -67,19 +68,69 @@ class ObserverTrip(QObject):
 
         self._current_trip = None
         self._current_collection_method = None
+        self._current_submitted_forms = []
+
         self.tripsChanged.connect(self._load_trips)
 
     @pyqtProperty(str)
     def COLLECTION_METHOD_PREFIX(self):
         """
-        Constant exposed to pyQT for comment upsert
+        FIELD-2123: Constant exposed to pyQT for comment upsert
         """
         return 'CollectionMethod='
+
+    @pyqtProperty(str)
+    def FORMS_SUBMISSION_PREFIX(self):
+        """
+        FIELD-2123: Constant exposed to pyQT for comment upsert
+        """
+        return 'SubmittedForms='
+
+    @pyqtProperty(QVariant, notify=submittedFormsChanged)
+    def currentSubmittedForms(self):
+        """
+        FIELD-2123: Param for EndTripScreen submitted forms dialog
+        :return: str, DirectEntry, DirectFormHybrid, FormsOnly
+        """
+        return self._current_submitted_forms
+
+    @currentSubmittedForms.setter
+    def currentSubmittedForms(self, forms):
+        """
+        FIELD-2123: Setter to signal back to qml if value changed
+        :param forms: str, DirectEntry, DirectFormHybrid, FormsOnly
+        """
+        try:
+            forms = forms.toVariant()  # if array coming from QML, convert
+        except AttributeError:
+            pass
+
+        if self._current_submitted_forms != forms:
+            self._current_submitted_forms = forms
+            self.submittedFormsChanged.emit(','.join(forms))
+
+    def _get_current_submitted_forms(self):
+        """
+        FIELD-2123: Get collection method in Comments based on prefix
+        :return: str, DirectEntry, DirectFormHybrid, FormsOnly
+        """
+        try:
+            c = Comment.get(
+                Comment.trip == self.tripId,
+                Comment.comment.contains(self.FORMS_SUBMISSION_PREFIX)
+            )
+        except (Comment.DoesNotExist, ValueError):  # value error catches if tripId not set
+            return None
+        try:
+            # extract any text between prefix and semicolon
+            return re.search(f'{self.FORMS_SUBMISSION_PREFIX}(.*?);', c.comment)[1]
+        except TypeError:
+            return None
 
     @pyqtProperty(str, notify=collectionMethodChanged)
     def currentCollectionMethod(self):
         """
-        string received from TripDetails Catch Collection Method Buttons
+        FIELD-2123: string received from TripDetails Catch Collection Method Buttons
         :return: str, DirectEntry, DirectFormHybrid, FormsOnly
         """
         return self._current_collection_method
@@ -87,7 +138,7 @@ class ObserverTrip(QObject):
     @currentCollectionMethod.setter
     def currentCollectionMethod(self, method):
         """
-        Setter emits when val changed for updating back to UI
+        FIELD-2123: Setter emits when val changed for updating back to UI
         :param method: str, DirectEntry, DirectFormHybrid, FormsOnly
         :return:
         """
@@ -97,7 +148,7 @@ class ObserverTrip(QObject):
 
     def _get_current_collection_method(self):
         """
-        Get collection method in Comments based on prefix
+        FIELD-2123: Get collection method in Comments based on prefix
         :return: str, DirectEntry, DirectFormHybrid, FormsOnly
         """
         try:
@@ -241,6 +292,7 @@ class ObserverTrip(QObject):
         self._current_trip = None
         self._certs_model.clear()  # FIELD-2084: prevent permit to carry to next trip
         self.currentCollectionMethod = None  # similar to certs, avoid carry over to next trip
+        self.currentSubmittedForms = []
         self.tripsChanged.emit()
         self.tripIdChanged.emit('')
         self.currentVesselNameChanged.emit('')
@@ -297,6 +349,7 @@ class ObserverTrip(QObject):
             self._current_trip = trip_q
             self._current_trip_model_idx = self._trips_model.get_item_index('trip', int(value))
             self._current_collection_method = self._get_current_collection_method()
+            self._current_submitted_forms = self._get_current_submitted_forms()
             self._logger.info('Selected trip #{}'.format(self._current_trip.trip))
             self.tripIdChanged.emit(str(value))
             ObserverDBUtil.db_save_setting('trip_number', self._current_trip.trip)
