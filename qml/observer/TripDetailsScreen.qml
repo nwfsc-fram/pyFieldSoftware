@@ -655,7 +655,7 @@ Item {
                                     obsSM.currentStateName + "::Trip Details"
                                 )
                                 if (method === 'FormsEntryOnly') {
-                                    framFooter.openComments("DeckFormsOnly:")
+                                    framFooter.openComments("")
                                 }
                             }
                         }
