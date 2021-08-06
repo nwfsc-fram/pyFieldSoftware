@@ -103,6 +103,10 @@ class CountsWeights(QObject):
             self._baskets_model.clear()
         # self.dataExistsChanged.emit()
 
+    @pyqtProperty(bool, notify=unusedSignal)
+    def isPaperEntry(self):
+        return ObserverDBUtil.get_setting('current_collection_method', None) == 'FormsEntryOnly'
+
     @pyqtSlot(name="speciesIsNotCounted", result=bool)
     def _is_mixed_species(self):
         return True if self._current_species_comp_item and \
@@ -606,7 +610,7 @@ class CountsWeights(QObject):
 
             # use subsample avg extrapolation when species avg wt exists, tot basket ct is 0, and subsample ct > thresh
             count_threshold = ObserverDBUtil.get_setting('trawl_subsample_count_threshold', 75)
-            if not self._species_fish_count and self._subsample_avg_weight and self._subsample_count > int(count_threshold):
+            if not self._species_fish_count and self._subsample_avg_weight and self._subsample_count > int(count_threshold) and not self.isPaperEntry:
                 self.subsampleAvgMode = True
             else:
                 self.subsampleAvgMode = False
