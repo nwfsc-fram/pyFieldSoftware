@@ -52,6 +52,7 @@ Item {
         // Update highlights of labels of required field
         vesselLabel.highlight(!vesselIsSpecified);
         fisheryLabel.highlight(!fisheryIsSpecified);
+        lblCollectionMethod.highlight(!collectionMethodChecked);
     }
 
     Keys.forwardTo: [framNumPadDetails, keyboardMandatory] // Required for capture of Enter key
@@ -624,8 +625,9 @@ Item {
 
         RowLayout {
             // FIELD-2123: Menu to select type of catch data entry.  Required to advance to sets
+            // TODO: Prevent repeater buttons from skeweing rest of layouts
             visible: (tfFishery.text.length > 0 & tfVesselName.length > 0)
-            Label {
+            FramLabelHighlightCapable {
                 id: lblCollectionMethod
                 text: qsTr("Catch Collection\nMethod")
                 Layout.preferredWidth: gridStartTrip.labelColWidth
@@ -642,16 +644,16 @@ Item {
                 }
                 Repeater {
                     model: [
-                        'Direct\nOnly',
-                        'Direct/Form\nHybrid',
-                        'Forms\nOnly'
+                        'Direct\nEntry\nOnly',
+                        'Direct\nForm\nHybrid',
+                        'Forms\nEntry\nOnly'
                     ]
                     ObserverGroupButton {
                         text: modelData
-                        property string dbStr: modelData.replace("\n", "").replace("/", "")  // strip for db comment
+                        property string dbStr: modelData.split("\n").join("") // strip for db comment; replaceAll DNE
                         exclusiveGroup: grpCollectionMethod
-                        Layout.preferredWidth: 120
-                        Layout.preferredHeight: ObserverSettings.default_tf_height
+                        Layout.preferredWidth: 80
+                        Layout.preferredHeight: 80
 //                        enabled: (tfFishery.text.length > 0 & tfVesselName.length > 0)
                         checked: appstate.trips.currentCollectionMethod === dbStr  // send flatstr between py and qml
                         /*
@@ -668,12 +670,13 @@ Item {
                         Connections {
                             target: appstate.trips
                             onCollectionMethodChanged: {
+                                //TODO: Why is this signal emitted once but run 3 times here?
                                 appstate.upsertComment(
                                     appstate.trips.COLLECTION_METHOD_PREFIX,
-                                    method + ';'
-                                    , "start_fg_state::Trip Details"
+                                    method + ';',
+                                    obsSM.currentStateName + "::Trip Details"
                                 )
-                                if (method === 'FormsOnly') {
+                                if (method === 'FormsEntryOnly') {
                                     framFooter.openComments("DeckFormsOnly:")
                                 }
                             }
@@ -681,11 +684,13 @@ Item {
                     }
                 }
             }
+        }
+        RowLayout {
             Label{}
             Label {
                 id: lblDeckFormReminder
                 text: (
-                      appstate.trips.currentCollectionMethod == 'FormsOnly' ||
+                      appstate.trips.currentCollectionMethod == 'FormsEntryOnly' ||
                       appstate.trips.currentCollectionMethod == 'DirectFormHybrid'
                 ) ? "Attach PDF(s) at trip end" : ""
                 Layout.preferredWidth: gridStartTrip.labelColWidth

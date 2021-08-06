@@ -52,6 +52,7 @@ Item {
         // Update highlights of labels of required field
         vesselLabel.highlight(!vesselIsSpecified);
         fisheryLabel.highlight(!fisheryIsSpecified);
+        lblCollectionMethod.highlight(!collectionMethodChecked);
     }
 
     Keys.forwardTo: [framNumPadDetails, keyboardMandatory] // Required for capture of Enter key
@@ -599,79 +600,82 @@ Item {
                     appstate.trips.currentStartPortName = text;
                 }
             }
+        }
+        RowLayout {
+            // FIELD-2123: Menu to select type of catch data entry.  Required to advance to hauls
+            visible: (tfFishery.text.length > 0 & tfVesselName.length > 0)
+            FramLabelHighlightCapable {
+                id: lblCollectionMethod
+                text: qsTr("Catch Collection\nMethod")
+                Layout.preferredWidth: gridStartTrip.labelColWidth
+                Layout.fillHeight: true
+                verticalAlignment: Text.AlignVCenter
+                font.pixelSize: 25
+            }
             RowLayout {
-                // FIELD-2123: Menu to select type of catch data entry.  Required to advance to hauls
-                visible: (tfFishery.text.length > 0 & tfVesselName.length > 0)
-                Label {
-                    id: lblCollectionMethod
-                    text: qsTr("Catch Collection\nMethod")
-                    Layout.preferredWidth: gridStartTrip.labelColWidth
-                    Layout.fillHeight: true
-                    verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: 25
+                ExclusiveGroup {
+                    id: grpCollectionMethod
+                    onCurrentChanged: {
+                        checkDetailsComplete()
+                    }
                 }
-                RowLayout {
-                    ExclusiveGroup {
-                        id: grpCollectionMethod
-                        onCurrentChanged: {
+                Repeater {
+                    model: [
+                        'Direct\nEntry\nOnly',
+                        'Direct\nForm\nHybrid',
+                        'Forms\nEntry\nOnly'
+                    ]
+                    ObserverGroupButton {
+                        text: modelData
+                        property string dbStr: modelData.split("\n").join("")  // strip for db comment; replaceAll DNE
+                        exclusiveGroup: grpCollectionMethod
+                        Layout.preferredWidth: 80
+                        Layout.preferredHeight: 80
+//                        enabled: (tfFishery.text.length > 0 & tfVesselName.length > 0)
+                        checked: appstate.trips.currentCollectionMethod === dbStr  // send flatstr between py and qml
+                        /*
+                        1. set currentCollectionMethod
+                        2. if val has changed, emit python signal collectionMethodChanged
+                        3. Use stateMachine.upsertComment with emitted value to upsert comment
+                        */
+                        onClicked: {
+                            if (checked) {
+                                appstate.trips.currentCollectionMethod = dbStr
+                            }
                             checkDetailsComplete()
                         }
-                    }
-                    Repeater {
-                        model: [
-                            'Direct\nOnly',
-                            'Direct/Form\nHybrid',
-                            'Forms\nOnly'
-                        ]
-                        ObserverGroupButton {
-                            text: modelData
-                            property string dbStr: modelData.replace("\n", "").replace("/", "")  // strip for db comment
-                            exclusiveGroup: grpCollectionMethod
-                            Layout.preferredWidth: 120
-                            Layout.preferredHeight: ObserverSettings.default_tf_height
-    //                        enabled: (tfFishery.text.length > 0 & tfVesselName.length > 0)
-                            checked: appstate.trips.currentCollectionMethod === dbStr  // send flatstr between py and qml
-                            /*
-                            1. set currentCollectionMethod
-                            2. if val has changed, emit python signal collectionMethodChanged
-                            3. Use stateMachine.upsertComment with emitted value to upsert comment
-                            */
-                            onClicked: {
-                                if (checked) {
-                                    appstate.trips.currentCollectionMethod = dbStr
-                                }
-                                checkDetailsComplete()
-                            }
 
-                            Connections {
-                                target: appstate.trips
-                                onCollectionMethodChanged: {
-                                    appstate.upsertComment(
-                                        appstate.trips.COLLECTION_METHOD_PREFIX,
-                                        method + ';'
-                                        , "start_trawl_state::Trip Details"
-                                    )
-                                    if (method === 'FormsOnly') {
-                                        framFooter.openComments("DeckFormsOnly:")
-                                    }
+                        Connections {
+                            target: appstate.trips
+                            onCollectionMethodChanged: {
+                                //TODO: Why is this signal emitted once but run 3 times here?
+                                appstate.upsertComment(
+                                    appstate.trips.COLLECTION_METHOD_PREFIX,
+                                    method + ';',
+                                    obsSM.currentStateName + "::Trip Details"
+                                )
+                                if (method === 'FormsEntryOnly') {
+                                    framFooter.openComments("DeckFormsOnly:")
                                 }
                             }
                         }
                     }
                 }
-                Label{}
-                Label {
-                    id: lblDeckFormReminder
-                    text: (
-                          appstate.trips.currentCollectionMethod == 'FormsOnly' ||
-                          appstate.trips.currentCollectionMethod == 'DirectFormHybrid'
-                    ) ? "Attach PDF(s) at trip end" : ""
-                    Layout.preferredWidth: gridStartTrip.labelColWidth
-                    Layout.fillHeight: true
-                    verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: 18
-                    color: "red"
-                }
+            }
+        }
+        RowLayout {
+            Label{}
+            Label {
+                id: lblDeckFormReminder
+                text: (
+                      appstate.trips.currentCollectionMethod == 'FormsEntryOnly' ||
+                      appstate.trips.currentCollectionMethod == 'DirectFormHybrid'
+                ) ? "Attach PDF(s) at trip end" : ""
+                Layout.preferredWidth: gridStartTrip.labelColWidth
+                Layout.fillHeight: true
+                verticalAlignment: Text.AlignVCenter
+                font.pixelSize: 18
+                color: "red"
             }
         }
     } // GridLayout
