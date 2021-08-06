@@ -105,6 +105,9 @@ class ObserverTrip(QObject):
         except AttributeError:
             pass
 
+        if not isinstance(forms, list):
+            self._logger.error(f"currentSubmittedForms must be list; {type(forms)} passed instead.")
+
         if self._current_submitted_forms != forms:
             self._current_submitted_forms = forms
             self.submittedFormsChanged.emit(','.join(forms))
@@ -120,12 +123,12 @@ class ObserverTrip(QObject):
                 Comment.comment.contains(self.FORMS_SUBMISSION_PREFIX)
             )
         except (Comment.DoesNotExist, ValueError):  # value error catches if tripId not set
-            return None
+            return []
         try:
-            # extract any text between prefix and semicolon
-            return re.search(f'{self.FORMS_SUBMISSION_PREFIX}(.*?);', c.comment)[1]
+            # extract any text between prefix and semicolon, split into list
+            return re.search(f'{self.FORMS_SUBMISSION_PREFIX}(.*?);', c.comment)[1].split(',')
         except TypeError:
-            return None
+            return []
 
     @pyqtProperty(str, notify=collectionMethodChanged)
     def currentCollectionMethod(self):
@@ -145,6 +148,10 @@ class ObserverTrip(QObject):
         if self._current_collection_method != method:
             self._current_collection_method = method
             self.collectionMethodChanged.emit(method)
+            if not method:
+                ObserverDBUtil.clear_setting('current_collection_method')
+            else:
+                ObserverDBUtil.db_save_setting('current_collection_method', method)
 
     def _get_current_collection_method(self):
         """
@@ -348,8 +355,8 @@ class ObserverTrip(QObject):
                                (Trips.user == current_user_id))
             self._current_trip = trip_q
             self._current_trip_model_idx = self._trips_model.get_item_index('trip', int(value))
-            self._current_collection_method = self._get_current_collection_method()
-            self._current_submitted_forms = self._get_current_submitted_forms()
+            self.currentCollectionMethod = self._get_current_collection_method()  # using pyqt signal to access setter
+            self.currentSubmittedForms = self._get_current_submitted_forms()  # using pyqt signal to access setter
             self._logger.info('Selected trip #{}'.format(self._current_trip.trip))
             self.tripIdChanged.emit(str(value))
             ObserverDBUtil.db_save_setting('trip_number', self._current_trip.trip)
@@ -387,7 +394,8 @@ class ObserverTrip(QObject):
     def clear_trip_id(self):
         self._current_trip = None
         self._current_trip_model_idx = None
-        self._current_collection_method = None
+        self.currentCollectionMethod = None
+        self.currentSubmittedForms = None
         self._tickets_model.clear()
         self._certs_model.clear()
         self._logger.info('Cleared current Trip ID.')
