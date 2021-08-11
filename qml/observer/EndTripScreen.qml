@@ -204,6 +204,9 @@ Item {
             ObserverSunlightButton {
                 id: btnSubmissionForms
                 width: 100
+                // FIELD-2123: underline/bold if nothing has been selected yet
+                txtBold: appstate.trips.currentSubmittedForms.length === 0
+                txtUnderline: appstate.trips.currentSubmittedForms.length === 0
                 Layout.leftMargin: 50
                 Layout.rightMargin: 50
                 Layout.preferredWidth: 150

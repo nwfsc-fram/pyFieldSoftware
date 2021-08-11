@@ -18,7 +18,7 @@ Button {
     property string bgColor: "lightgray"
     property string highlightColor: "white"
     property int fontsize: 20
-
+    property bool txtUnderline: false  // FIELD-2123: underline text if button is required field(s)
     property bool txtBold: false
 
     style: ButtonStyle {
@@ -30,6 +30,7 @@ Button {
             font.pixelSize: fontsize
             color: txtColor
             font.bold: txtBold
+            font.underline: txtUnderline
             text: control.text
         }
         background: Rectangle {
