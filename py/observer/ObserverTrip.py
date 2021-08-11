@@ -395,7 +395,7 @@ class ObserverTrip(QObject):
         self._current_trip = None
         self._current_trip_model_idx = None
         self.currentCollectionMethod = None
-        self.currentSubmittedForms = None
+        self.currentSubmittedForms = []
         self._tickets_model.clear()
         self._certs_model.clear()
         self._logger.info('Cleared current Trip ID.')
