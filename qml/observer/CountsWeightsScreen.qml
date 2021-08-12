@@ -835,7 +835,7 @@ Item {
             TableViewColumn {
                 role: "is_subsample"
                 title: "SS"
-                visible: screenCW.speciesIsCounted()
+                visible: screenCW.speciesIsCounted() & !appstate.catches.species.counts_weights.isPaperEntry
                 width: 50
                 delegate: Text {
                     text: styleData.value ? "X" : ""
@@ -1081,6 +1081,7 @@ Item {
 //                    property int widthTF: 100
 
                 RowLayout {
+                    visible: !appstate.catches.species.counts_weights.isPaperEntry
                     anchors.right: parent.right
                     Label {
                         id: lblSubsampleWt
@@ -1112,6 +1113,7 @@ Item {
                     }
                 }
                 RowLayout {
+                    visible: !appstate.catches.species.counts_weights.isPaperEntry
                     anchors.right: parent.right
                     Label {
                         id: lblSubsampleCt
@@ -1144,6 +1146,7 @@ Item {
                     }
                 }
                 RowLayout {
+                    visible: !appstate.catches.species.counts_weights.isPaperEntry
                     anchors.right: parent.right
                     Label {
                         id: lblSubsampleAvg
@@ -1207,7 +1210,7 @@ Item {
                     Layout.preferredWidth: 150
                     Layout.alignment: Qt.AlignHCenter
                     checkable: true
-                    visible: btnEditBasket.checked && screenCW.speciesIsCounted()
+                    visible: btnEditBasket.checked && screenCW.speciesIsCounted() & !appstate.catches.species.counts_weights.isPaperEntry
                     checked: tvBaskets.model.get(tvBaskets.currentRow).is_subsample === 1
                     onClicked: {
                         /*

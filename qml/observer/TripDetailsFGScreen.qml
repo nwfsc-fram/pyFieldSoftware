@@ -39,14 +39,20 @@ Item {
         if (!fisheryIsSpecified) {
             console.debug("Trip's fishery not yet specified.");
         }
+        // FIELD-2123: collection method required
+        var collectionMethodChecked = (grpCollectionMethod.current)
+        if (!collectionMethodChecked) {
+            console.debug("Collection Method not checked!")
+        }
 
         // Update navigation
-        var detailsComplete = vesselIsSpecified && fisheryIsSpecified;
+        var detailsComplete = vesselIsSpecified && fisheryIsSpecified && collectionMethodChecked;
         framHeader.forwardEnable(detailsComplete);
 
         // Update highlights of labels of required field
         vesselLabel.highlight(!vesselIsSpecified);
         fisheryLabel.highlight(!fisheryIsSpecified);
+        lblCollectionMethod.highlight(!collectionMethodChecked);
     }
 
     Keys.forwardTo: [framNumPadDetails, keyboardMandatory] // Required for capture of Enter key
@@ -616,8 +622,85 @@ Item {
                 readOnly: true;
             }
         }
-    } // GridLayout
 
+        RowLayout {
+            // FIELD-2123: Menu to select type of catch data entry.  Required to advance to sets
+            // TODO: Prevent repeater buttons from skeweing rest of layouts
+            visible: (tfFishery.text.length > 0 & tfVesselName.length > 0)
+            FramLabelHighlightCapable {
+                id: lblCollectionMethod
+                text: qsTr("Catch Collection\nMethod")
+                Layout.preferredWidth: gridStartTrip.labelColWidth
+                Layout.fillHeight: true
+                verticalAlignment: Text.AlignVCenter
+                font.pixelSize: 25
+            }
+            RowLayout {
+                ExclusiveGroup {
+                    id: grpCollectionMethod
+                    onCurrentChanged: {
+                        checkDetailsComplete()
+                    }
+                }
+                Repeater {
+                    model: [
+                        'Direct\nEntry\nOnly',
+                        'Direct\nForm\nHybrid',
+                        'Forms\nEntry\nOnly'
+                    ]
+                    ObserverGroupButton {
+                        text: modelData
+                        property string dbStr: modelData.split("\n").join("") // strip for db comment; replaceAll DNE
+                        exclusiveGroup: grpCollectionMethod
+                        Layout.preferredWidth: 80
+                        Layout.preferredHeight: 80
+//                        enabled: (tfFishery.text.length > 0 & tfVesselName.length > 0)
+                        checked: appstate.trips.currentCollectionMethod === dbStr  // send flatstr between py and qml
+                        /*
+                        1. set currentCollectionMethod
+                        2. if val has changed, emit python signal collectionMethodChanged
+                        3. Use stateMachine.upsertComment with emitted value to upsert comment
+                        */
+                        onClicked: {
+                            if (checked) {
+                                appstate.trips.currentCollectionMethod = dbStr
+                            }
+                            checkDetailsComplete()
+                        }
+                        Connections {
+                            target: appstate.trips
+                            onCollectionMethodChanged: {
+                                //TODO: Why is this signal emitted once but run 3 times here?
+                                appstate.upsertComment(
+                                    appstate.trips.COLLECTION_METHOD_PREFIX,
+                                    method + ';',
+                                    obsSM.currentStateName + "::Trip Details"
+                                )
+                                if (method === 'FormsEntryOnly') {
+                                    framFooter.openComments("")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        RowLayout {
+            Label{}
+            Label {
+                id: lblDeckFormReminder
+                text: (
+                      appstate.trips.currentCollectionMethod == 'FormsEntryOnly' ||
+                      appstate.trips.currentCollectionMethod == 'DirectFormHybrid'
+                ) ? "Attach PDF(s) at trip end" : ""
+                Layout.preferredWidth: gridStartTrip.labelColWidth
+                Layout.fillHeight: true
+                verticalAlignment: Text.AlignVCenter
+                font.pixelSize: 18
+                color: "red"
+            }
+        }
+    } // GridLayout
     Rectangle {
      id: keyboardFrame // add a background for the autocomplete dropdown
      color: ObserverSettings.default_bgcolor
