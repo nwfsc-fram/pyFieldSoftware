@@ -7,11 +7,12 @@ Button {
     property int fontsize: 16
     property bool bold: false
     property color text_color: "black"
+    property int implicitWidth: 200  // default width val
 
     style: ButtonStyle {
         id: framStyle
         background: Rectangle {
-            implicitWidth: 200
+            implicitWidth: framButton.implicitWidth
             implicitHeight: 50
             border.width: control.activeFocus ? 2 : 1
             border.color: "#888"

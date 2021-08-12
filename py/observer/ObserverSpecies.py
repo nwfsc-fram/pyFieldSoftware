@@ -171,6 +171,8 @@ class ObserverSpecies(QObject):
     totalCatchCountChanged = pyqtSignal(QVariant, arguments=['count'], name='totalCatchCountChanged')
     totalCatchCountFGChanged = pyqtSignal(QVariant, arguments=['count'], name='totalCatchCountFGChanged')
     reactivateSpecies = pyqtSignal(QVariant, arguments=['speciesCompItemId'])  #FIELD-2039
+    selectedSpeciesItemChanged = pyqtSignal()
+    calculateTotalsForDrChange = pyqtSignal()
 
     species_list_types = (
         'Full',  # Full list from SPECIES table of observer.db
@@ -239,7 +241,7 @@ class ObserverSpecies(QObject):
 
         self._species_comp_items_model = ObserverSpeciesCompModel()
 
-        self._counts_weights = CountsWeights()
+        self._counts_weights = CountsWeights(self)
         self._filter_name = ''  # Filter both by common_name and by scientific_name
 
         self.current_protocol_str = ''  # store protocol lookup, e.g. 'FL, WS'
@@ -547,6 +549,15 @@ class ObserverSpecies(QObject):
             self._logger.debug(f'FG Tally avg Weight {avg_weight}')
             idx = self._get_cur_species_comp_item_idx()
 
+            # FIELD-1900: reverse engineer avg for DO/PRED fish where no weights are taken
+            if self.discardReason in ['12', '15'] and not avg_weight:
+                try:
+                    avg_weight = ObserverDBUtil.round_up(
+                        self._current_speciescomp_item.species_weight / self._current_speciescomp_item.species_number
+                    )
+                except TypeError as e:  # if weight  or number is None, catch error, continue with None avg
+                    pass
+
             self._species_comp_items_model.setProperty(
                 idx, 'avg_weight', avg_weight)
             self._logger.debug(f'Avg Weight updated to {avg_weight}')
@@ -726,6 +737,10 @@ class ObserverSpecies(QObject):
                 old_dr = self._current_speciescomp_item.discard_reason
                 self._current_speciescomp_item.discard_reason = dr
                 self._current_speciescomp_item.save()
+
+                if old_dr in ['12', '15'] or dr in ['12', '15']:
+                    self.calculateTotalsForDrChange.emit()
+
                 if old_dr:
                     bios_q = BioSpecimens.select().where(
                         (BioSpecimens.catch == self._current_species_comp.catch) &
@@ -1095,6 +1110,7 @@ class ObserverSpecies(QObject):
 
             self._logger.info('Set species item {}'.format(self._current_speciescomp_item.species_comp_item))
             self.counts_weights.currentSpeciesCompItem = item_id
+            self.selectedSpeciesItemChanged.emit()  # FIELD-2095: custom signal for species switch
         except SpeciesCompositionItems.DoesNotExist:
             self.clear_current_species_item_id()
         except ValueError:
@@ -1504,6 +1520,50 @@ class ObserverSpecies(QObject):
     @pyqtProperty(QVariant, notify=totalCatchCountChanged)
     def totalCatchCount(self):
         return self._total_haul_count
+
+    @property
+    def species_comp_item_notes(self):
+        return self._species_comp_item_notes
+
+    @species_comp_item_notes.setter
+    def species_comp_item_notes(self, notes):
+        if self._current_speciescomp_item:
+            self._current_speciescomp_item.notes = notes
+            self._current_speciescomp_item.save()
+
+    @staticmethod
+    def get_related_species(species_id):
+        """
+        If species is one of a few where multiple need to be compared,
+        return a list of related species, else return that species only
+        TODO: develop table relation ship for these groupings
+        :param species_id: species DB id (int)
+        :return: int[]
+        """
+        if species_id == 10340:  # skate unid custom handle
+            return [
+                10334,  # big skate
+                10337,  # longnose skate
+                10338,  # sandpaper skate
+                10340   # skate unid, including here per FIELD-1900
+            ]
+
+        complexes = {
+            'thornyhead': [
+                10239,  # longspine
+                10492,  # shortspine / longspine
+                10491  # shortspine
+            ],
+            'shortraker': [
+                10254,  # shortraker
+                10427,  # shortraker/rougheye/blackspotted
+                10490  # rougheye/blackspotted
+            ],
+        }
+        for species in complexes.values():
+            if species_id in species:
+                return species
+        return [species_id]
 
 
 class TestObserverSpecies(unittest.TestCase):

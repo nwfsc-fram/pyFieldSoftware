@@ -18,8 +18,10 @@ from socket import gethostname
 import sys
 import time
 
-from PyQt5.QtCore import QUrl, qInstallMessageHandler, QT_VERSION_STR
+from PyQt5.QtCore import QUrl, qInstallMessageHandler, QT_VERSION_STR, Qt
 from PyQt5.QtQml import QQmlApplicationEngine
+from PyQt5.QtWidgets import QSplashScreen, QMessageBox
+from PyQt5.QtGui import QPixmap
 
 # Note: pyinstaller doesn't copy over the 'qmldir' files required by QtQuick,
 # thus requires a build script to do the copy
@@ -46,6 +48,7 @@ from py.observer.SampleMethod import SampleMethod
 from py.observer.DiscardReason import DiscardReason
 from py.observer.CatchCategory import CatchCategory
 from py.observer.ObserverDBMigrations import ObserverDBMigrations
+from py.observer.ObserverDBCustomFuncs import ObserverDBCustomFuncs
 
 PROFILE_CODE = False
 
@@ -133,6 +136,21 @@ class ObserverLogUtility:
                     logging.info(f'Moved logfile {filename} to {dest_filepath}.')
 
 
+class OptecsSplash(QSplashScreen):
+    """
+    Class to hold splash screen config
+    Helpful: https://stackoverflow.com/questions/58661539/create-splash-screen-in-pyqt5
+    # FIELD-1471: Splash screen should help indicate when Optecs is booting
+    TODO: Make gif animated???
+    TODO: Loading screen with message and pic... progress bar???
+    """
+    def __init__(self):
+        super(QSplashScreen, self).__init__()
+        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint | Qt.SplashScreen)
+        self.setPixmap(QPixmap("./resources/images/optecsredfish.gif"))
+        self.setWindowOpacity(0.80)
+
+
 def disableQMLDiskCache():
     """
     For Qt 5.8, QML disk caching is broken (doesn't update when QML changes.)
@@ -182,16 +200,32 @@ if __name__ == '__main__' or __name__ == 'observer__main__':
     migrator.perform_migrations()
 
     connect_orm()  # ObserverORM
+    ObserverDBCustomFuncs().register_funcs()
 
     main_qml = QUrl('qrc:/qml/observer/ObserverLogin.qml')
     appGuid = '8284d07e-d07c-4aad-8874-36720e37ce53'
     app = QtSingleApplication(appGuid, sys.argv)
 
+    # splash screen to launch before loading, close later
+    splash = OptecsSplash()
+    splash.show()
+
     logging.info(f'Qt Version: {QT_VERSION_STR}')
     logging.info(get_db_version_info())
     # logging.info('after self.app')
+
     if app.isRunning():
         logging.error('Application is already running, abort.')
+        # FIELD-1471: Tell user when they're already running optecs, not working on tablet???
+        msg = QMessageBox(
+            text="Optecs is already running, shutting down...",
+            icon=QMessageBox.Critical,
+        )
+        msg.setStandardButtons(QMessageBox.NoButton)
+        msg.setWindowFlags(Qt.WindowStaysOnTopHint)
+        msg.show()
+        app.processEvents()
+        time.sleep(4)
         sys.exit(-1)
 
     engine = QQmlApplicationEngine()
@@ -236,6 +270,8 @@ if __name__ == '__main__' or __name__ == 'observer__main__':
         logging, log_filename_for_today, appstate)
 
     engine.load(main_qml)
+    splash.close()  # close splash after ObserverLogin successfully loaded
+
     engine.quit.connect(app.quit)
     ret = app.exec_()
     if PROFILE_CODE:

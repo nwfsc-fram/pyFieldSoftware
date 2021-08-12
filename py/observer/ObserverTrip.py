@@ -10,6 +10,7 @@
 
 import unittest
 import logging
+import re
 
 from PyQt5.QtCore import pyqtProperty, QObject, QVariant, pyqtSignal, pyqtSlot
 
@@ -22,7 +23,8 @@ from playhouse.shortcuts import model_to_dict, dict_to_model
 from peewee import fn, IntegrityError
 
 from py.observer.ObserverDBModels import Trips, Vessels, Settings, Users, Programs, \
-    Contacts, Ports, FishTickets, TripCertificates, IfqDealers, FishingActivities, Lookups
+    Contacts, Ports, FishTickets, TripCertificates, IfqDealers, FishingActivities, Lookups, VesselContacts, \
+    Comment
 from py.observer.ObserverDBSyncController import ObserverDBSyncController
 from py.observer.ObserverTripsModel import TripsModel
 from py.observer.FishTicketsModel import FishTicketsModel
@@ -41,6 +43,8 @@ class ObserverTrip(QObject):
     debrieferModeChanged = pyqtSignal(bool, name='debrieferModeChanged')
     currentVesselNameChanged = pyqtSignal(str, name='currentVesselNameChanged')
     tripDataChanged = pyqtSignal()  # catch-all
+    collectionMethodChanged = pyqtSignal(str, arguments=['method'])
+    submittedFormsChanged = pyqtSignal(str, arguments=['forms'])
 
     def __init__(self):
         super().__init__()
@@ -63,7 +67,109 @@ class ObserverTrip(QObject):
             self._logger.info('No trips loaded (likely first run.)')
 
         self._current_trip = None
+        self._current_collection_method = None
+        self._current_submitted_forms = []
+
         self.tripsChanged.connect(self._load_trips)
+
+    @pyqtProperty(str)
+    def COLLECTION_METHOD_PREFIX(self):
+        """
+        FIELD-2123: Constant exposed to pyQT for comment upsert
+        """
+        return 'CollectionMethod='
+
+    @pyqtProperty(str)
+    def FORMS_SUBMISSION_PREFIX(self):
+        """
+        FIELD-2123: Constant exposed to pyQT for comment upsert
+        """
+        return 'SubmittedForms='
+
+    @pyqtProperty(QVariant, notify=submittedFormsChanged)
+    def currentSubmittedForms(self):
+        """
+        FIELD-2123: Param for EndTripScreen submitted forms dialog
+        :return: str, DirectEntry, DirectFormHybrid, FormsOnly
+        """
+        return self._current_submitted_forms
+
+    @currentSubmittedForms.setter
+    def currentSubmittedForms(self, forms):
+        """
+        FIELD-2123: Setter to signal back to qml if value changed
+        :param forms: str, DirectEntry, DirectFormHybrid, FormsOnly
+        """
+        try:
+            forms = forms.toVariant()  # if array coming from QML, convert
+        except AttributeError:
+            pass
+
+        if not isinstance(forms, list):
+            self._logger.error(f"currentSubmittedForms must be list; {type(forms)} passed instead.")
+
+        if self._current_submitted_forms != forms:
+            self._current_submitted_forms = forms
+            self.submittedFormsChanged.emit(','.join(forms))
+
+    def _get_current_submitted_forms(self):
+        """
+        FIELD-2123: Get collection method in Comments based on prefix
+        :return: str, DirectEntry, DirectFormHybrid, FormsOnly
+        """
+        try:
+            c = Comment.get(
+                Comment.trip == self.tripId,
+                Comment.comment.contains(self.FORMS_SUBMISSION_PREFIX)
+            )
+        except (Comment.DoesNotExist, ValueError):  # value error catches if tripId not set
+            return []
+        try:
+            # extract any text between prefix and semicolon, split into list
+            return re.search(f'{self.FORMS_SUBMISSION_PREFIX}(.*?);', c.comment)[1].split(',')
+        except TypeError:
+            return []
+
+    @pyqtProperty(str, notify=collectionMethodChanged)
+    def currentCollectionMethod(self):
+        """
+        FIELD-2123: string received from TripDetails Catch Collection Method Buttons
+        :return: str, DirectEntry, DirectFormHybrid, FormsOnly
+        """
+        return self._current_collection_method
+
+    @currentCollectionMethod.setter
+    def currentCollectionMethod(self, method):
+        """
+        FIELD-2123: Setter emits when val changed for updating back to UI
+        :param method: str, DirectEntry, DirectFormHybrid, FormsOnly
+        :return:
+        """
+        if self._current_collection_method != method:
+            self._current_collection_method = method
+            self.collectionMethodChanged.emit(method)
+            if not method:
+                ObserverDBUtil.clear_setting('current_collection_method')
+            else:
+                ObserverDBUtil.db_save_setting('current_collection_method', method)
+
+    def _get_current_collection_method(self):
+        """
+        FIELD-2123: Get collection method in Comments based on prefix
+        :return: str, DirectEntry, DirectFormHybrid, FormsOnly
+        """
+        try:
+            c = Comment.get(
+                Comment.trip == self.tripId,
+                Comment.comment.contains(self.COLLECTION_METHOD_PREFIX)
+            )
+        except (Comment.DoesNotExist, ValueError):  # value error catches if tripId not set
+            return None
+        try:
+            # extract any text between prefix and semicolon
+            return re.search('CollectionMethod=(.*?);', c.comment)[1]
+        except TypeError:
+            return None
 
     @pyqtSlot(bool, name='setDebrieferMode')
     def set_debriefer_mode(self, is_set):
@@ -161,10 +267,17 @@ class ObserverTrip(QObject):
         """
         try:
             is_fixed_gear = ObserverTrip.get_fg_value()
-            newtrip = Trips.create(user=observer_id, vessel=vessel_id, program=program_id,
-                                   partial_trip='F', trip_status='FALSE', created_by=observer_id,
-                                   created_date=ObserverDBUtil.get_arrow_datestr(),
-                                   is_fg_trip_local=is_fixed_gear)
+            newtrip = Trips.create(
+                user=observer_id,
+                vessel=vessel_id,
+                program=program_id,
+                partial_trip='F',
+                trip_status='FALSE',
+                created_by=observer_id,
+                created_date=ObserverDBUtil.get_arrow_datestr(),
+                is_fg_trip_local=is_fixed_gear,
+                data_source=ObserverDBUtil.get_data_source()  # FIELD-2099: setting data source initially
+            )
 
             self.add_trip(newtrip)
             return newtrip
@@ -185,6 +298,8 @@ class ObserverTrip(QObject):
         self._logger.info("User ended trip # {}".format(self.tripId))
         self._current_trip = None
         self._certs_model.clear()  # FIELD-2084: prevent permit to carry to next trip
+        self.currentCollectionMethod = None  # similar to certs, avoid carry over to next trip
+        self.currentSubmittedForms = []
         self.tripsChanged.emit()
         self.tripIdChanged.emit('')
         self.currentVesselNameChanged.emit('')
@@ -240,6 +355,8 @@ class ObserverTrip(QObject):
                                (Trips.user == current_user_id))
             self._current_trip = trip_q
             self._current_trip_model_idx = self._trips_model.get_item_index('trip', int(value))
+            self.currentCollectionMethod = self._get_current_collection_method()  # using pyqt signal to access setter
+            self.currentSubmittedForms = self._get_current_submitted_forms()  # using pyqt signal to access setter
             self._logger.info('Selected trip #{}'.format(self._current_trip.trip))
             self.tripIdChanged.emit(str(value))
             ObserverDBUtil.db_save_setting('trip_number', self._current_trip.trip)
@@ -277,6 +394,8 @@ class ObserverTrip(QObject):
     def clear_trip_id(self):
         self._current_trip = None
         self._current_trip_model_idx = None
+        self.currentCollectionMethod = None
+        self.currentSubmittedForms = []
         self._tickets_model.clear()
         self._certs_model.clear()
         self._logger.info('Cleared current Trip ID.')
@@ -419,11 +538,20 @@ class ObserverTrip(QObject):
             # FIELD-1509 this breaks when app is frozen. Just building a dict instead. [didn't work quite right.]
             # FIELD-1882 issue with multiple first names
             # FIELD-1882 rewritten to search all names, but will only return first match.
+            # FIELD-2106 if dupe skippers exist in DB, need to select by vessel/active status
             skippers = {}
-            contacts_q = Contacts.select().where(Contacts.first_name.is_null(False))
+            contacts_q = Contacts.select().join(
+                VesselContacts
+            ).where(
+                (Contacts.first_name.is_null(False)) &
+                (VesselContacts.contact_status == 'A') &  # Skipper autocomplete won't offer inactive contacts
+                (VesselContacts.vessel == self._current_trip.vessel.vessel)  # Skipper must be with current vessel
+                # assuming above that self._current_trip must be set if we've gotten to skipper menu...
+            )
 
             for c in contacts_q:
                 if (c.first_name + ' ' + c.last_name) == skipper_name:
+                    self._logger.info(f"Matched skipper {skipper_name} to active FK {c.contact}")
                     return c.contact
             return None
         except Exception as e:

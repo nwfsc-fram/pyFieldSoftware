@@ -19,16 +19,18 @@ import socket
 import shutil
 import re
 
+from decimal import *
 from typing import Any, Dict, List, Type, Union
 
 from apsw import BusyError
 from peewee import Model, BigIntegerField, BooleanField, DoubleField, FloatField, ForeignKeyField, IntegerField, \
     PrimaryKeyField, SmallIntegerField, TextField, TimestampField
 from py.observer.ObserverDBBaseModel import BaseModel, database
-from py.observer.ObserverDBModels import Settings, Programs, TripChecks, SpeciesCompositionItems
+from py.observer.ObserverDBModels import Settings, Programs, TripChecks, SpeciesCompositionItems, FishingActivities
 from playhouse.apsw_ext import APSWDatabase
 from playhouse.shortcuts import dict_to_model
 from playhouse.test_utils import test_database
+from py.observer.ObserverConfig import optecs_version
 
 import unittest
 
@@ -279,6 +281,17 @@ class ObserverDBUtil:
         if datestr:
             arrow_time = arrow.get(datestr, ObserverDBUtil.default_dateformat)
             return arrow_time.format(ObserverDBUtil.javascript_dateformat)
+
+    @staticmethod
+    def convert_datestr(datestr, existing_fmt, desired_fmt):
+        """
+        pass in datestr, parse into datetime, then reformat back to string
+        :param datestr: str
+        :param existing_fmt: str (e.g. default_dateformat)
+        :param desired_fmt: str (e.g. oracle_date_format)
+        :return: str (new format)
+        """
+        return arrow.get(datestr, existing_fmt).format(desired_fmt)
 
     @staticmethod
     def log_peewee_model_dependencies(logger, dependencies, context_message=None):
@@ -571,6 +584,28 @@ class ObserverDBUtil:
             return None
 
     @staticmethod
+    def get_current_haulset_id():
+        try:
+            return int(ObserverDBUtil.get_setting('current_haulset_id'))
+        except (TypeError, ValueError):
+            return None
+
+    @staticmethod
+    def get_current_haulset_createddate():
+        """
+        Getting created_date for current selected haul/set.
+        :return: date string from database in format MM/DD/YYYY HH:mm
+        """
+        current_faid = ObserverDBUtil.get_current_haulset_id()  # database ID set when haul is selected
+        if current_faid:
+            try:
+                return FishingActivities.get(FishingActivities.fishing_activity == current_faid).created_date
+            except FishingActivities.DoesNotExist:
+                return None
+        else:
+            return None
+
+    @staticmethod
     def get_current_debriefer_mode() -> bool:
         try:
             debriefer_mode = ObserverDBUtil.get_setting('current_debriefer_mode', fallback_value=False)
@@ -599,7 +634,7 @@ class ObserverDBUtil:
 
     @staticmethod
     def get_data_source() -> str:
-        return'optecs ' + socket.gethostname()
+        return f'optecs_{optecs_version} {socket.gethostname()}'  # FIELD-2114: adding version to data_source
 
     @staticmethod
     def del_species_comp_item(comp_item_id, delete_baskets=True):
@@ -610,6 +645,20 @@ class ObserverDBUtil:
         except SpeciesCompositionItems.DoesNotExist:
             logging.error(f'Could not delete species comp item ID {comp_item_id}')
 
+    @staticmethod
+    def round_up(val, precision='.01'):
+        """
+        https://stackoverflow.com/questions/56820/round-doesnt-seem-to-be-rounding-properly#56833
+        function to properly round up
+
+        TODO: replace the Decimal rounding functionality throughout the app, using this in Sets.
+        TODO: replace in CountsWeights.tallyTimesAvgWeight, CountsWeights._calculate_totals...
+        :return: rounded float (defaults to two points of precision)
+        """
+        try:
+            return float(Decimal(val).quantize(Decimal(precision), rounding=ROUND_HALF_UP))
+        except TypeError:
+            return None
 
 class TestObserverDBUtil(unittest.TestCase):
     """

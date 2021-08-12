@@ -157,7 +157,7 @@ RowLayout {
             font.pixelSize: defaultPixelSize
             width: defaultitemwidth
             visible: false
-
+            enabled: appstate.trips.currentSubmittedForms.length > 0  // FIELD-2123: only if submitted forms selected
             MouseArea {
                 anchors.fill: parent
                 onClicked: {

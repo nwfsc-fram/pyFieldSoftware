@@ -795,6 +795,12 @@ Item {
                 width: 50
                 visible: false   // Make visible for debugging - to check sort order.
             }
+            TableViewColumn {  // FIELD-2087: debriefer QA/QC purposes
+                role: "created_date"
+                title: "Created"
+                width: 200
+                visible: appstate.trips.debrieferMode   // Make visible for debriefers
+            }
 //            TableViewColumn {
 //                role: "notes"
 //                title: "Notes"

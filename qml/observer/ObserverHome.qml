@@ -248,7 +248,9 @@ Item {
                             console.debug("ObserverHome showing Edit Trip")
                             hauls_sets_button.item_enabled = true;
                             end_button.item_enabled = true;
-                            haulsButtonElem.item_enabled = true;
+                            if (appstate.trips.currentFisheryName) {  // FIELD-2107: Go to hauls only if fishery set
+                                haulsButtonElem.item_enabled = true;
+                            }
                             modelHomeButtons.set(start_edit_idx, editTrawlElem);
 
                         } else {
@@ -267,7 +269,9 @@ Item {
                             console.debug("ObserverHome showing Edit FG Trip")
                             hauls_sets_button.item_enabled = true;
                             end_button.item_enabled = true;
-                            setsButtonElem.item_enabled = true;
+                            if (appstate.trips.currentFisheryName) {  // FIELD-2107: Go to sets only if fishery set
+                                setsButtonElem.item_enabled = true;
+                            }
                             modelHomeButtons.set(start_edit_idx, editFGElem);
 
                         } else {

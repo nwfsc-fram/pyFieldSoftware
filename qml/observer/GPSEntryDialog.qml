@@ -12,6 +12,7 @@ Dialog {
     width: 800
     height: 500
     title: "GPS Entry"
+
     property alias enable_audio: numPad.enable_audio
 
     // Capture datetime, lat/long, and depth.
@@ -534,6 +535,7 @@ Dialog {
         location_id = null;
         position_number = -1;
         depth = "";
+        labelGpsStatus.text = "";
         clearInProgress = false;
     }
 
@@ -597,12 +599,38 @@ Dialog {
                 //Layout.alignment: Qt.AlignHCenter
 
                 GridLayout { // Time/Latitude/Longitude/Depth
-                    rows: 4
+                    rows: 5
                     columns: 1
                     flow: GridLayout.TopToBottom
                     columnSpacing: 0
                     rowSpacing: 20
-
+                    RowLayout {
+                        anchors.left: parent.left
+                        FramButton {
+                            id: btnGetLatLon
+                            text: "Tablet GPS Lat/Lon"
+                            Layout.leftMargin: 20
+                            implicitWidth: 100
+                            onClicked: {
+                                appstate.hauls.locations.tabletGPS.getGPSLatLon()
+                            }
+                        }
+                        Label {}  // spacer
+                        Label {
+                            id: labelGpsStatus
+                            text: ""
+                            font.pixelSize: 14
+                        }
+                        Connections {
+                            target: appstate.hauls.locations.tabletGPS
+                            onStatusChanged: {
+                                // pass custom text from python signal
+                                labelGpsStatus.text = s
+                                labelGpsStatus.color = color
+                                labelGpsStatus.font.pixelSize = size
+                            }
+                        }
+                    }
                     RowLayout { // TIME
                         // Give extra row space between Time and Latitude (columns aren't aligned, diff measures)
                         Layout.alignment: Qt.AlignHCenter || Qt.AlignTop
@@ -643,8 +671,14 @@ Dialog {
                             id: dateLocationPicker
                             enable_audio: numPad.enable_audio
                             onDateAccepted: {
-                                console.info("Picked: start datetime: " + selected_date);
+                                console.info("Picked start datetime: " + selected_date);
                                 time_val = selected_date;
+                            }
+                        }
+                        Connections {
+                            target: appstate.hauls.locations.tabletGPS
+                            onTimestampChanged: {
+                                time_val = new Date(ts)
                             }
                         }
                     }
@@ -853,6 +887,14 @@ Dialog {
                             Layout.preferredHeight: default_tf_height
                             verticalAlignment: Text.AlignTop
                         }
+                        Connections {
+                            target: appstate.hauls.locations.tabletGPS
+                            onLatitudeChanged: {
+                                tfLatDeg.text = appstate.hauls.locations.tabletGPS.latDegrees
+                                tfLatMinWhole.text = appstate.hauls.locations.tabletGPS.latMinutes
+                                tfLatMinFract.text = ((appstate.hauls.locations.tabletGPS.latSeconds/60)*100).toFixed(0)
+                            }
+                        }
                     }
                     RowLayout { // LONGITUDE
                         spacing: 0
@@ -1034,6 +1076,14 @@ Dialog {
                             Layout.preferredHeight: default_tf_height
                             verticalAlignment: Text.AlignTop
                         }
+                        Connections {
+                            target: appstate.hauls.locations.tabletGPS
+                            onLongitudeChanged: {
+                                tfLongDeg.text = Math.abs(appstate.hauls.locations.tabletGPS.lonDegrees)
+                                tfLongMinWhole.text = appstate.hauls.locations.tabletGPS.lonMinutes
+                                tfLongMinFract.text = ((appstate.hauls.locations.tabletGPS.lonSeconds/60)*100).toFixed(0)
+                            }
+                        }
                     }
                     RowLayout { // DEPTH
                         FramLabel {
@@ -1099,6 +1149,12 @@ Dialog {
                                     }
                                 }
                                 ****************************/
+                            }
+                            Connections {
+                                target: appstate.hauls.locations.tabletGPS
+                                onFocusDepthField: {
+                                    tfDepth.forceActiveFocus()
+                                }
                             }
                         }
                     }

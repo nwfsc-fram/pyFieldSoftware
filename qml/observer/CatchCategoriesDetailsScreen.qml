@@ -211,7 +211,7 @@ Item {
                     Label {
                         Layout.alignment: Qt.AlignLeft
                         id: labelRequiredFields
-                        Layout.preferredWidth: layoutCCFGDetails.itemwidth
+                        Layout.preferredWidth: layoutCCDetails.itemwidth
                         text: "Please complete all fields."
                         color: "red"
                         font.bold: true
@@ -797,7 +797,7 @@ Item {
 
                             model: discardModel
                             ObserverGroupButton {
-                                visible: discard_id != -1
+                                visible: ['-1', '12', '15'].indexOf(discard_id) == -1  // FIELD-2104
                                 text: discard_id
                                 exclusiveGroup: groupDR
                                 Layout.preferredWidth: layoutCCDetails.buttonsize
@@ -1142,8 +1142,11 @@ Item {
                     ////
                     FramNoteDialog {
                         id: dlgNumerAndDenomAreEqual
-                        message: "If weighted portion is 100%," +
-                                "\nplease use Weight Method 1."
+                        width: 420
+                        height: 350
+                        message: "If weighted portion is 100%, use WM 20.\n\nIf numerator and denominator" +
+                            "\nstart with same digit,\nenter denominator first." +
+                            "\n\n(ex: 1/10, enter the 10 first)"
                     }
                     FramNoteDialog {
                         id: dlgNumerGreaterThanDenom

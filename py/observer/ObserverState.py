@@ -324,7 +324,11 @@ class ObserverState(QObject):
         if trip_id is None:
             self._logger.info('Current trip ID is not set.')
             return
-
+        # this is also being set in ObserverTrips.tripId.setter, but fails if in debriefer mode (user mismatch).
+        # adding here to ensure trip_number param is definitely set when selecting trip
+        # TODO: consolidate logic for setting trip_number here, or rework ObserverTrip.tripId setter
+        ObserverDBUtil.db_save_setting('trip_number', trip_id)
+        self._logger.debug(f"setting SETTINGS parameter trip_number to {trip_id}")
         trip_id = int(trip_id)  # ensure integer key
         self._trips.tripId = trip_id
         self._hauls.reset()
@@ -594,6 +598,46 @@ class ObserverState(QObject):
 
             logging.info(f"CatchNum {c.catch_num} (ID: {c.catch}) WM5 weight updated to {new_wt}")
             self.wm5WeightChanged.emit(c.catch, new_wt)  # tell CC QML page to update too
+
+    @pyqtSlot(str, str, str, name='upsertComment')
+    def upsert_comment(self, comment_prefix, comment, appstate):
+        """
+        Use for comment update/insert oustide of Comment dialog box.
+        Find comment with prefix, if exists, replace, else insert
+        :param comment_prefix: str, e.g. CollectionMethod=
+        :param comment: str, e.g. string after prefix
+        :param appstate: str, e.g. state of app + title of current screen
+        :return: None
+        """
+        new_comment_date = ObserverDBUtil.get_arrow_datestr()
+        new_comment = f"{comment_prefix}{comment}"
+
+        # try to get comment model and update
+        try:
+            c = Comment.get(Comment.comment.contains(comment_prefix), Comment.trip == self.currentTripId)
+            Comment.update(
+                comment=new_comment,
+                comment_date=new_comment_date,
+                username=self.currentObserver
+            ).where(
+                Comment.comment_id == c.comment_id
+            ).execute()
+
+        except ValueError:  # trip id is not defined yet
+            return
+
+        # if existing comment not found, create a new one
+        except Comment.DoesNotExist:
+            Comment.create(
+                comment=new_comment,
+                comment_date=new_comment_date,
+                username=self.currentObserver,
+                trip=self.currentTripId,
+                appstateinfo=appstate
+            )
+
+        # parse comments to trips/fishing_activities
+        self.update_comments()
 
     @pyqtSlot(str, str, name='addComment')
     def add_comment(self, comment, appstate):

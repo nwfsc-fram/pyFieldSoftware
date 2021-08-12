@@ -539,11 +539,11 @@ Item {
                                 numPadStack.currentIndex = 1
                                 btnEditBasket.visible = false
                                 NBSM.isEnteringMatrixBasket()
+                                btnQuartersMatrix.checked = true  // defaults to 0.25 increments
                             } else {
                                 modeSC.reset();  // revert back to ready for basket wt state
                                 btnEditBasket.visible = true
                             }
-
                         }
                     }
                     // FIELD-1698: allow matrix increment toggle
@@ -561,23 +561,28 @@ Item {
                             exclusiveGroup: egMatrixToggle
                             Layout.preferredWidth: idEntry.default_width / 8
                             Layout.preferredHeight: buttonLogin.height / 2
-                            onCheckedChanged: {
+                            onCheckedChanged: { // FIELD-2115: only addModel if it doesn't exist
                                 if (checked) { // changing vals should change matrix dynamically
-                                    wtMatrix.setModel(0.1)
+                                    if (!wtMatrix.setModel(0.10)) {
+                                        wtMatrix.addModel(0.10, 0.10, 40.1)  // 40.1 allows 40 button to populate
+                                        wtMatrix.setModel(0.10)
+                                    }
                                 }
                             }
                         }
                         ObserverGroupButton {
                             id: btnQuartersMatrix
                             text: "0.25"
-                            checked: true  // default to 0.25
                             font_size: 13
                             exclusiveGroup: egMatrixToggle
                             Layout.preferredWidth: idEntry.default_width / 8
                             Layout.preferredHeight: buttonLogin.height / 2
                             onCheckedChanged: {
-                                if(checked) { // changing vals should change matrix dynamically
-                                    wtMatrix.setModel(0.25)
+                                if (checked) {  // FIELD-2115: only addModel if it doesn't exist
+                                    if (!wtMatrix.setModel(0.25)) {
+                                        wtMatrix.addModel(0.25, 0.25, 40.0)  // increment, lower bound, upper bound
+                                        wtMatrix.setModel(0.25)
+                                    }
                                 }
                             }
                         }
@@ -793,26 +798,19 @@ Item {
                                 }
                             }
                         }
-                        ObserverWeightMatrix { // FIELD-1698: Allow matrix weight selection
+                        ObserverMatrix { // FIELD-1698: Allow matrix weight selection
                             id: wtMatrix
                             y: 73
                             x: 2
-                            // setting model defaults here just to be explicit
-                            increment: 0.25
-                            lowerRange: 0.25
-                            upperRange: 40.0
                             enable_audio: true
-                            onWeightClicked: {
+                            onValClicked: {
                                 if (!gridDR.is_dr_set() && !appstate.catches.species.isRetained && !is_mix) {  // FIELD-2028
-                                        dlgSelectDRWarning.open();
-                                        return;
-                                    }
-                                modeSC.addNewBasket(weight, 1)  // matrix weight always has count of 1
+                                    dlgSelectDRWarning.open();
+                                    return;
+                                }
+                                modeSC.addNewBasket(val, 1)  // matrix weight always has count of 1
                                 warnIfAvgWeightShowsAsZero();
                                 modeSC.selectNewestRow()  // select newly added wt
-                            }
-                            Component.onCompleted: {
-                                wtMatrix.addModel(0.10, 0.10, 40.1) // for later toggling; for some reason 40.0 is not inclusive...
                             }
                         }
                     }
@@ -903,7 +901,7 @@ Item {
             id: tvBaskets
             x: grpMeasurementType.x + grpMeasurementType.width + 20
             y: 190
-            width: 400
+            width: appstate.trips.debrieferMode ? 600 : 400  // add width of created_date col if debreifer mode
             height: main.height - 335
             enabled: !isEditingExistingBasket && !NBSM.isEnteringNewBasket()
 
@@ -963,7 +961,12 @@ Item {
 //                }
 //            }
 
-
+            TableViewColumn {  // FIELD-2087: debriefer QA/QC purposes
+                role: "created_date"
+                title: "Created"
+                width: 200
+                visible: appstate.trips.debrieferMode   // Make visible for debriefers
+            }
             onClicked: {
                 if (!btnEditBasket.checked) {
                     tvBaskets.selection.clear();
@@ -1011,7 +1014,7 @@ Item {
                 property string req_type: "requested/required"
                 function prompt_if_bio_needed() {
                     var discard_reason = gridDR.current_discard_id;
-                    if (discard_reason === '12' || discard_reason === 15)
+                    if (discard_reason === '12' || discard_reason === '15') // FIELD-1910: DR vals should be strings
                     {
                         console.log('DR is dropoff/pred, not warning about Biospecimens.')
                         return;
@@ -1139,10 +1142,15 @@ Item {
                         fontsize: 30
                         property bool enableAudio: ObserverSettings.enableAudio
                         onClicked: {
-                            appstate.catches.species.counts_weights.addToTallyFGCount(1)
-                            if (enableAudio) {
-                                soundPlayer.play_sound("keyInput", false)
+                            if (!gridDR.is_dr_set() && !appstate.catches.species.isRetained) {
+                                dlgSelectDRWarning.open();  // FIELD-1900: prevent tally if DR not set
+                            } else {
+                                appstate.catches.species.counts_weights.addToTallyFGCount(1)
+                                if (enableAudio) {
+                                    soundPlayer.play_sound("keyInput", false)
+                                }
                             }
+
                         }
 
                     }
@@ -1383,7 +1391,7 @@ Item {
     ////
     FramNoteDialog {
         id: dlgSelectDRWarning
-        message: "Select a discard reason\nprior to adding baskets."
+        message: "Select a discard reason\nprior to adding baskets or counts."
         font_size: 18
     }
 

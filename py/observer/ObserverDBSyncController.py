@@ -457,7 +457,7 @@ class ObserverDBSyncController(QObject):
                 # "EVALUATION_ID", "PARTIAL_TRIP", "SKIPPER_ID", "FISHERY", "CREW_SIZE",
                 None, None, row.logbook_type, first_receiver,  # TODO: PERMIT_NUMBER, LICENSE_NUMBER
                 # "PERMIT_NUMBER", "LICENSE_NUMBER", "LOGBOOK_TYPE", "FIRST_RECEIVER",
-                None, None, None, None, ObserverDBUtil.get_data_source(),
+                None, None, None, None, ObserverDBUtil.get_data_source(),  # FIELD-2121 rewrite ds in case its changed
                 # "EXPORT", "EXTERNAL_TRIP_ID", "DO_EXPAND", "RUN_TER", "DATA_SOURCE",
                 None, None, row.fish_processed, None,
                 # "ROW_PROCESSED", "ROW_STATUS", "FISH_PROCESSED", "NO_FISHING_ACTIVITY",
@@ -839,8 +839,15 @@ class ObserverDBSyncController(QObject):
                 # "SPECIES_COMP_BASKET_ID", "SPECIES_COMP_ITEM_ID",
                 row.basket_weight_itq, row.fish_number_itq,
                 # "BASKET_WEIGHT_ITQ", "FISH_NUMBER_ITQ",
-                row.created_date, row.created_by, None,
-                # "CREATED_DATE", "CREATED_BY", "MODIFIED_BY",
+                # FIELD-2087: recast to Oracle date; TODO: fix sync_upload.SPECIES_COMP_BASKETS created_date dtype
+                ObserverDBUtil.convert_datestr(
+                    row.created_date,
+                    ObserverDBUtil.default_dateformat,
+                    ObserverDBUtil.oracle_date_format
+                ),
+                # "CREATED_DATE"
+                row.created_by, None,
+                # "CREATED_BY", "MODIFIED_BY",
                 ObserverDBUtil.get_data_source(), None, None
                 # "DATA_SOURCE", "ROW_PROCESSED", "ROW_STATUS"
             ]
@@ -895,8 +902,15 @@ class ObserverDBSyncController(QObject):
                 row.catch_addtl_baskets, row.catch.catch,
                 # "BASKET_WEIGHT",
                 row.basket_weight,
-                # "CREATED_DATE", "CREATED_BY",
-                row.created_date, row.created_by,
+                # "CREATED_DATE",
+                # FIELD-2087: recast to Oracle date; TODO: fix sync_upload.CAB created_date dtype
+                ObserverDBUtil.convert_datestr(
+                    row.created_date,
+                    ObserverDBUtil.default_dateformat,
+                    ObserverDBUtil.oracle_date_format
+                ),
+                #"CREATED_BY",
+                row.created_by,
                 # "MODIFIED_DATE", "MODIFIED_BY",
                 None, None,
                 # "DATA_SOURCE", "ROW_PROCESSED", "ROW_STATUS",

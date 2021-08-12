@@ -28,23 +28,26 @@ Item {
     signal valClicked(real val)  // signal passes value stripped from button
 
     Component.onCompleted: {
-    // load up default model from parameters defined above
+    // load up blank stored models obj
         storedModels = {}
-        matrix.addModel(increment, lowerRange, upperRange)  // add default model
-        matrix.setModel(increment)  // set default model
     }
 
     function setModel(incr) {
+    // TODO set increment, lowerRange, and upperRange whenever model is set
     // use for toggling model in matrix
-        if (storedModels[incr]) {
+        var newModel = storedModels[incr]
+        if (newModel) {
             matrix.increment = incr
             rptMatrixBtns.model = storedModels[incr]
             console.info("Matrix model incremented by " + incr)
+            return true
         } else {
             console.info("Increment model " + incr + " has not been created yet!  Please use 'addModel' func")
+            return false
         }
     }
     function addModel(incr, lr, ur) {
+        console.info("Adding model with " + incr + " " + lr + " " + ur)
         // incase you wanted to add custom model, or overwrite existing
         storedModels[incr] = matrix.createModel(incr, lr, ur)
         console.debug("New matrix model stored: increment=" + increment + ", " + lr + " - " + ur)

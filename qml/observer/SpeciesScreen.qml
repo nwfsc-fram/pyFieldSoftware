@@ -628,6 +628,12 @@ Item {
                 title: "Ct"
                 width: 70
             }
+            TableViewColumn {  // FIELD-2087: debriefer QA/QC purposes
+                role: "created_date"
+                title: "Created"
+                width: 200
+                visible: appstate.trips.debrieferMode   // Make visible for debriefers
+            }
             function activate_recalc_all() {
                 // intended only for use with WM15 (perf reasons)
                 console.warn("Recalculating weights for all " + rowCount + " rows.");

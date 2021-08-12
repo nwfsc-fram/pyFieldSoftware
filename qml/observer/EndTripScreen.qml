@@ -1,5 +1,6 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.4
+import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.2
 import QtQuick.Controls.Private 1.0
 import QtQuick.Controls.Styles 1.4
@@ -77,23 +78,143 @@ Item {
         property int editFontSize: 24
         property int defaultTFHeight: 50    // TextField height default
 
+        Dialog {
+            // FIELD-2123: dialog with checkbox menu for forms to be submitted
+            id: dlgSubmissionForms
+            modality: Qt.ApplicationModal
+            signal dialogClosed;
+            width: 325
+            height: 540
+            title: "Submitted Forms"
+            contentItem: Rectangle {
+                color: "lightgray"
+                border.color: "black"  // using windowless hint flag, so setting border
+                border.width: 6
+                anchors.fill: parent
+                ColumnLayout {
+                    id: clCboxes
+                    ColumnLayout {
+                        Label {
+                            text: "Forms to be submitted:"
+                            font.pixelSize: 20
+                            Layout.leftMargin: 20
+                            Layout.bottomMargin: 10
+                            Layout.topMargin: 20
+                        }
+                        /*
+                        Signalling logic
+                        1. Do nothing until "Save" button
+                        2. On save append checked dbStrs to array and set appstate.trips.currentSubmittedForms
+                        3. if appstate.trips.currentSubmittedForms changed, emit back string onSubmittedFormsChanged
+                        4. upsert string as comment using prefix
+                        */
+                        Repeater {
+                            id: rptFormChecks
+                            model: [
+                                "MM/SB/ST Forms",
+                                "BRD/HFLC Forms",
+                                "Deck Sheet",
+                                "Vessel Logbook Images",
+                                "Species ID Forms",
+                                "IFQ Tracking Form",
+                                "Scrap Paper",
+                                "Other",
+                                "None"
+                            ]
+                            ObserverCheckBox {
+                                text: modelData
+                                property string dbStr: modelData.split("/").join("").split(" ").join("")
+                                checkbox_size: 40
+                                Layout.alignment: Qt.AlignLeft
+                                Layout.leftMargin: 40
+                                checked: appstate.trips.currentSubmittedForms.indexOf(dbStr) > -1
+                                onCheckedChanged: {
+                                    // logic to uncheck everything if None checked
+                                    if (checked & modelData === 'None') {
+                                        for (var i = 0; i < rptFormChecks.model.length; i++) {
+                                            var cbox = rptFormChecks.itemAt(i)
+                                            if (cbox.text !== 'None' & cbox.checked) {
+                                                cbox.checked = false;
+                                            }
+                                        }
+                                    // uncheck None if anything else checked
+                                    } else if (checked) {
+                                        var noneBox = rptFormChecks.itemAt(rptFormChecks.model.indexOf('None'))
+                                        if (noneBox) {noneBox.checked = false}
+                                    }
+                                }
+                            }
+                            function getSelectedForms() {
+                                var checklist = [];
+                                for (var i = 0; i < model.length; i++) {
+                                    var cbox = rptFormChecks.itemAt(i)
+                                    if (cbox.checked) {
+                                        checklist.push(cbox.dbStr)
+                                    }
+                                }
+                                return checklist
+                            }
+                        }
+                    }
+                    RowLayout {
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        ObserverSunlightButton{
+                            id: btnSubmitForms
+                            text: "Save"
+                            anchors.centerIn: parent
+                            Layout.topMargin: 20
+                            Layout.preferredWidth: 100
+                            Layout.preferredHeight: 50
+                            onClicked: {
+                                dlgSubmissionForms.close()
+                                appstate.trips.currentSubmittedForms = rptFormChecks.getSelectedForms()
+                            }
+                        }
+                    }
+                }
+                Connections {
+                    target: appstate.trips
+                    onSubmittedFormsChanged: {
+                        appstate.upsertComment(
+                            appstate.trips.FORMS_SUBMISSION_PREFIX,
+                            forms + ";",
+                            obsSM.currentStateName + "::End Trip"
+                        )
+                    }
+                }
+            }
+            onVisibleChanged: {
+                if (visible) {
+                    contentItem.ApplicationWindow.window.flags |= Qt.FramelessWindowHint
+                }
+            }
+        }
         RowLayout {
-
             ObserverCheckBox {
                 id: checkPartialTrip
                 text: "Partial Trip"
                 checkbox_size: 40
-                Layout.fillWidth: true
+//                Layout.fillWidth: true
                 checked: appstate.trips.getData("partial_trip")
                 onCheckedChanged: {
                     appstate.trips.setData("partial_trip", checked);
                 }
             }
-            Rectangle { // spacer
-                color: "transparent"
-                Layout.preferredWidth: 10
+            ObserverSunlightButton {
+                id: btnSubmissionForms
+                width: 100
+                // FIELD-2123: underline/bold if nothing has been selected yet
+                txtBold: appstate.trips.currentSubmittedForms.length === 0
+                txtUnderline: appstate.trips.currentSubmittedForms.length === 0
+                Layout.leftMargin: 50
+                Layout.rightMargin: 50
+                Layout.preferredWidth: 150
+                text: "Forms to\nSubmit"
+                onClicked: {
+                    dlgSubmissionForms.open()
+                }
             }
-
             Label {
                 text: "Fish Processed\nDuring Trip"
                 font.pixelSize: 20

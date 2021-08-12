@@ -13,9 +13,11 @@ from decimal import *
 
 from PyQt5.QtCore import pyqtProperty, QVariant, QObject, pyqtSignal, pyqtSlot
 
+from peewee import fn
 from py.observer.ObserverBasketsModel import ObserverBasketsModel
 from py.observer.ObserverData import ObserverData
-from py.observer.ObserverDBModels import CatchAdditionalBaskets, SpeciesCompositionItems, SpeciesCompositionBaskets
+from py.observer.ObserverDBModels import CatchAdditionalBaskets, SpeciesCompositionItems, SpeciesCompositionBaskets, \
+    Trips, FishingActivities, Catches, Species, SpeciesCompositions
 from py.observer.ObserverDBUtil import ObserverDBUtil
 
 
@@ -35,12 +37,19 @@ class CountsWeights(QObject):
     tallyFGFishCountChanged = pyqtSignal(QVariant, name='tallyFGFishCountChanged')
     tallyTimesAvgWeightChanged = pyqtSignal(QVariant, name='tallyTimesAvgWeightChanged')
     tallyAvgWeightChanged = pyqtSignal(QVariant, name='tallyAvgWeightChanged')
+    recalculateRetainedFishAvg = pyqtSignal()
+    subsampleCountChanged = pyqtSignal(QVariant, arguments=['ct'])
+    subsampleWeightChanged = pyqtSignal(QVariant, arguments=['wt'])
+    subsampleAvgChanged = pyqtSignal(QVariant, arguments=['avg'])
+    subsampleAvgModeChanged = pyqtSignal(QVariant, arguments=['mode'])
     unusedSignal = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, observer_species):
         super().__init__()
         self._logger = logging.getLogger(__name__)
-
+        self._observer_species = observer_species
+        self._observer_species.calculateTotalsForDrChange.connect(self._calculate_totals)
+        
         # weight metrics
         self._species_weight = None
         self._total_tally = None
@@ -52,6 +61,11 @@ class CountsWeights(QObject):
 
         self._actual_weight = None
         self._avg_weight = None
+        self._subsample_weight = None
+        self._subsample_count = None
+        self._subsample_avg_weight = None
+        self._subsample_avg_mode = None
+        self._weighted_baskets = 0
 
         self._current_species_comp_item = None
         self._baskets_model = ObserverBasketsModel()
@@ -73,6 +87,10 @@ class CountsWeights(QObject):
 
     def _clear_counts_and_weights(self):
         self._avg_weight = None
+        if not self._is_fixed_gear:  # subsample funcs only on trawl
+            self.subsampleWeight = None  # use pyqtProperty to trigger setter
+            self.subsampleCount = None  # use pyqtProperty to trigger setter
+            self._subsample_avg_weight = None
         self._species_weight = None
         self._species_fish_count = None
         self._total_tally = None
@@ -80,9 +98,14 @@ class CountsWeights(QObject):
         self._extrapolated_species_fish_count = None
         self._actual_weight = None
         self._tally_fg_fish_count = None
+        self._weighted_baskets = 0
         if self._baskets_model:
             self._baskets_model.clear()
         # self.dataExistsChanged.emit()
+
+    @pyqtProperty(bool, notify=unusedSignal)
+    def isPaperEntry(self):
+        return ObserverDBUtil.get_setting('current_collection_method', None) == 'FormsEntryOnly'
 
     @pyqtSlot(name="speciesIsNotCounted", result=bool)
     def _is_mixed_species(self):
@@ -161,14 +184,15 @@ class CountsWeights(QObject):
             return
 
         try:
-
             new_basket = SpeciesCompositionBaskets.create(
                     species_comp_item=self._current_species_comp_item,
                     basket_weight_itq=weight,
                     fish_number_itq=count,
                     created_by=ObserverDBUtil.get_current_user_id(),
-                    created_date=ObserverDBUtil.get_arrow_datestr(date_format=ObserverDBUtil.oracle_date_format),
-                    is_fg_tally_local=1 if self._is_fixed_gear else None
+                    # FIELD-2087: Using default dateformat for time display; reformat before sync later
+                    created_date=ObserverDBUtil.get_arrow_datestr(date_format=ObserverDBUtil.default_dateformat),
+                    is_fg_tally_local=1 if self._is_fixed_gear else None,
+                    is_subsample=None
             )
             self._baskets_model.add_basket(new_basket)
             self._logger.info(f'Added basket wt: {weight} ct: {count}')
@@ -205,7 +229,8 @@ class CountsWeights(QObject):
                     catch=current_catch_id,
                     basket_weight=weight,
                     created_by=ObserverDBUtil.get_current_user_id(),
-                    created_date=ObserverDBUtil.get_arrow_datestr(date_format=ObserverDBUtil.oracle_date_format),
+                    # FIELD-2087: Using default dateformat for time display; reformat before sync later
+                    created_date=ObserverDBUtil.get_arrow_datestr(date_format=ObserverDBUtil.default_dateformat),
             )
             self._baskets_model.add_basket(new_basket)
             self._logger.info(f'Added addl basket wt: {weight}')
@@ -223,6 +248,178 @@ class CountsWeights(QObject):
     def editBasketCount(self, basket_id, count):
         self._edit_basket(basket_id, count=count)
 
+    @pyqtSlot(QVariant, QVariant, name='editBasketSubsample')
+    def editBasketSubsample(self, basket_id, flag):
+        self._edit_basket(basket_id, is_subsample=flag)
+
+    @pyqtProperty(QVariant, notify=subsampleWeightChanged)
+    def subsampleWeight(self):
+        """
+        FIELD-1471: sum weight of actual fish weighed from baskets flagged as subsample (trawl only)
+        :return: int
+        """
+        return self._subsample_weight
+
+    @subsampleWeight.setter
+    def subsampleWeight(self, wt):
+        """
+        FIELD-1471: if changed, set var, recalculate avg, and emit val
+        :param wt: float
+        :return: None (emit float)
+        """
+        if self._subsample_weight != wt or not self._subsample_weight:
+            self._subsample_weight = wt
+            self._calculate_subsample_avg()
+            self.subsampleWeightChanged.emit(wt)
+            self._logger.info(f"Subsample wt set to {wt}")
+
+    @pyqtProperty(QVariant, notify=subsampleCountChanged)
+    def subsampleCount(self):
+        """
+        FIELD-1471: Count of actual fish counted from baskets flagged as subsample (trawl only)
+        :return: int
+        """
+        return self._subsample_count
+
+    @subsampleCount.setter
+    def subsampleCount(self, ct):
+        """
+        FIELD-1471: If changed, set var, recalculate avg, and emit val
+        :param ct: count of fish from subsample baskets
+        :return: None (emit int)
+        """
+        if self._subsample_count != ct or not self._subsample_count:
+            self._subsample_count = ct
+            self._calculate_subsample_avg()
+            self.subsampleCountChanged.emit(ct)
+            self._logger.info(f"Subsample ct set to {ct}")
+
+    @pyqtProperty(QVariant, notify=subsampleAvgChanged)
+    def subsampleAvgWeight(self):
+        """
+        FIELD-1471: See _calculate_subsample_avg; divides _subsample_weight by _subsample_count
+        :return: float
+        """
+        return self._subsample_avg_weight
+
+    @subsampleAvgWeight.setter
+    def subsampleAvgWeight(self, avg):
+        """
+        FIELD-1471: if changed, set var amd emit val
+        :param avg: float
+        :return: None (emit float)
+        """
+        if self._subsample_avg_weight != avg or not self._subsample_avg_weight:
+            self._subsample_avg_weight = avg
+            self.subsampleAvgChanged.emit(self._subsample_avg_weight)
+            self._logger.info(f'Subsample avg weight set to {self._subsample_avg_weight}')
+
+    @pyqtProperty(QVariant, notify=subsampleAvgModeChanged)
+    def subsampleAvgMode(self):
+        """
+        FIELD-1471: Set to true IF (trawl only)
+            subsample count > trawl_subsample_count_threshold (param in SETTINGS) 75 by default &
+            No actual fish counts have been entered &
+            A daily subsample avg for the relevant species is available
+        IF true, count of basket is extrapolated using the daily subsample avg
+        :return: bool
+        """
+        return self._subsample_avg_mode
+
+    @subsampleAvgMode.setter
+    def subsampleAvgMode(self, mode):
+        """
+        FIELD-1471: set during _calculate_totals.
+        If changed, emit bool
+        :param mode: bool
+        :return: None (emit bool)
+        """
+        if self._subsample_avg_mode != mode:
+            self._subsample_avg_mode = mode
+            self.subsampleAvgModeChanged.emit(mode)
+
+    def _calculate_subsample_avg(self):
+        """
+        FIELD-1471: get subsample avg fish weight
+        Catch if dividing by zero, or numerator or denominator is None
+        :return: None, set subsample avg (val is then emitted)
+        """
+        try:
+            self.subsampleAvgWeight = self._subsample_weight / self._subsample_count
+            self._logger.info(f"Calculating subsample avg: {self._subsample_weight}/{self._subsample_count}")
+        except (TypeError, ZeroDivisionError) as e:
+            self.subsampleAvgWeight = None
+
+    def _calculate_subsample_weight(self):
+        """
+        FIELD-1471: get rounded avg weight of fish in same day as haul (using created_date of current haul)
+        species_list is usually single current species_id (except for hardcoded complexes in function def)
+        :return: sets float val _todays_avg_weight (exposed as todaysAvgWeight property)
+        """
+        trip_id = ObserverDBUtil.get_current_trip_id()
+        species_list = self._observer_species.get_related_species(self._observer_species.currentSpeciesItemSpeciesID)
+        haulset_date = ObserverDBUtil.get_current_haulset_createddate()
+
+        if not haulset_date or not species_list or not trip_id:
+            self.logger.error(f"haulset_date/species/trip list not retrieved, can't calculate subsample weight")
+
+        self._logger.info(f"Daily subsample weight calc'd, species {species_list} day {haulset_date[:10]} trip {trip_id}")
+
+        self.subsampleWeight = Trips.select(
+            fn.sum(SpeciesCompositionBaskets.basket_weight_itq)
+        ).join(
+            FishingActivities
+        ).join(
+            Catches, on=FishingActivities.fishing_activity == Catches.fishing_activity
+        ).join(
+            SpeciesCompositions
+        ).join(
+            SpeciesCompositionItems
+        ).join(
+            SpeciesCompositionBaskets
+        ).join(
+            Species, on=SpeciesCompositionItems.species == Species.species  # no rel_model in model def...
+        ).where(
+            (Trips.trip == trip_id) &
+            (Species.species.in_(species_list)) &
+            (fn.substr(SpeciesCompositionBaskets.created_date, 1, 10) == fn.substr(haulset_date, 1, 10)) &
+            (SpeciesCompositionBaskets.is_subsample == 1)
+        ).scalar()
+
+    def _calculate_subsample_count(self):
+        """
+        FIELD-1471: get rounded avg weight of fish in same day as haul (using created_date of current haul)
+        :return: sets float val _todays_avg_weight (exposed as todaysAvgWeight property)
+        """
+        trip_id = ObserverDBUtil.get_current_trip_id()
+        species_list = self._observer_species.get_related_species(self._observer_species.currentSpeciesItemSpeciesID)
+        haulset_date = ObserverDBUtil.get_current_haulset_createddate()
+
+        if not haulset_date or not species_list or not trip_id:
+            self.logger.error(f"haulset_date/species/trip list not retrieved, can't calculate subsample count")
+
+        self._logger.info(f"Daily subsample count calc'd, species {species_list} day {haulset_date[:10]} trip {trip_id}")
+
+        self.subsampleCount = Trips.select(
+            fn.sum(SpeciesCompositionBaskets.fish_number_itq)
+        ).join(
+            FishingActivities
+        ).join(
+            Catches, on=FishingActivities.fishing_activity == Catches.fishing_activity
+        ).join(
+            SpeciesCompositions
+        ).join(
+            SpeciesCompositionItems
+        ).join(
+            SpeciesCompositionBaskets
+        ).join(
+            Species, on=SpeciesCompositionItems.species == Species.species  # no rel_model in model def...
+        ).where(
+            (Trips.trip == trip_id) &
+            (Species.species.in_(species_list)) &
+            (fn.substr(SpeciesCompositionBaskets.created_date, 1, 10) == fn.substr(haulset_date, 1, 10)) &
+            (SpeciesCompositionBaskets.is_subsample == 1)
+        ).scalar()
 
     def _edit_basket(self, basket_id, **kwargs):
         """
@@ -235,12 +432,13 @@ class CountsWeights(QObject):
             return
         set_weight = 'weight' in kwargs.keys()
         set_count = 'count' in kwargs.keys()
+        set_subsample = 'is_subsample' in kwargs.keys()
 
         try:
             basket_q = self._get_basket_db_item(basket_id)
             # Both weight and count can be empty string. Map empty string to zero.
-            weight = None
             count = None
+            ss_flag = None
             if set_weight:
                 weight = float(kwargs['weight']) if kwargs['weight'] else None
                 if not self._is_mixed_species():
@@ -256,6 +454,11 @@ class CountsWeights(QObject):
                 basket_q.fish_number_itq = count  # Type INTEGER in DB
                 self._logger.info(f'Edit basket ct: {count}')
 
+            if set_subsample:
+                ss_flag = int(kwargs['is_subsample']) if kwargs['is_subsample'] else 0
+                basket_q.is_subsample = ss_flag
+                self._logger.info(f'is_subsample flag set to {ss_flag}')
+
             basket_q.save()
 
             idx = self._baskets_model.get_item_index('basket_primary_key', basket_id)
@@ -265,6 +468,8 @@ class CountsWeights(QObject):
                     self._baskets_model.setProperty(idx, 'basket_weight_itq', weight)  # FloatField in model
                 if set_count and not self._is_mixed_species():
                     self._baskets_model.setProperty(idx, 'fish_number_itq', count)  # IntegerField in model
+                if set_subsample:
+                    self._baskets_model.setProperty(idx, 'is_subsample', ss_flag)  # IntegerField in model
             else:
                 self._logger.error('Error looking up basket_primary_key in model.')
         except (SpeciesCompositionBaskets.DoesNotExist, CatchAdditionalBaskets.DoesNotExist) as e:
@@ -317,6 +522,7 @@ class CountsWeights(QObject):
         self._species_fish_count = None
         self._extrapolated_species_fish_count = None
         self._tally_table_fish_count = None
+        self._weighted_baskets = 0
 
         weighted_baskets = 0
         species_fish_count = 0
@@ -340,7 +546,7 @@ class CountsWeights(QObject):
                 cur_fish_count = self._baskets_model.get(i)['fish_number_itq']
 
                 if cur_wt is not None and cur_wt > 0:
-                    weighted_baskets += 1
+                    self._weighted_baskets += 1
                     species_weight += cur_wt
 
                     if cur_fish_count is not None and cur_fish_count > 0:
@@ -357,7 +563,7 @@ class CountsWeights(QObject):
         self._tally_table_fish_count = species_unweighted_count + species_fish_count
         self._species_fish_count = species_fish_count
 
-        if weighted_baskets == 0:  # Didn't find any weight data
+        if self._weighted_baskets == 0:  # Didn't find any weight data
             self._species_weight = self._extrapolated_species_weight = self._actual_weight = self._avg_weight = None
             self.emit_calculated_weights()
             return
@@ -399,17 +605,29 @@ class CountsWeights(QObject):
         # Now that we recalculated average fish weight, calculate extrapolated counts
         # noinspection PyBroadException
         if not self.isFixedGear:
+            self._calculate_subsample_weight()
+            self._calculate_subsample_count()
+
+            # use subsample avg extrapolation when species avg wt exists, tot basket ct is 0, and subsample ct > thresh
+            count_threshold = ObserverDBUtil.get_setting('trawl_subsample_count_threshold', 75)
+            if not self._species_fish_count and self._subsample_avg_weight and self._subsample_count > int(count_threshold) and not self.isPaperEntry:
+                self.subsampleAvgMode = True
+            else:
+                self.subsampleAvgMode = False
+
             try:
                 for i in range(self._baskets_model.count):  # can't iterate, so just step through
                     cur_wt = self._baskets_model.get(i)['basket_weight_itq']
                     cur_fish_count = self._baskets_model.get(i)['fish_number_itq']
 
-                    indiv_extrapolated_number = 0
-                    if cur_wt and self._avg_weight and not cur_fish_count:
-                        indiv_extrapolated_number = \
-                            Decimal(cur_wt) / Decimal(self._avg_weight)  # round(cur_wt / self._avg_weight)
-                        indiv_extrapolated_number = \
-                            float(indiv_extrapolated_number.quantize(Decimal('.01'), rounding=ROUND_HALF_UP))
+                    indiv_extrapolated_number = Decimal(0)
+                    if cur_wt and not cur_fish_count and self._subsample_avg_mode:  # extrapolate count with subsample
+                        indiv_extrapolated_number = Decimal(cur_wt) / Decimal(self._subsample_avg_weight)
+                        self._logger.info(f'Count for basket {i} using SUBSAMPLE avg = {indiv_extrapolated_number}')
+                    elif cur_wt and self._avg_weight and not cur_fish_count:
+                        indiv_extrapolated_number = Decimal(cur_wt) / Decimal(self._avg_weight)
+                        self._logger.info(f'Count for basket {i} using OTHER avg = {indiv_extrapolated_number}')
+                    indiv_extrapolated_number = float(indiv_extrapolated_number.quantize(Decimal('.01'), rounding=ROUND_HALF_UP))
                     self._baskets_model.setProperty(i, 'extrapolated_number', indiv_extrapolated_number)
                     species_extrapolated_count += indiv_extrapolated_number
             except Exception as e:
@@ -417,6 +635,14 @@ class CountsWeights(QObject):
 
             self._logger.info('Extrapolated count calculation: {}'.format(species_extrapolated_count))
             self._extrapolated_species_fish_count = round(self._species_fish_count + species_extrapolated_count)
+            if self._subsample_avg_mode == 1:
+                note = f'SPECIES_NUMBER=WEIGHT/SUBSAMPLE_AVG={species_weight}/{round(self._subsample_avg_weight, 2)}'
+                self._observer_species.species_comp_item_notes = note
+            elif self._extrapolated_species_fish_count:
+                note = f'SPECIES_NUMBER=(NO_COUNT_WEIGHT/FISH_AVG)+ACTUAL_COUNT=(' \
+                       f'{species_weight - species_counted_weight}/{ObserverDBUtil.round_up(self._avg_weight)})+{species_fish_count}'
+                self._observer_species.species_comp_item_notes = note
+
             if self._current_weight_method == '8' and self._total_tally is not None:
                 self._logger.info(f"WM8: Adding total tally {self._total_tally} to extrapolated " +
                                    f"fish count of {self._extrapolated_species_fish_count}")
@@ -529,7 +755,11 @@ class CountsWeights(QObject):
 
     @pyqtProperty(QVariant, notify=tallyFGFishCountChanged)
     def tallyTimesAvgWeight(self):
-        if self.avgWeight and self.tallyFGFishCount:
+        # FIELD-1900: avoid nulling out weight for DR 12 and 15 with null avg (avg from retained will be used)
+        if self._observer_species.discardReason in ['12', '15'] and self._weighted_baskets == 0:
+            self._logger.info(f"DR12/15 without baskets, not calculating species weight with avg val = {self.avgWeight}")
+            return self._current_species_comp_item.species_weight
+        elif self.avgWeight and self.tallyFGFishCount:
             val = Decimal(self.avgWeight) * Decimal(self.tallyFGFishCount)
             round_val = val.quantize(Decimal('.01'), rounding=ROUND_HALF_UP)
             # https://stackoverflow.com/questions/56820/round-doesnt-seem-to-be-rounding-properly#56833

@@ -75,7 +75,7 @@ Item {
                 return "";
             }
 
-            if (discard_reason === '12' || discard_reason === 15)
+            if (discard_reason === '12' || discard_reason === '15') // FIELD-1910: DR vals should be strings
             {
                 console.log('DR is dropoff/pred, not warning about Biospecimens.');
                 return "";
@@ -913,7 +913,7 @@ Item {
                     FramLabel {  // FIELD-2060, added in label
                         text: "Protocol: " + appstate.catches.species.currentProtocols
                         + (appstate.catches.species.currentBiolist ? "(" + appstate.catches.species.currentBiolist + ")" : "")
-                        + "; Biolist: " + appstate.hauls.currentBiolistNum
+                        + "; Biolist: " + appstate.sets.currentBiolistNum
                         font.pixelSize: 18
                         font.italic: true
                         Layout.preferredHeight: 35
