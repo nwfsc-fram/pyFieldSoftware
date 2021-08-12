@@ -81,7 +81,7 @@ class HookandlineFpc(QObject):
 
         appGuid = 'F3FF80BA-BA05-4277-8063-82A6DB9245A2'
         self.app = QtSingleApplication(appGuid, sys.argv)
-        self.app.setWindowIcon(QtGui.QIcon("resources/ico/hooklogger.ico"))
+        self.app.setWindowIcon(QtGui.QIcon("resources/ico/hooklogger_v2.ico"))
         if self.app.isRunning():
             sys.exit(0)
 

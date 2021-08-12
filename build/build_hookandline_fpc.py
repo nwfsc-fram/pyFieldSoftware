@@ -73,7 +73,7 @@ if sys.platform == 'win32':
       # base='Console',  # useful for debugging
       base='Win32GUI',  # use this to hide console output (releases)
       targetName='HookLogger.exe',
-      icon='../resources/ico/hooklogger.ico'
+      icon='../resources/ico/hooklogger_v2.ico'
     )
 
 # Prompt to nuke existing directory
