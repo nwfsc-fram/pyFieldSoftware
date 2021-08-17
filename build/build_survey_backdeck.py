@@ -85,7 +85,7 @@ if sys.platform == 'win32':
 #      copyDependentFiles=True,
 #      appendScriptToExe=False,
 #      appendScriptToLibrary=False,
-      icon='../resources/ico/trawl2.ico'
+      icon='../resources/ico/cutter.ico'
     )
 
 # Prompt to nuke existing directory

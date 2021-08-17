@@ -29,6 +29,7 @@ from PyQt5.QtCore import pyqtProperty, pyqtSignal, QObject
 from PyQt5 import QtCore
 from PyQt5.QtQuick import *
 from py.common.QSingleApplication import QtSingleApplication
+from PyQt5 import QtGui
 
 from py.common.FramUtil import FramUtil
 from py.common.FramLog import FramLog
@@ -87,6 +88,7 @@ class Backdeck:
 
         appGuid = 'F3FF80BA-BA05-4277-8063-82A6DB9245A5'
         self.app = QtSingleApplication(appGuid, sys.argv)
+        self.app.setWindowIcon(QtGui.QIcon("resources/ico/cutter.ico"))
         if self.app.isRunning():
             sys.exit(0)
 
