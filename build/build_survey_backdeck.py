@@ -105,4 +105,4 @@ setup(
 )
 
 # Zip up our creation
-buildzipper.create_zip_archive(base_folder=deployed_path, filedesc='CutterStation')
+buildzipper.create_zip_archive(base_folder=deployed_path, filedesc=f'CutterStation_{version}')
