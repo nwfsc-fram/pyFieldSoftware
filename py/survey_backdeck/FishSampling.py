@@ -529,8 +529,36 @@ class FishSampling(QObject):
         self._specials_model = SpecialsModel(app=self._app, db=self._db)
         self._species_full_list_model = SpeciesFullListModel(app=self._app)
         self._personnel_model = PersonnelModel(app=self._app)
+        self._current_specimen_index = None
+        self._current_specimen = None
 
         self._random_drops = None
+
+    @pyqtProperty(int)
+    def currentSpecimenIndex(self):
+        return self._current_specimen_index
+
+    @currentSpecimenIndex.setter
+    def currentSpecimenIndex(self, ix):
+        """
+        Set when user selects row from FishSampling tableview.
+        Use to set current specimen model so we get most updated data from self._specimens_model
+        :param ix: int, model index
+        """
+        self._current_specimen_index = ix
+
+    @property
+    def current_specimen(self):
+        """
+        Always pull current specimen using current index, so we're always
+        accessing updated model data
+        :return: SpecimensModel object
+        """
+        ix = self._current_specimen_index
+        if ix is None or ix < 0 or ix >= self._specimens_model.count:
+            self._current_specimen = None
+        else:
+            return self._specimens_model.get(ix)
 
     @pyqtProperty(FramListModel, notify=personnelModelChanged)
     def personnelModel(self):
