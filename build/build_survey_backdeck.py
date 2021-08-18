@@ -85,7 +85,7 @@ if sys.platform == 'win32':
 #      copyDependentFiles=True,
 #      appendScriptToExe=False,
 #      appendScriptToLibrary=False,
-      icon='../resources/ico/trawl2.ico'
+      icon='../resources/ico/cutter.ico'
     )
 
 # Prompt to nuke existing directory
@@ -105,4 +105,4 @@ setup(
 )
 
 # Zip up our creation
-buildzipper.create_zip_archive(base_folder=deployed_path, filedesc='CutterStation')
+buildzipper.create_zip_archive(base_folder=deployed_path, filedesc=f'CutterStation_{version}')
