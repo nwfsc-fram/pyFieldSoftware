@@ -519,6 +519,7 @@ class FishSampling(QObject):
     specimenObservationUpdated = pyqtSignal(int, QVariant, int, QVariant,
                                             arguments=["speciesSamplingPlanId",
                                                        "modelType", "id", "tagNumber"])
+    lwRelationshipOutlier = pyqtSignal(str, arguments=["message"])
 
     def __init__(self, app=None, db=None):
         super().__init__()
@@ -1294,6 +1295,166 @@ class FishSampling(QObject):
         except Exception as ex:
 
             logging.error(f"Error upserting the specimen child record: {ex}")
+
+    def _get_lw_relationship_params(self, species, sex_code):
+        """
+        #94: get coefficient, exponent, and tolerance from
+        LENGTH_WEIGHT_RELATIONSHIP_LU and SETTINGS tables
+        :param species: str unique display name of species TODO: use taxonomyID instead, but probably doesn't matter
+        :param sex_code: str, M (Male), F (Female), U (unsexed)
+        :return: dict{coeff(a): float, exponent(b): float, tolerance(t): float}
+        """
+        try:
+            results = self._app.rpc.execute_query(
+                sql='''
+                            select  lw.lw_coefficient_cmkg as coefficient_a
+                                    ,lw.lw_exponent_cmkg as exponent_b
+                                    ,(select value from settings where parameter = 'Length Weight Relationship Tolerance') t
+                            from    length_weight_relationship_lu lw
+                            join    catch_content_lu cc
+                                    on lw.taxonomy_id = cc.taxonomy_id
+                            where   lower(cc.display_name) = lower(?)
+                                    and sex_code = ?
+                                    and lw_coefficient_cmkg is not null
+                                    and lw_exponent_cmkg is not null
+                        ''',
+                params=[species, sex_code]
+            )
+        except Exception as e:
+            logging.warning(f"Unable to retrieve Length/Weight relationship params; {e}")
+            return {}
+        try:
+            return [{'a': r[0], 'b': r[1], 't': r[2]} for r in results][0]
+        except IndexError as e:
+            logging.info(f"LW relationship parameters not available for taxonomy {species} sex {sex_code}; {e}")
+            return {}
+
+    @staticmethod
+    def unabbreviate_sex(sex_abbrev):
+        """
+        :param sex_abbrev: string.  M, F, U
+        :return: Male, Female, Unsexed
+        """
+        try:
+            return dict([('F', 'Female'), ('M', 'Male'), ('U', 'Unsexed')])[sex_abbrev]
+        except KeyError:
+            return None
+
+    @pyqtSlot(name="checkLWRelationship")
+    def check_lw_relationship(self):
+        """
+        #94: Use length, weight, coefficient, and exponent value for current specimen species
+        to determine if the two are within the tolerated range.
+        Coefficient and exponent are pulled based on taxonomy_id and sex code from length_weight_relationship_lu
+        Tolerance value is pulled and set in SETTINGS table
+
+        W = aL^b
+        log W = log a + b·log L
+        :return: None; Emit message for display in FishSamplingEntryDialog.qml
+        """
+        # no current specimen, no calculation
+        if not self._current_specimen:
+            return
+        specimen = self._current_specimen
+        lw_params = self._get_lw_relationship_params(specimen['species'], specimen['sex'])
+
+        # parse and convert all values to float, catch and return if any fail
+        try:
+            l = float(specimen['length'])  # entered specimen length (cm)
+            w = float(specimen['weight'])  # entered specimen weight (kg)
+            a = float(lw_params['a'])  # coefficient in equation W = aL^b
+            b = float(lw_params['b'])  # exponent in equation W = aL^b
+            t = float(lw_params['t'])  # tolerance value pulled from SETTINGS table
+        except (KeyError, TypeError) as e:
+            logging.info(f"Unable to obtain len/wt/a/b/t param(s) for {specimen['species']}; {e}")
+            return
+
+        logging.info(f"Weight Entered: {w}. Length Entered: {l}, a: {a}, b: {b}")
+
+        # calc expected values
+        expected_wt = self.get_expected_wt_from_len(l, a, b)
+        logging.info(f"Expected Weight using Length {l} = {expected_wt}")
+        expected_len = self.get_expected_len_from_wt(w, a, b)
+        logging.info(f"Expected Length Using Weight {w} = {expected_len}")
+
+        # get ranges
+        exp_wt_lower, exp_wt_upper = self.get_tolerated_range(expected_wt, t)
+        exp_len_lower, exp_len_upper = self.get_tolerated_range(expected_len, t)
+
+        # check if either is not between
+        if not exp_wt_lower <= w <= exp_wt_upper or not exp_len_lower <= l <= exp_len_upper:
+            logging.info(f"wt {w} not between {exp_wt_lower} and {exp_wt_upper} based on len {l}")
+            logging.info(f"l {l} not between {exp_len_lower} and {exp_len_upper} based on len {l}")
+            msg = f'''
+                        Warning: Length-Weight Outlier!
+                        ------------------------------------------
+                        Species:\t\t{specimen['species']}
+                        Sex:\t\t\t{self.unabbreviate_sex(specimen['sex'])}
+                        Entered Weight:\t{w} kg
+                        Entered Length:\t{l} cm
+                        
+                        Expected length at {w} kg: 
+        
+                            {round(exp_len_lower, 2)} - {round(exp_len_upper, 2)} cm
+                        
+                        Expected weight at {l} cm:
+        
+                            {round(exp_wt_lower, 2)} - {round(exp_wt_upper, 2)} kg
+                        ------------------------------------------
+                    '''
+
+            self.lwRelationshipOutlier.emit(msg)
+
+    @staticmethod
+    def get_expected_wt_from_len(length, coeff, expon):
+        """
+        #94: calculate expected weight from entered length
+        https://www2.dnr.state.mi.us/publications/pdfs/ifr/manual/smii%20chapter17.pdf
+        Fish length-weight relationship can be written as (solving for W)
+        W = aL^b --> log W = log a + b·log L --> W = 10^(log a + b * log10(L)))
+        *Both coefficient and exponent values are alread on log scale
+        :param len: actual measured length of fish (cm)
+        :param coeff: logarithmic coefficient stored in LENGHTH_WEIGHT_RELATIONSHIP_LU per taxon and sex
+        :param expon: logarithmic exponent stored in LENGHTH_WEIGHT_RELATIONSHIP_LU per taxon and sex
+        :return: float, expected fish weight
+        """
+        logging.debug(f"Calculating exp. fish weight w/ W = aL^b --> {coeff}*{length}^{expon}")
+        try:
+            return float(coeff) * float(length)**float(expon)
+        except TypeError:  # if param of None is passed in
+            return None
+
+    @staticmethod
+    def get_expected_len_from_wt(weight, coeff, expon):
+        """
+        #94: calculate expected length from entered weight
+        https://www2.dnr.state.mi.us/publications/pdfs/ifr/manual/smii%20chapter17.pdf
+        Fish length-weight relationship can be written as (solving for L)
+        W = aL^b --> log W = log a + b·log L --> 10^((log10(W) - log a)/b)
+        *Both coefficient and exponent values are alread on log scale
+        :param len: actual measured length of fish
+        :param coeff: logarithmic coefficient stored in LENGHTH_WEIGHT_RELATIONSHIP_LU per taxon and sex
+        :param expon: logarithmic exponent stored in LENGHTH_WEIGHT_RELATIONSHIP_LU per taxon and sex
+        :return: float, expected fish length
+        """
+        logging.debug(f"Calculating exp. fish length w/ L = (W/a)^(1/b) --> ({weight}/{coeff})^(1/{expon})")
+        try:
+            return (float(weight)/float(coeff))**(1/float(expon))
+        except TypeError:  # if param of None is passed in
+            return None
+
+    @staticmethod
+    def get_tolerated_range(val, tolerance):
+        """
+        apply tolerance to value to get upper and lower bounds
+        :param val: number
+        :param tolerance: float
+        :return: tuple; (lower bound, upper bound)
+        """
+        try:
+            return val * (1.0-float(tolerance)), val * (1.0+float(tolerance))
+        except TypeError:  # if param of None is passed in
+            return None, None
 
     @pyqtSlot(str, name="observationToDbMapping", result=str)
     def observation_to_db_mapping(self, action: str) -> str:
