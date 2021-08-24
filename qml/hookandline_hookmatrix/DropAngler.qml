@@ -578,9 +578,9 @@ Item {
     EditTimeDialog {
         id: dlgEditTime
         onAccepted: {
-            console.info('new time: ' + numPad.tfMinutes.text + ":" + numPad.tfSeconds.text);
+            var newTime = zfill(numPad.tfMinutes.text, 2) + ":" + zfill(numPad.tfSeconds.text, 2); // #91: force zfill
+            console.info('new time: ' + newTime);
             console.info('btn: ' + editedButton.text);
-            var newTime = numPad.tfMinutes.text + ":" + numPad.tfSeconds.text;
             var buttonType = editedButton.text.split("\n")[0]
             editedButton.text = buttonType + "\n" + newTime;
             drops.upsertOperationAttribute(operationId, luType, buttonType, valueType, newTime, "Angler " + anglerLetter);
