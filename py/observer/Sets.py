@@ -202,7 +202,8 @@ class Sets(QObject):
                 (SpeciesCompositionBaskets.fish_number_itq.is_null(False)) & # baskets with actual counts
                 (SpeciesCompositionItems.species.in_(species_ids))  # species associated with CC
             ).scalar()
-            avg = ObserverDBUtil.round_up(avg)  # round here, precision will propagate to downstream vals
+            # DO NOT ROUND HERE
+            # avg = ObserverDBUtil.round_up(avg)  # round here, precision will propagate to downstream vals
             self._logger.info(f"Retained avg for set {faid}, species_ids {species_ids} = {avg}")
             return avg
 
@@ -320,7 +321,8 @@ class Sets(QObject):
             self._logger.info(f"related species for {i.species.species} = {related_species}")
             avg = self._calculate_retained_spp_avg(related_species)
             try:
-                new_wt = avg * i.species_number
+                new_wt = ObserverDBUtil.round_up(avg * i.species_number)
+                self._logger.info(f"New rounded weight = {avg}*{i.species_number} = {new_wt}")
             except TypeError:
                 self._logger.warning(f"No ret avg for species {i.cname}, DO/Pred comp item {i.species_comp_item} wt = NULL")
                 null_species.append(i.cname)
