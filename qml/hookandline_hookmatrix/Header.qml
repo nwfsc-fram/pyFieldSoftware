@@ -16,7 +16,7 @@ BorderImage {
     property string forwardTitle: ""  // sets text label for forward nav
     property string backwardTitle: ""  // sets text label for backward nav
     property string title: "Title"  // center title text
-    property int nav_click_width: 100 // width of toolbar area that can be clicked to nav back/fwd
+    property int nav_click_width: 175 // width of toolbar area that can be clicked to nav back/fwd
     property bool forwardEnabled: false  // allow disabling of forward nav
     property bool forwardVisible: false  // allow hiding of forward nav
     property variant forwardAction: null;  // do we need this???
