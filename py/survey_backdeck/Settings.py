@@ -1,12 +1,7 @@
 __author__ = 'Will.Smith'
 # -----------------------------------------------------------------------------
-# Name:        ObserverSettings.py
-# Purpose:     Global settings data (Observer)
-#
-# Author:      Will Smith <will.smith@noaa.gov>
-#
-# Created:     Jan 29, 2016
-# License:     MIT
+# Name:        Settings.py
+
 # ------------------------------------------------------------------------------
 
 import time
@@ -18,28 +13,45 @@ from dateutil import parser
 # import win32print
 # from win32print import EnumPrinters, PRINTER_ENUM_NAME, PRINTER_ENUM_LOCAL
 from py.common.FramUtil import FramUtil
+from py.common.FramListModel import FramListModel
 import logging
 import unittest
 import re
 
 # from py.observer.ObserverData import ObserverData
 
+class SettingsModel(FramListModel):
+    """
+    Model used in SettingsScreen TableView to expose settings params
+    """
+    def __init__(self):
+        super().__init__()
+        self.add_role_name(name="settingsId")
+        self.add_role_name(name="parameter")
+        self.add_role_name(name="type")
+        self.add_role_name(name="value")
+        self.add_role_name(name="is_active")
 
 class Settings(QObject):
     """
-    Handles Trawl Backdeck settings and related database interactions
+    Handles Survey Backdeck settings and related database interactions
     """
     # onPrinterChanged = pyqtSignal()
     printerChanged = pyqtSignal()
     pingStatusReceived = pyqtSignal(str, bool, arguments=['message', 'success'])
+    rebootRequired = pyqtSignal(str, arguments=['param'])
 
-    def __init__(self, db):
+    def __init__(self, app=None, db=None):
         super().__init__()
         self._logger = logging.getLogger(__name__)
 
         # TODO (todd.hay) Tie to the SETTINGS table values
         self._db = db
+        self._app = app
         self._settings = self._initialize_settings()
+        self._model = SettingsModel()
+        self._build_model()
+
         try:
             self._wheelhouse_ip_address = self._settings["Wheelhouse IP Address"]
             self._test_wheelhouse_ip_address = self._settings["Test Wheelhouse IP Address"]
@@ -63,9 +75,48 @@ class Settings(QObject):
 
         return settings
 
+    @pyqtProperty(QVariant)
+    def model(self):
+        return self._model
+
+    def _build_model(self):
+        """
+        Load settings model using SETTINGS table
+        :return: None
+        """
+        sql = '''
+                select
+                            SETTINGS_ID
+                            ,PARAMETER
+                            ,VALUE
+                FROM        SETTINGS
+                WHERE       IS_ACTIVE = 'True'
+            '''
+        for row in self._db.execute(query=sql):
+            self._model.appendItem({'settingsId': row[0], 'parameter': row[1], 'value': row[2]})
+
+    @pyqtSlot(QVariant, QVariant, name='updateDbParameter')
+    def updateDbParameter(self, parameter, value):
+        """
+        PyQt wrapper for _update_db_parameter private method
+        if value has changed, update in DB and model
+        if param changing is IP address, signal for reboot (this value is loaded on startup)
+        :param parameter: str; SETTINGS parameter value
+        :param value: str; value to set parameter in SETTINGS
+        :return: None
+        """
+        role_index = self._model.get_item_index('parameter', parameter)  # get row num in model
+        cur_value = self._model.get(role_index)['value']  # get existing model value
+        logging.info(f"Updating DB param {parameter} from {cur_value} to {value}")
+        if cur_value != value:
+            self._update_db_parameter(parameter, value)
+            self._model.setProperty(role_index, 'value', value)
+            if parameter == 'FPC IP Address':
+                self.rebootRequired.emit(parameter)
+
     def _update_db_parameter(self, parameter, value):
 
-        sql = "UPDATE SETTINGS SET VALUE = '?' WHERE PARAMETER = '?';"
+        sql = "UPDATE SETTINGS SET VALUE = ? WHERE PARAMETER = ?;"
         params = [value, parameter]
 
         try:

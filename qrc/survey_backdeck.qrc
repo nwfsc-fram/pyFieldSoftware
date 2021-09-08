@@ -8,6 +8,7 @@
         <file>../qml/survey_backdeck/OperationSelectionScreen.qml</file>
         <file>../qml/survey_backdeck/FishSamplingScreen.qml</file>
         <file>../qml/survey_backdeck/SitesScreen.qml</file>
+        <file>../qml/survey_backdeck/SettingsScreen.qml</file>
 
         <!-- Widgets -->
         <file>../qml/survey_backdeck/BackdeckMenuButton.qml</file>
@@ -57,6 +58,7 @@
         <file>../qml/common/TrawlBackdeckTableView.qml</file>
         <file>../qml/common/TrawlBackdeckButton.qml</file>
         <file>../qml/common/TrawlNoteDialog.qml</file>
+        <file>../qml/common/FramComboBox.qml</file>
 
 
 

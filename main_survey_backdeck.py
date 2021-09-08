@@ -45,6 +45,7 @@ from py.survey_backdeck.StateMachine import StateMachine
 from py.survey_backdeck.SerialPortManager import SerialPortManager
 from py.survey_backdeck.LabelPrinter import LabelPrinter
 from py.survey_backdeck.Notes import Notes
+from py.survey_backdeck.Settings import Settings
 
 import py.survey_backdeck.survey_backdeck_qrc
 
@@ -120,6 +121,7 @@ class Backdeck:
         self.label_printer = LabelPrinter(app=self, db=db)
         self.notes = Notes(app=self, db=db)
         # self.qaqc = QAQC(app=self, db=db)
+        self.settings = Settings(app=self, db=db)
 
         self.context.setContextProperty("soundPlayer", self.sound_player)
         self.context.setContextProperty("stateMachine", self.state_machine)
@@ -129,6 +131,7 @@ class Backdeck:
         self.context.setContextProperty("labelPrinter", self.label_printer)
         self.context.setContextProperty("notes", self.notes)
         # self.context.setContextProperty("qaqc", self.qaqc)
+        self.context.setContextProperty("settings", self.settings)
 
         # self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
