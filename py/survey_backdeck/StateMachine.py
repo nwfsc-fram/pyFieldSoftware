@@ -15,6 +15,7 @@ from PyQt5.QtCore import pyqtProperty, pyqtSlot, QVariant, pyqtSignal, QObject
 from PyQt5.QtQml import QJSValue
 import logging
 import arrow
+import sys
 
 from py.survey_backdeck.CutterConfig import CUTTER_VERSION
 
@@ -509,7 +510,7 @@ class StateMachine(QObject):
     @pyqtSlot(name="exitApp")
     def exitApp(self):
         logging.info("Calling exitApp to quit app")
-        exit()
+        sys.exit()
 
 if __name__ == '__main__':
 
