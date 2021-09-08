@@ -99,6 +99,10 @@ Dialog {
     Connections {
         target: fishSampling
         onExceptionEncountered: showException(message, action);
+        onLwRelationshipOutlier: {  // 94: when LW outlier message received, display in dialog
+            dlgLwWarning.message = message
+            dlgLwWarning.open()
+        }
     } // fishSampling.onExceptionEncountered
     function showException(message, action) {
         dlgOkay.message = message;
@@ -191,6 +195,7 @@ Dialog {
 
         if ("specimenID" in specimen) {
             specimenID = specimen["specimenID"];
+            fishSampling.currentSpecimenId = specimenID  // #94: set for FishSampling class
             for (var item in specimen) {
                 if (specimen[item] !== undefined) {
 //                    console.info('populating ' + item);
@@ -605,6 +610,11 @@ Dialog {
                     actionSubType = actionSubType ? actionSubType.replace("\n", " ") : null;
                     fishSampling.upsertObservation(specimenID, action, value, dataType,
                                                     actionSubType, speciesSamplingPlanId);
+
+                    // # 94: check LW relationship when sex/length/weight changes
+                    if (action === 'sex' || action === 'length' || action === 'weight') {
+                        fishSampling.checkLWRelationship()
+                    }
                     break;
             }
         }
@@ -897,6 +907,32 @@ Dialog {
     OkayDialog {
         id: dlgOkay
         modality: Qt.ApplicationModal
+    }
+    LengthWeightDialog {
+        // #94: LW dialog to pop with message
+        id: dlgLwWarning
+        message: ""
+        onProceed: {  // do nothing, go to age tab
+            tbActions.setCurrentIndex(5)
+            dlgLwWarning.close()
+        }
+        onProceedWNote: {  // do nothing, open note dialog
+            tbActions.setCurrentIndex(5)
+            dlgLwWarning.close()
+            dlgDrawingNotes.open()
+        }
+        onEditWeight: {  // back to weight tab
+            tbActions.setCurrentIndex(2)
+            dlgLwWarning.close()
+        }
+        onEditLength: {  // back to length tab
+            tbActions.setCurrentIndex(3)
+            dlgLwWarning.close()
+        }
+        onEditSex: {  // back to sex tab
+            tbActions.setCurrentIndex(4)
+            dlgLwWarning.close()
+        }
     }
     SpeciesConflictDialog {
         id: dlgSpeciesConflict
