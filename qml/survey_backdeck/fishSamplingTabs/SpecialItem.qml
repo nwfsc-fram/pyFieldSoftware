@@ -216,8 +216,19 @@ Item {
                 onClicked: {
                     if (tvSpecial.currentRow !== -1) {
                         var item = tvSpecial.model.get(tvSpecial.currentRow);
+                        var prj = item.project
                         if ((item.tagNumber === undefined) || (item.tagNumber === "")) {
-                            assignLabel();
+                            if (  // #257: ask user before printing inactive special projects, list them below
+                               (prj.includes('Whole Ovary')) ||
+                               (prj === 'Ovary Section-SWFSC')
+                            ) {
+                                dlgOkayCancel.message = 'Special project ' + prj + ' not active in ' + new Date().getFullYear() + ".";
+                                dlgOkayCancel.action = "Assign tag anyway?";
+                                dlgOkayCancel.accepted_action = 'check special project';
+                                dlgOkayCancel.open()
+                            } else {
+                                assignLabel();
+                            }
 //                            printLabel();
                         }
                     }
@@ -279,6 +290,9 @@ Item {
                         updateLabel("special", specialValue, null, false, null);
                     }
                     break;
+                // #257: assignLabel if user okays inactive special project print
+                case "check special project":
+                    assignLabel();
             }
         }
     }
