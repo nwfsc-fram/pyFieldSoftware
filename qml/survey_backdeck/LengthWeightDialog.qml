@@ -14,9 +14,9 @@ import QtQuick.Window 2.0
 Dialog {
     id: dlg
     width: 580
-    height: 580
+    height: 500
     modality: Qt.ApplicationModal  // force acknowledgement here before going elsewhere
-    title: "L-W Relationship Warning"
+    title: "LW Relationship Warning!"
 
     property string message: ""
 

@@ -195,6 +195,7 @@ Dialog {
 
         if ("specimenID" in specimen) {
             specimenID = specimen["specimenID"];
+            fishSampling.currentSpecimenId = specimenID  // #94: set for FishSampling class
             for (var item in specimen) {
                 if (specimen[item] !== undefined) {
 //                    console.info('populating ' + item);

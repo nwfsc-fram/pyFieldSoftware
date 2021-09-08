@@ -530,36 +530,35 @@ class FishSampling(QObject):
         self._specials_model = SpecialsModel(app=self._app, db=self._db)
         self._species_full_list_model = SpeciesFullListModel(app=self._app)
         self._personnel_model = PersonnelModel(app=self._app)
-        self._current_specimen_index = None
-        self._current_specimen = None
+        self._current_specimen = None  # placeholder for current specimen model item
+        self._current_specimen_id = None  # placeholder for parent specimen db id
 
         self._random_drops = None
 
     @pyqtProperty(int)
-    def currentSpecimenIndex(self):
-        return self._current_specimen_index
+    def currentSpecimenId(self):
+        """
+        Set when specimenID var in FishSamplingEntryDialog is set
+        :return: int; SPECIMENS parent DB ID
+        """
+        return self._current_specimen_id
 
-    @currentSpecimenIndex.setter
-    def currentSpecimenIndex(self, ix):
-        """
-        Set when user selects row from FishSampling tableview.
-        Use to set current specimen model so we get most updated data from self._specimens_model
-        :param ix: int, model index
-        """
-        self._current_specimen_index = ix
+    @currentSpecimenId.setter
+    def currentSpecimenId(self, specimen_id):
+        logging.debug(f"currentSpecimenId set to {specimen_id}")
+        self._current_specimen_id = specimen_id
 
     @property
     def current_specimen(self):
         """
-        Always pull current specimen using current index, so we're always
-        accessing updated model data
-        :return: SpecimensModel object
+        Use SPECIMENS DB ID to retrieve the current specimen model item
+        :return: SpecimensModel --> {specimenID: 9, adh: A12, species: Bank Rockfish, length: 50, weight: 2, etc...}
+        TODO: JF- set currentSpecimenIndex instead of db ID and use it to get current specimen model; QML reselecting
+        old tableview row onSelectionChanged bug prevented my first attempt of this, using specimenID for now
         """
-        ix = self._current_specimen_index
-        if ix is None or ix < 0 or ix >= self._specimens_model.count:
-            self._current_specimen = None
-        else:
-            return self._specimens_model.get(ix)
+        model_ix = self._specimens_model.get_item_index('specimenID', self._current_specimen_id)
+        self._current_specimen = self._specimens_model.get(model_ix)
+        return self._current_specimen
 
     @pyqtProperty(FramListModel, notify=personnelModelChanged)
     def personnelModel(self):
@@ -1305,6 +1304,7 @@ class FishSampling(QObject):
         :return: dict{coeff(a): float, exponent(b): float, tolerance(t): float}
         """
         try:
+            logging.info(f"getting LW relationship params for {sex_code} {species}")
             results = self._app.rpc.execute_query(
                 sql='''
                             select  lw.lw_coefficient_cmkg as coefficient_a
@@ -1353,56 +1353,65 @@ class FishSampling(QObject):
         :return: None; Emit message for display in FishSamplingEntryDialog.qml
         """
         # no current specimen, no calculation
-        if not self._current_specimen:
-            return
-        specimen = self._current_specimen
-        lw_params = self._get_lw_relationship_params(specimen['species'], specimen['sex'])
-
-        # parse and convert all values to float, catch and return if any fail
-        try:
-            l = float(specimen['length'])  # entered specimen length (cm)
-            w = float(specimen['weight'])  # entered specimen weight (kg)
-            a = float(lw_params['a'])  # coefficient in equation W = aL^b
-            b = float(lw_params['b'])  # exponent in equation W = aL^b
-            t = float(lw_params['t'])  # tolerance value pulled from SETTINGS table
-        except (KeyError, TypeError) as e:
-            logging.info(f"Unable to obtain len/wt/a/b/t param(s) for {specimen['species']}; {e}")
+        specimen = self.current_specimen
+        if not specimen:
             return
 
-        logging.info(f"Weight Entered: {w}. Length Entered: {l}, a: {a}, b: {b}")
+        # emit this if it gets set
+        msg = None
 
-        # calc expected values
-        expected_wt = self.get_expected_wt_from_len(l, a, b)
-        logging.info(f"Expected Weight using Length {l} = {expected_wt}")
-        expected_len = self.get_expected_len_from_wt(w, a, b)
-        logging.info(f"Expected Length Using Weight {w} = {expected_len}")
+        # return None if key-val DNE
+        species = specimen.get('species', None)
+        sex = specimen.get('sex', None)
+        l = specimen.get('length', None)
+        w = specimen.get('weight', None)
 
-        # get ranges
-        exp_wt_lower, exp_wt_upper = self.get_tolerated_range(expected_wt, t)
-        exp_len_lower, exp_len_upper = self.get_tolerated_range(expected_len, t)
+        # this returns an empty {} if query is unsuccessful
+        lw_params = self._get_lw_relationship_params(species, sex)
+        a = lw_params.get('a', None)
+        b = lw_params.get('b', None)
+        t = lw_params.get('t', None)
 
-        # check if either is not between
-        if not exp_wt_lower <= w <= exp_wt_upper or not exp_len_lower <= l <= exp_len_upper:
-            logging.info(f"wt {w} not between {exp_wt_lower} and {exp_wt_upper} based on len {l}")
-            logging.info(f"l {l} not between {exp_len_lower} and {exp_len_upper} based on len {l}")
+        # if l/w isn't populated but we've already passed to sex tab, still warn user
+        if (not l or not w) and sex:
+            logging.info(f"Sex filled out, but length ({l}) and/or weight ({w}) missing!")
             msg = f'''
-                        Warning: Length-Weight Outlier!
-                        ------------------------------------------
+                        Length-Weight Outlier!
+                        ------------------------------------
                         Species:\t\t{specimen['species']}
-                        Sex:\t\t\t{self.unabbreviate_sex(specimen['sex'])}
-                        Entered Weight:\t{w} kg
-                        Entered Length:\t{l} cm
+                        Sex:\t\t{self.unabbreviate_sex(specimen['sex'])}
+                        Length:\t\t{l} cm
+                        Weight:\t\t{w} kg
                         
-                        Expected length at {w} kg: 
-        
-                            {round(exp_len_lower, 2)} - {round(exp_len_upper, 2)} cm
-                        
-                        Expected weight at {l} cm:
-        
-                            {round(exp_wt_lower, 2)} - {round(exp_wt_upper, 2)} kg
-                        ------------------------------------------
+                        Please complete length/weight
+                        or leave note!
+                        ------------------------------------
                     '''
 
+        # if all needed params available for LW lookup, do calculation
+        elif all([l, w, a, b, t]):
+            logging.info(f"LW args: Weight: {w}. Length: {l}, a: {a}, b: {b}, t: {t}")
+            expected_wt = self.get_expected_wt_from_len(l, a, b)  # calc expected weight from length
+            logging.info(f"Expected Weight using Length {l} = {expected_wt}")
+            exp_wt_lower, exp_wt_upper = self.get_tolerated_range(expected_wt, t)  # get tolerated range
+
+            # check if weight is not between tolerated range
+            if not exp_wt_lower <= w <= exp_wt_upper:
+                logging.info(f"wt {w} not between {exp_wt_lower} and {exp_wt_upper} based on len {l}")
+                msg = f'''
+                            Length-Weight Outlier!
+                            ------------------------------------
+                            Species:\t{specimen['species']}
+                            Sex:\t\t{self.unabbreviate_sex(specimen['sex'])}
+                            Length:\t\t{l} cm
+                            Weight:\t\t{w} kg
+                            
+                            Expected weight at {l} cm:
+            
+                                {round(exp_wt_lower, 4)} - {round(exp_wt_upper, 4)} kg
+                            ------------------------------------
+                        '''
+        if msg:
             self.lwRelationshipOutlier.emit(msg)
 
     @staticmethod
@@ -1418,28 +1427,9 @@ class FishSampling(QObject):
         :param expon: logarithmic exponent stored in LENGHTH_WEIGHT_RELATIONSHIP_LU per taxon and sex
         :return: float, expected fish weight
         """
-        logging.debug(f"Calculating exp. fish weight w/ W = aL^b --> {coeff}*{length}^{expon}")
+        logging.info(f"Calculating exp. fish weight w/ W = aL^b --> {coeff}*{length}^{expon}")
         try:
             return float(coeff) * float(length)**float(expon)
-        except TypeError:  # if param of None is passed in
-            return None
-
-    @staticmethod
-    def get_expected_len_from_wt(weight, coeff, expon):
-        """
-        #94: calculate expected length from entered weight
-        https://www2.dnr.state.mi.us/publications/pdfs/ifr/manual/smii%20chapter17.pdf
-        Fish length-weight relationship can be written as (solving for L)
-        W = aL^b --> log W = log a + b·log L --> 10^((log10(W) - log a)/b)
-        *Both coefficient and exponent values are alread on log scale
-        :param len: actual measured length of fish
-        :param coeff: logarithmic coefficient stored in LENGHTH_WEIGHT_RELATIONSHIP_LU per taxon and sex
-        :param expon: logarithmic exponent stored in LENGHTH_WEIGHT_RELATIONSHIP_LU per taxon and sex
-        :return: float, expected fish length
-        """
-        logging.debug(f"Calculating exp. fish length w/ L = (W/a)^(1/b) --> ({weight}/{coeff})^(1/{expon})")
-        try:
-            return (float(weight)/float(coeff))**(1/float(expon))
         except TypeError:  # if param of None is passed in
             return None
 
