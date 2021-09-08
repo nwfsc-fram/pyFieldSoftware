@@ -150,6 +150,17 @@ Item {
                 sites.sitesModel.retrieveSites("all");
             }
         } // btnAll
+        Label { Layout.preferredHeight: 150 } // spacer
+        BackdeckButton {
+            id: btnSettings
+            anchors.bottom: tvSites.bottom
+            text: qsTr("Settings")
+            Layout.preferredWidth: 120
+            Layout.preferredHeight: 60
+            onClicked: {
+                smBackdeck.to_settings_state()
+            }
+        } // btnSettings
     }
 
     OkayCancelDialog {

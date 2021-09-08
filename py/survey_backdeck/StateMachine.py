@@ -506,6 +506,11 @@ class StateMachine(QObject):
         self._angler_name = value
         self.anglerNameSelected.emit()
 
+    @pyqtSlot(name="exitApp")
+    def exitApp(self):
+        logging.info("Calling exitApp to quit app")
+        exit()
+
 if __name__ == '__main__':
 
     sm = StateMachine()
