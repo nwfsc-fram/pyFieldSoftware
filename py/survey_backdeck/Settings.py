@@ -40,6 +40,7 @@ class Settings(QObject):
     printerChanged = pyqtSignal()
     pingStatusReceived = pyqtSignal(str, bool, arguments=['message', 'success'])
     rebootRequired = pyqtSignal(str, arguments=['param'])
+    unusedSignal = pyqtSignal()  # use to silence warning "depends on non-NOTIFYable properties"
 
     def __init__(self, app=None, db=None):
         super().__init__()
@@ -75,7 +76,7 @@ class Settings(QObject):
 
         return settings
 
-    @pyqtProperty(QVariant)
+    @pyqtProperty(QVariant, notify=unusedSignal)
     def model(self):
         return self._model
 

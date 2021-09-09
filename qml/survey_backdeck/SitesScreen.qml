@@ -153,7 +153,6 @@ Item {
         Label { Layout.preferredHeight: 150 } // spacer
         BackdeckButton {
             id: btnSettings
-            anchors.bottom: tvSites.bottom
             text: qsTr("Settings")
             Layout.preferredWidth: 120
             Layout.preferredHeight: 60

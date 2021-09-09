@@ -6,10 +6,8 @@ Created date:   20210908
 Description:    Expose all parameters of Setting table to UI
                 to allow user to manipulate for current vessel.  TableView
                 can be edited via loaded delegate or via "Restore Defaults"
-                button, which pulls settings from "DEFAULT_SETTINGS" table.
-                Settings changes are not allowed with collected data in database.
-                "Clean DB" functionality exists to allow user to clear out collected
-                data.
+                button, which pulls settings from hard-coded list for now.
+                TODO: store default settings in a table
 
 **************************************************************************/
 
@@ -35,7 +33,7 @@ Item {
 
         RowLayout {
             id: rlTable
-            TrawlBackdeckTableView {
+            BackdeckTableView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 // editable tableview: https://stackoverflow.com/questions/43273240/how-to-make-a-cell-editable-in-qt-tableview
@@ -104,6 +102,9 @@ Item {
                                 text: ""
                                 font.pixelSize: 18
                                 textColor: "Green"
+                                Keys.onEscapePressed: {  // get out of edit loader
+                                    loader.visible = false
+                                }
                                 onAccepted:{
                                     if (styleData.value !== text) {
                                         console.info("Parameter " + model.parameter + " being set to " + text + " from " + styleData.value)
@@ -148,7 +149,7 @@ Item {
             id: rlButtons
             anchors.right: parent.right
             anchors.left: parent.left
-            TrawlBackdeckButton {
+            BackdeckButton {
                 anchors.left: parent.left
                 text: qsTr("<<")
                 implicitHeight: 60
@@ -157,7 +158,7 @@ Item {
             }
             RowLayout {
                 anchors.horizontalCenter: parent.horizontalCenter
-                TrawlBackdeckButton {
+                BackdeckButton {
                     id: btnRestore
                     text: qsTr("Restore\nDefaults")
 
