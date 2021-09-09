@@ -106,6 +106,7 @@ Item {
                                 text: ""
                                 font.pixelSize: 18
                                 textColor: "Green"
+                                Keys.onEscapePressed: loader.visible = false
                                 onAccepted:{
                                     if (styleData.value !== text) {
                                         console.info("Parameter " + model.parameter + " being set to " + text + " from " + styleData.value)
