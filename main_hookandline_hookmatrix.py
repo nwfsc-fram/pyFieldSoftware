@@ -19,6 +19,7 @@ from py.hookandline_hookmatrix.RpcClient import RpcClient
 from py.hookandline_hookmatrix.LabelPrinter import LabelPrinter
 from py.hookandline_hookmatrix.SerialPortManager import SerialPortManager
 from py.hookandline_hookmatrix.Notes import Notes
+from py.hookandline_hookmatrix.Settings import Settings
 
 
 class HookandlineHookMatrix:
@@ -64,6 +65,9 @@ class HookandlineHookMatrix:
 
         self.notes = Notes(app=self, db=self.db)
         self.context.setContextProperty("notes", self.notes)
+
+        self.settings = Settings(app=self, db=self.db)
+        self.context.setContextProperty("settings", self.settings)
 
         self.engine.load(QUrl('qrc:/qml/hookandline_hookmatrix/main_hookmatrix.qml'))
         self.engine.quit.connect(self.app.quit)

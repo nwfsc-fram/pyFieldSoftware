@@ -205,6 +205,15 @@ Item {
                 printTest("aft");
             }
         } // printAftTest
+        BackdeckButton {
+            id: btnSettings
+            text: qsTr("Settings")
+            Layout.preferredWidth: 120
+            Layout.preferredHeight: 60
+            onClicked: {
+                smHookMatrix.to_settings_state();
+            }
+        } // btnSettings, https://github.com/nwfsc-fram/pyFieldSoftware/issues/259
     }
     Footer {
         id: framFooter
