@@ -161,7 +161,8 @@ Item {
                 BackdeckButton {
                     id: btnRestore
                     text: qsTr("Restore\nDefaults")
-
+//                    txtColor: cbVessels.currentText ? 'black' : 'gray'
+                    enabled: cbVessels.currentText
                     implicitHeight: 60
                     onClicked: {
                         dlgDefaults.ask()
@@ -200,9 +201,10 @@ Item {
                 FramComboBox {
                     // TODO: Pull these from DEFAULT_SETTINGS table
                     id: cbVessels
-                    model: ['Mirage', 'Aggressor', 'Toronado']
+                    model: ['', 'Mirage', 'Aggressor', 'Toronado']
                     implicitWidth: 250
                     implicitHeight: 60
+                    dropdownfontsize: 32
                 }
             }
         }
