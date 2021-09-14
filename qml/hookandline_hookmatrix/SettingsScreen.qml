@@ -166,7 +166,7 @@ Item {
                 BackdeckButton {
                     id: btnRestore
                     text: qsTr("Restore\nDefaults")
-
+                    enabled: cbVessels.currentText
                     implicitHeight: 60
                     onClicked: {
                         dlgDefaults.ask()
@@ -205,12 +205,48 @@ Item {
                 FramComboBox {
                     // TODO: Pull these from DEFAULT_SETTINGS table
                     id: cbVessels
-                    model: ['Mirage', 'Aggressor', 'Toronado']
+                    model: ['', 'Mirage', 'Aggressor', 'Toronado']
                     implicitWidth: 250
                     implicitHeight: 60
+                    dropdownfontsize: 32
                 }
             }
+            RowLayout {
+                id: rlPrintTest
+                spacing: 10
+                anchors.right: rlButtons.right
+                BackdeckButton {
+                    id: printBowTest
+                    text: qsTr("Print Bow\nTest")
+                    Layout.preferredWidth: 120
+                    Layout.preferredHeight: 60
+                    onClicked: {
+                        printTest("bow");
+                    }
+                } // printBowTest
+                BackdeckButton {
+                    id: printAftTest
+                    text: qsTr("Print Aft\nTest")
+                    Layout.preferredWidth: 120
+                    Layout.preferredHeight: 60
+                    onClicked: {
+                        printTest("aft");
+                    }
+                } // printAftTest
+            }
         }
+    }
+    function printTest(printer) {
+        var equipment = "";
+        switch (printer) {
+            case "bow":
+                equipment = "Zebra Printer Bow";
+                break;
+            case "aft":
+                equipment = "Zebra Printer Aft";
+                break;
+        }
+        labelPrinter.printADHLabel(equipment, "A", "1", "1", "Test Species");
     }
     OkayDialog {
         // message when killing app during reboot
