@@ -101,4 +101,4 @@ setup(
 )
 
 # Zip up our creation
-buildzipper.create_zip_archive(base_folder=deployed_path, filedesc=f'hookandline_hookmatrix_{version}')
+buildzipper.create_zip_archive(base_folder=deployed_path, filedesc=f'HookMatrix_{version}')
