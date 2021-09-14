@@ -172,7 +172,7 @@ Item {
         }
         BackdeckButton {
             id: btnSettings
-            text: qsTr("Settings >>")
+            text: qsTr("Settings\n>>")
             Layout.preferredWidth: 120
             Layout.preferredHeight: 60
             onClicked: {
