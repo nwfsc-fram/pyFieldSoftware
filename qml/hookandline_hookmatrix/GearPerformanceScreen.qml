@@ -48,7 +48,7 @@ Item {
     }
     Header {
         id: framHeader
-        title: "Gear Performance: Drop " + stateMachine.drop + " - Angler " + stateMachine.angler
+        title: "Gear Performance: Drop " + stateMachine.drop + " - Angler " + stateMachine.angler + " - " + stateMachine.anglerName
         height: 50
         backwardTitle: "Drops"
         forwardTitle: drops.getAnglerHooksLabel(anglerOpId, true)

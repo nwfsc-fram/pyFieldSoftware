@@ -445,6 +445,7 @@ Item {
                     anchors.fill: parent
                     onClicked: {
                         stateMachine.angler = anglerLetter
+                        stateMachine.anglerName = anglerName;
                         smHookMatrix.to_gear_performance_state();
                     }
                 }
