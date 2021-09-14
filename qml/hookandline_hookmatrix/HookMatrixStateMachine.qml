@@ -9,6 +9,7 @@ DSM.StateMachine {
     property alias drops_state: drops_state
     property alias gear_performance_state: gear_performance_state
     property alias hooks_state: hooks_state
+    property alias settings_state: settings_state
 
 //    property bool full_species_list_selected: false
 
@@ -16,6 +17,7 @@ DSM.StateMachine {
     signal to_drops_state
     signal to_gear_performance_state
     signal to_hooks_state
+    signal to_settings_state
 
     DSM.State {
         id: sites_state
@@ -35,11 +37,17 @@ DSM.StateMachine {
                 stateMachine.anglerCOpId = null;
                 stateMachine.angler = null;
                 stateMachine.hook = null;
+            } else if (stateMachine.previousScreen === 'settings') {
+                screens.pop()
             }
         }
         DSM.SignalTransition {
             targetState: drops_state
             signal: to_drops_state
+        } // to_drops_state
+        DSM.SignalTransition {
+            targetState: settings_state
+            signal: to_settings_state
         } // to_drops_state
     } // sites_state
     DSM.State {
@@ -115,4 +123,16 @@ DSM.StateMachine {
             signal: to_gear_performance_state
         } // to_drops_state
     } // hook_state
+    DSM.State {
+        id: settings_state
+        onEntered: {
+            stateMachine.previousScreen = stateMachine.screen;
+            stateMachine.screen = "settings"
+            screens.push(Qt.resolvedUrl("SettingsScreen.qml"));
+        }
+        DSM.SignalTransition {
+            targetState: sites_state
+            signal: to_sites_state
+        } // to_settings_state
+    } // settings_state, see https://github.com/nwfsc-fram/pyFieldSoftware/issues/259
 }
