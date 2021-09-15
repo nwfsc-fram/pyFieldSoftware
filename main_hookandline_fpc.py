@@ -29,6 +29,7 @@ import logging
 from py.common.FramUtil import FramUtil
 from py.common.FramLog import FramLog
 from py.common.FramTreeItem import FramTreeItem
+from py.common.ClockUpdater import ClockUpdater
 from py.hookandline.HookandlineFpcDB import HookandlineFpcDB
 from py.hookandline.FpcMain import FpcMain
 from py.hookandline.SensorDataFeeds import SensorDataFeeds
@@ -40,7 +41,6 @@ from py.hookandline.RpcServer import RpcServer
 from py.hookandline.SpeciesReview import SpeciesReview
 from py.hookandline.SerialPortSimulator import SerialPortSimulator
 from py.hookandline.EndOfSiteValidation import EndOfSiteValidation
-
 
 def exception_hook(except_type, except_value, traceback_obj):
     """
@@ -126,6 +126,11 @@ class HookandlineFpc(QObject):
         self.sensor_data_feeds = SensorDataFeeds(app=self, db=db)
         self.species_review = SpeciesReview(app=self, db=db)
         self.end_of_site_validation = EndOfSiteValidation(app=self, db=db)
+
+        # 199: init class for updating system with GPS, then start background thread
+        self.clock_updater = ClockUpdater(10)  # pass interval for sys clock update
+        self.clock_updater.start()  # start timer thread
+
         logging.info(f"\tComponent classes all initialized")
 
         self.context.setContextProperty('fpcMain', self.fpc_main)
@@ -136,6 +141,7 @@ class HookandlineFpc(QObject):
         self.context.setContextProperty('sensorDataFeeds', self.sensor_data_feeds)
         self.context.setContextProperty('speciesReview', self.species_review)
         self.context.setContextProperty('endOfSiteValidation', self.end_of_site_validation)
+        self.context.setContextProperty('clockUpdater', self.clock_updater)
 
         logging.info(f"\tContext Properties all set")
 

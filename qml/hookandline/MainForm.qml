@@ -1084,6 +1084,9 @@ Item {
                     readOnly: true
                     text: ""
                     Layout.preferredWidth: 80
+                    onTextChanged: {  // #199: pass new gps time to clock updater
+                        clockUpdater.gpsTime = text
+                    }
                 } // tfTime
                 Label {
                     id: lblLatitude
