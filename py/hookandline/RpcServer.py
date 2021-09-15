@@ -26,6 +26,7 @@ import os
 import sys
 import socket
 import shutil
+import arrow
 
 from PyQt5.QtCore import QObject, QVariant, pyqtProperty, pyqtSlot, pyqtSignal
 
@@ -358,6 +359,27 @@ class RpcServer(QObject):
             return results
 
         self._server.register_function(execute_query, 'execute_query')
+
+        def get_galley_localtime():
+            """
+            Allow HookMatrix and Cutter to pull system local time from galley
+            so we don't have to sync all three CPU times with GPS
+            :return: arrow local datetime
+            """
+            return arrow.now()
+
+        self._server.register_function(get_galley_localtime, 'get_galley_localtime')
+
+        def get_galley_utctime():
+            """
+            Allow HookMatrix and Cutter to pull system utc time from galley
+            so we don't have to sync all three CPU times with GPS
+            :return: arrow utc datetime
+            """
+            return arrow.utcnow()
+
+        self._server.register_function(get_galley_utctime, 'get_galley_utctime')
+
 
         def get_hauls():
             """
