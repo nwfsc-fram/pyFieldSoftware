@@ -197,10 +197,18 @@ Item {
             }
         }
     } // cvsMeatballYellow
+    OkayDialog {
+        // #199: Remind to check system time
+        id: dlgGpsTime
+        title: "GPS Time Reminder"
+        message: "Please ensure that the galley station, cutter station, and hook matrix\n" +
+                "computer times have been manually synced with the GPS time.\n\n\n" +
+                "GPS date and time can be reviewed on the 'Sensor Data Feeds' page\nor directly on the GPS."
+        action: ""
+    }
     Component.onCompleted: {
-
         console.info('Component.onCompleted ...');
-
+        dlgGpsTime.open()
         meatballs = [rctMeatball1, rctMeatball2, rctMeatball3, rctMeatball4, rctMeatball5,
                     rctMeatball6, rctMeatball7, rctMeatball8, rctMeatball9, rctMeatball10];
         tooltips = [ttMeatball1, ttMeatball2, ttMeatball3, ttMeatball4,  ttMeatball5,
