@@ -7,7 +7,7 @@ cx-Freeze==5.0.1
 defusedxml==0.4.1
 isodate==0.5.4
 keyring==10.2
-lxml==3.8.0
+lxml==4.6.3
 mypy==0.521
 peewee==2.8.5
 pygame==1.9.3
