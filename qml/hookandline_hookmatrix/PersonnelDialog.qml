@@ -13,7 +13,7 @@ import "." // For ScreenUnits
 Dialog {
     id: dlg
     title: qsTr("Personnel")
-    width: 800
+    width: rlContent.width + 40
     height: 600
     property variant currentPerson: anglerA
 
@@ -106,6 +106,7 @@ Dialog {
     contentItem: Rectangle {
         color: "#eee"
         RowLayout {
+            id: rlContent
             anchors.left: parent.left
             anchors.leftMargin: 20
             anchors.top: parent.top
@@ -132,7 +133,7 @@ Dialog {
             Label { id: lblSpacer; Layout.preferredWidth: 20 }
             GridLayout {
                 rows: 5
-                columns: 3
+                columns: 4
                 rowSpacing: 20
                 columnSpacing: 20
                 Repeater {
@@ -156,6 +157,7 @@ Dialog {
                 Layout.preferredWidth: buttonWidth
                 Layout.preferredHeight: buttonHeight
                 text: qsTr("Okay")
+                boldFont: true
                 onClicked: {
                     dlg.accept();
                 }
@@ -165,6 +167,7 @@ Dialog {
                 Layout.preferredWidth: buttonWidth
                 Layout.preferredHeight: buttonHeight
                 text: qsTr("Cancel")
+                boldFont: true
                 onClicked: {
                     dlg.close();
                 }
