@@ -596,6 +596,8 @@ class Drops(QObject):
                 is_fish = hook['isFish']
                 if is_fish:
                     hooks_lbl += f"<font color=\"{green}\">{hook_num_lbl},</font>"
+                elif not hook['hookContent']:
+                    hooks_lbl += f"<font color=\"{black}\">_,</font>"
                 else:
                     hooks_lbl += f"<font color=\"{black}\">{hook_num_lbl},</font>"
 
