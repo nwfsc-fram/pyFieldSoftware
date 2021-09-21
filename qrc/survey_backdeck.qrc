@@ -48,6 +48,7 @@
         <!-- Images -->
         <file>../resources/images/navigation_previous_item_dark.png</file>
         <file>../resources/images/navigation_next_item_dark.png</file>
+        <file>../resources/images/cutter_icon.png</file>
 
         <!-- Sounds -->
         <file>../resources/sounds/cutterstation_nextfish.wav</file>
