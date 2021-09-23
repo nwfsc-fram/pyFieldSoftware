@@ -28,21 +28,6 @@ Item {
     state: "short species list"
 
     Connections {
-        target: labelPrinter
-        onPrinterStatusReceived: receivedPrinterStatus(comport, success, message)
-    }
-    function receivedPrinterStatus(comport, success, message) {
-        var result = success ? "success" : "failed"
-        dlgOkay.message = "Print job to " + comport + " status: " + result;
-        if (result === "failed") {
-            dlgOkay.action = "Please try again";
-        } else {
-            dlgOkay.action = "Well done, continue on matey";
-        }
-        dlgOkay.open();
-    }
-
-    Connections {
         target: hook5
         onCurrentHookChanged: changeCurrentHook(hookNumber);
     } // onCurrentHookChanged

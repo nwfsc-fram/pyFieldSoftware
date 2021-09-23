@@ -11,6 +11,7 @@ Item {
         onPrinterStatusReceived: receivedPrinterStatus(comport, success, message)
     }
     function receivedPrinterStatus(comport, success, message) {
+    // #267: Dialog used by both test print (SettingsScreen.qml) and tag print (HooksScreen.qml)
         var result = success ? "success" : "failed"
         dlgOkay.message = "Print job to " + comport + " status: " + result;
         if (result === "failed") {
