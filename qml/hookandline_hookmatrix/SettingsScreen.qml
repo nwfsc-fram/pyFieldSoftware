@@ -165,8 +165,10 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 BackdeckButton {
                     id: btnRestore
-                    text: qsTr("Restore\nDefaults")
+                    text: qsTr("Save\nDefaults")
                     enabled: cbVessels.currentText
+                    txtColor: cbVessels.currentText ? 'green' : 'gray'
+                    boldFont: cbVessels.currentText
                     implicitHeight: 60
                     onClicked: {
                         dlgDefaults.ask()
