@@ -28,21 +28,6 @@ Item {
     state: "short species list"
 
     Connections {
-        target: labelPrinter
-        onPrinterStatusReceived: receivedPrinterStatus(comport, success, message)
-    }
-    function receivedPrinterStatus(comport, success, message) {
-        var result = success ? "success" : "failed"
-        dlgOkay.message = "Print job to " + comport + " status: " + result;
-        if (result === "failed") {
-            dlgOkay.action = "Please try again";
-        } else {
-            dlgOkay.action = "Well done, continue on matey";
-        }
-        dlgOkay.open();
-    }
-
-    Connections {
         target: hook5
         onCurrentHookChanged: changeCurrentHook(hookNumber);
     } // onCurrentHookChanged
@@ -203,6 +188,41 @@ Item {
             return cpButton;
         }
     }
+    function printTags(printer) {
+        /*
+        #266: moving this function from footer.qml to here
+        so we can move print buttons off footer
+        TODO: Move this function all to python so its not isolated on HooksScreen.qml
+        */
+        var equipment = "";
+        switch (printer) {
+            case "bow":
+                equipment = "Zebra Printer Bow";
+                break;
+            case "aft":
+                equipment = "Zebra Printer Aft";
+                break;
+            case "mid":
+                equipment = "Zebra Printer Aft";
+                break;
+        }
+        var angler = stateMachine.angler;
+        var drop = stateMachine.drop;
+        var hooks = {1: hook1, 2: hook2, 3: hook3,
+                     4: hook4, 5: hook5}
+        var species = null;
+        for (var i in hooks) {
+            species = hooks[i].tfHook.text;
+            if ((species !== "Bait Back") &&
+                (species !== "No Bait") &&
+                (species !== "No Hook") &&
+                (species !== "Multiple Hook") &&
+                (species !== "")) {
+                console.info('printing ADH:  angler=' + angler + ', drop=' + drop + ', hook=' + i + ', species=' + species);
+                labelPrinter.printADHLabel(equipment, angler, drop, i, species);  // emits signal back to dlg on sites
+            }
+        }
+    }
     Component {
         id: cpLabel
         Label {}
@@ -268,6 +288,7 @@ Item {
         anchors.left: clHooks.right
         anchors.leftMargin: 20
         anchors.top: clHooks.top
+        anchors.rightMargin: 20
 
         // column 1
         BackdeckButton {
@@ -530,6 +551,63 @@ Item {
         } // btnYellowtail
     } // glShortSpeciesList
 //    SwipeView {
+    ColumnLayout {
+    // columnlayout allows margins for vertical line separator
+        id: clSpacer
+        anchors {
+            top: glShortSpeciesList.top
+            bottom: glShortSpeciesList.bottom
+            left: glShortSpeciesList.right
+        }
+        Rectangle {
+            Layout.rightMargin: 50
+            Layout.leftMargin: 50
+            anchors {
+                top: parent.top
+                bottom: parent.bottom
+                topMargin: 20
+                bottomMargin: piIndicator.visible ? 110 : 20
+            }
+            width: 2
+            color: "gray"
+        }
+    }
+    ColumnLayout {
+        // #266: print buttons moved from footer to here
+        id: clPrint
+        anchors.left: clSpacer.right
+        anchors.top: clSpacer.top
+        spacing: 20
+        Label {
+            text: "Print Tags"
+            font.pixelSize: 24
+            font.underline: true
+            font.bold: true
+            horizontalAlignment: Text.AlignLeft
+            Layout.preferredWidth: 200
+            Layout.preferredHeight: 40
+            Layout.alignment: Qt.AlignRight
+        }
+        BackdeckButton {
+            id: btnPrintBow
+            text: qsTr("Bow")
+            Layout.preferredWidth: buttonWidth
+            Layout.preferredHeight: buttonHeight
+            onClicked: {
+                printTags("bow");
+            }
+        }
+        BackdeckButton {
+            id: btnPrintAft
+            text: qsTr("Aft")
+            Layout.preferredWidth: buttonWidth
+            Layout.preferredHeight: buttonHeight
+            onClicked: {
+                printTags("aft");
+            }
+        }
+    }
+
     Item {
         id: svFullSpeciesList
 //        currentIndex: 0
