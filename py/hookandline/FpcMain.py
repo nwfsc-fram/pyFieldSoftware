@@ -47,6 +47,9 @@ class OperationsModel(FramListModel):
     def populate_model(self):
         """"
         Method to initially populate the model on startup
+        TODO: clean up looping thru results.  Rewriting the SQL can probably eliminate most of the
+        python logic here
+        #271: Using hasattr(result, 'events') to avoid erroring out if site doesn't have events
         """
         self.clear()
 
@@ -78,7 +81,7 @@ class OperationsModel(FramListModel):
                     item["set_id"] = result.operation_number
 
                     item["start_date_time"] = ""
-                    if result.events:
+                    if hasattr(result, 'events'):
                         if result.events.start_date_time:
                             item["start_date_time"] = result.events.start_date_time
                     elif result.date:
@@ -87,7 +90,7 @@ class OperationsModel(FramListModel):
                     item["day_of_cruise"] = result.day_of_cruise
                     item["site"] = result.site.name if result.site else ""
 
-                    if result.events:
+                    if hasattr(result, 'events'):
                         if result.events.start_date_time:
                             event_count = 1
                         else:
@@ -102,8 +105,11 @@ class OperationsModel(FramListModel):
                     previous_op = result.operation_number
 
                 else:
-                    if result.events.start_date_time is None:
-                        event_count = 0
+                    if not hasattr(result, 'events'):
+                        if result.events.start_date_time is None:
+                            event_count = 0
+                        else:
+                            event_count += 1
                     else:
                         event_count += 1
 
