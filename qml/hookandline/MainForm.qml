@@ -1623,8 +1623,9 @@ Item {
             width: 50
             delegate: Item {
                 TextField {
+                    id: tfTide
 //                    property bool status: tvEvents.model.get(styleData.row).start
-                    width: parent.width
+                    width: parent.width - btnEditTide.width
                     anchors.verticalCenter: parent.verticalCenter
 //                    enabled: (enabled_row == styleData.row) ? true : false
 //                    enabled: true
@@ -1671,6 +1672,34 @@ Item {
 //                            parent.cursorPosition = 0;
 //                        }
 //                    }
+                }
+                Button {
+                    // #25: allow user to edit tide height after entering
+                    id: btnEditTide
+                    width: 20
+                    height: 20
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: tfTide.right
+                    enabled: enabled_row >= styleData.row  // TODO: use something other than enabled row, its buggy
+                    onClicked: {
+                        tfTide.enabled = !tfTide.enabled  // toggle text field on and off
+                    }
+                    style: ButtonStyle {
+                        label: Item {
+                            Canvas {
+                                anchors.fill: parent
+                                onPaint: {
+                                    var ctx = getContext("2d");
+                                    ctx.lineWidth = 3;
+                                    ctx.strokeStyle = Qt.rgba(0, 0, 0, 1);
+                                    ctx.beginPath();
+                                    ctx.moveTo(width/4, height/4);
+                                    ctx.lineTo(3*width/4, 3*height/4);
+                                    ctx.stroke();
+                                }
+                            }
+                        }
+                    }
                 }
             }
         } // tide_height_m
