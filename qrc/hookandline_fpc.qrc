@@ -49,5 +49,6 @@
         <file>../resources/images/settings.png</file>
         <file>../resources/images/lightning_green.png</file>
         <file>../resources/images/lightning_yellow.png</file>
+        <file>../resources/images/hooklogger_icon.png</file>
     </qresource>
 </RCC>
