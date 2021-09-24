@@ -1630,7 +1630,7 @@ Item {
 //                    enabled: true
 //                    enabled: (fpcMain.eventsModel.get(styleData.row).start_date_time != "") ? true : false
                     enabled: getTideTextFieldStatus(enabled_row, styleData.row)
-                    text: styleData.value ? styleData.value : ""
+                    text: (styleData.value || styleData.value == 0) ? styleData.value : ""  // #26: display 0 as 0
 //                    inputMask: "##.#"
 //                    validator: DoubleValidator {
 //                        bottom: -2.0;
