@@ -8,6 +8,7 @@
         <file>../qml/survey_backdeck/OperationSelectionScreen.qml</file>
         <file>../qml/survey_backdeck/FishSamplingScreen.qml</file>
         <file>../qml/survey_backdeck/SitesScreen.qml</file>
+        <file>../qml/survey_backdeck/SettingsScreen.qml</file>
 
         <!-- Widgets -->
         <file>../qml/survey_backdeck/BackdeckMenuButton.qml</file>
@@ -42,10 +43,12 @@
         <file>../qml/survey_backdeck/DrawingNotesDialog.qml</file>
         <file>../qml/survey_backdeck/SpeciesConflictDialog.qml</file>
         <file>../qml/survey_backdeck/RecordedByDialog.qml</file>
+        <file>../qml/survey_backdeck/LengthWeightDialog.qml</file>
 
         <!-- Images -->
         <file>../resources/images/navigation_previous_item_dark.png</file>
         <file>../resources/images/navigation_next_item_dark.png</file>
+        <file>../resources/images/cutter_icon.png</file>
 
         <!-- Sounds -->
         <file>../resources/sounds/cutterstation_nextfish.wav</file>
@@ -56,6 +59,7 @@
         <file>../qml/common/TrawlBackdeckTableView.qml</file>
         <file>../qml/common/TrawlBackdeckButton.qml</file>
         <file>../qml/common/TrawlNoteDialog.qml</file>
+        <file>../qml/common/FramComboBox.qml</file>
 
 
 

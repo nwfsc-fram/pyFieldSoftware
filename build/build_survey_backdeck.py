@@ -20,6 +20,7 @@ import click
 
 from cx_Freeze import setup, Executable
 from buildzipper import buildzipper
+from build_config import increment_build_number
 
 PYTHON_DIR = sys.exec_prefix
 #path_platforms = os.path.join(PYTHON_DIR, 'Lib\site-packages\PyQt5\plugins\platforms\qwindows.dll')
@@ -34,6 +35,9 @@ QRC_PATH = str(Path(os.path.join(os.path.dirname(os.path.realpath(__file__)), '.
 QRCPY_PATH = str(Path(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../py/survey_backdeck/survey_backdeck_qrc.py')).resolve())
 print('\npyrcc: ' + PYRCC_DIR + '\nqrc: ' + QRC_PATH + '\nqrcpy: ' + QRCPY_PATH + '\n')
 subprocess.check_output([PYRCC_DIR, QRC_PATH, '-o', QRCPY_PATH])
+
+# increment build number
+version = increment_build_number('../py/survey_backdeck/CutterConfig.py', 'CUTTER_VERSION')
 
 includefiles = [
 #        path_platforms,
@@ -81,7 +85,7 @@ if sys.platform == 'win32':
 #      copyDependentFiles=True,
 #      appendScriptToExe=False,
 #      appendScriptToLibrary=False,
-      icon='../resources/ico/trawl2.ico'
+      icon='../resources/ico/cutter.ico'
     )
 
 # Prompt to nuke existing directory
@@ -101,4 +105,4 @@ setup(
 )
 
 # Zip up our creation
-buildzipper.create_zip_archive(base_folder=deployed_path, filedesc='CutterStation')
+buildzipper.create_zip_archive(base_folder=deployed_path, filedesc=f'CutterStation_{version}')

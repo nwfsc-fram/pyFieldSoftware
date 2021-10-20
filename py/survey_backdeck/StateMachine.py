@@ -15,9 +15,12 @@ from PyQt5.QtCore import pyqtProperty, pyqtSlot, QVariant, pyqtSignal, QObject
 from PyQt5.QtQml import QJSValue
 import logging
 import arrow
+import sys
+
+from py.survey_backdeck.CutterConfig import CUTTER_VERSION
 
 APP_NAME = 'Cutter'
-SW_VERSION = '1.0.8'
+SW_VERSION = CUTTER_VERSION  # 248: adding in year versioning (see CutterConfig.py)
 
 class StateMachine(QObject):
     """
@@ -503,6 +506,11 @@ class StateMachine(QObject):
         """
         self._angler_name = value
         self.anglerNameSelected.emit()
+
+    @pyqtSlot(name="exitApp")
+    def exitApp(self):
+        logging.info("Calling exitApp to quit app")
+        sys.exit()
 
 if __name__ == '__main__':
 

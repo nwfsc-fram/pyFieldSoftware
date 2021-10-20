@@ -105,7 +105,17 @@ Item {
                 sites.sitesModel.retrieveSites(filter);
             }
         } // btnRetrieveSites
-        Label { Layout.preferredHeight: 220 } // spacer
+//        Label { Layout.preferredHeight: 220 } // spacer
+        Rectangle {
+            Layout.topMargin: 20
+            Layout.bottomMargin: 20
+            anchors {
+                left: btnRetrieveSites.left
+                right: btnRetrieveSites.right
+            }
+            height: 2
+            color: "gray"
+        }
         Text {
             id: txFilter
             horizontalAlignment: Text.AlignHCenter
@@ -150,6 +160,25 @@ Item {
                 sites.sitesModel.retrieveSites("all");
             }
         } // btnAll
+        Rectangle {
+            Layout.topMargin: 20
+            Layout.bottomMargin: 20
+            anchors {
+                left: btnRetrieveSites.left
+                right: btnRetrieveSites.right
+            }
+            height: 2
+            color: "gray"
+        }
+        BackdeckButton {
+            id: btnSettings
+            text: qsTr("Settings\n>>")
+            Layout.preferredWidth: 120
+            Layout.preferredHeight: 60
+            onClicked: {
+                smBackdeck.to_settings_state()
+            }
+        } // btnSettings
     }
 
     OkayCancelDialog {

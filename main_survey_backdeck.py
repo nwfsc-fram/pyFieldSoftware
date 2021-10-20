@@ -21,14 +21,15 @@ import re
 import glob
 import shutil
 
-from PyQt5.QtCore import QUrl, qInstallMessageHandler
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel
+from PyQt5.QtCore import QUrl, qInstallMessageHandler, Qt
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QSplashScreen
 from PyQt5.QtQml import QQmlApplicationEngine, qmlRegisterType
 from PyQt5.Qt import QQmlComponent
 from PyQt5.QtCore import pyqtProperty, pyqtSignal, QObject
 from PyQt5 import QtCore
 from PyQt5.QtQuick import *
 from py.common.QSingleApplication import QtSingleApplication
+from PyQt5 import QtGui
 
 from py.common.FramUtil import FramUtil
 from py.common.FramLog import FramLog
@@ -44,6 +45,7 @@ from py.survey_backdeck.StateMachine import StateMachine
 from py.survey_backdeck.SerialPortManager import SerialPortManager
 from py.survey_backdeck.LabelPrinter import LabelPrinter
 from py.survey_backdeck.Notes import Notes
+from py.survey_backdeck.Settings import Settings
 
 import py.survey_backdeck.survey_backdeck_qrc
 
@@ -75,6 +77,22 @@ def exception_hook(except_type, except_value, traceback_obj):
 sys.excepthook = exception_hook
 
 
+class BackdeckSplash(QSplashScreen):
+    """
+    Class to hold splash screen config
+    Helpful: https://stackoverflow.com/questions/58661539/create-splash-screen-in-pyqt5
+    # 265: Splash screen should help indicate when Backdeck is booting
+    TODO: Make gif animated???
+    TODO: Loading screen with message and pic... progress bar???
+    TODO: Consolidate into common folder
+    """
+    def __init__(self):
+        super(QSplashScreen, self).__init__()
+        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint | Qt.SplashScreen)
+        self.setPixmap(QtGui.QPixmap("./resources/images/cutter_icon.png"))
+        self.setWindowOpacity(0.80)
+
+
 class Backdeck:
 
     def __init__(self):
@@ -87,6 +105,10 @@ class Backdeck:
 
         appGuid = 'F3FF80BA-BA05-4277-8063-82A6DB9245A5'
         self.app = QtSingleApplication(appGuid, sys.argv)
+        self.app.setWindowIcon(QtGui.QIcon("resources/ico/cutter.ico"))
+        # splash screen to launch before loading, close later
+        splash = BackdeckSplash()
+        splash.show()
         if self.app.isRunning():
             sys.exit(0)
 
@@ -118,6 +140,7 @@ class Backdeck:
         self.label_printer = LabelPrinter(app=self, db=db)
         self.notes = Notes(app=self, db=db)
         # self.qaqc = QAQC(app=self, db=db)
+        self.settings = Settings(app=self, db=db)
 
         self.context.setContextProperty("soundPlayer", self.sound_player)
         self.context.setContextProperty("stateMachine", self.state_machine)
@@ -127,13 +150,14 @@ class Backdeck:
         self.context.setContextProperty("labelPrinter", self.label_printer)
         self.context.setContextProperty("notes", self.notes)
         # self.context.setContextProperty("qaqc", self.qaqc)
+        self.context.setContextProperty("settings", self.settings)
 
         # self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
         try:
 
             self.engine.load(QUrl('qrc:/qml/survey_backdeck/main_backdeck.qml'))
-
+            splash.close()
             self.win = self.engine.rootObjects()[0]
             self.msg_box = self.win.findChild(QObject, "dlgUnhandledException")
 
