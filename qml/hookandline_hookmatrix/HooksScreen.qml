@@ -28,21 +28,6 @@ Item {
     state: "short species list"
 
     Connections {
-        target: labelPrinter
-        onPrinterStatusReceived: receivedPrinterStatus(comport, success, message)
-    }
-    function receivedPrinterStatus(comport, success, message) {
-        var result = success ? "success" : "failed"
-        dlgOkay.message = "Print job to " + comport + " status: " + result;
-        if (result === "failed") {
-            dlgOkay.action = "Please try again";
-        } else {
-            dlgOkay.action = "Well done, continue on matey";
-        }
-        dlgOkay.open();
-    }
-
-    Connections {
         target: hook5
         onCurrentHookChanged: changeCurrentHook(hookNumber);
     } // onCurrentHookChanged
@@ -122,55 +107,71 @@ Item {
         }
         stateMachine.hook = value;
     }
+    function highlightCurrentHook() {
+        // consolidate highlighting logic here
+        currentHook.tfHook.focus = true;
+        currentHook.tfHook.cursorPosition = 0
+        currentHook.tfHook.color = clickedColor
+    }
     function populateHook(species) {
-
     //    if (currentHook == "") return;
-        if (currentHook === null) return;
-
+        if (currentHook === null) {
+            return;
+        }
+        // #144: ask first when gear is undeployed and something other than undeployed is selected
+        if (hooks.isGearUndeployed & species !== 'Undeployed' & currentHook.tfHook.text === 'Undeployed') {
+            dlgGpUndeployed.hookToReview = currentHook;  // hack so dlg can recall this function if we reset to Und
+            dlgGpUndeployed.suggestedSpecies = species;  // passed for info purposes in dlg UI
+            dlgGpUndeployed.open();  // calls back populateHook to reset to Undeployed if rejected
+        }
         hooks.saveHook(currentHook.hookNumber, species);
         switch (currentHook) {
             case hook5:
                 hook5.tfHook.text = species;
                 hook5.tfHook.cursorPosition = 0;
-
-                hook4.tfHook.focus = true;
-                hook4.tfHook.cursorPosition = 0;
-                hook4.tfHook.color = clickedColor;
-
-                currentHook = hook4;
+                currentHook = hook4;  // set current hook to next, then highlight
+                highlightCurrentHook()
                 break;
             case hook4:
                 hook4.tfHook.text = species;
                 hook4.tfHook.cursorPosition = 0;
-
-                hook3.tfHook.focus = true;
-                hook3.tfHook.cursorPosition = 0;
-                hook3.tfHook.color = clickedColor;
                 currentHook = hook3;
+                highlightCurrentHook()
                 break;
             case hook3:
                 hook3.tfHook.text = species;
                 hook3.tfHook.cursorPosition = 0;
-
-                hook2.tfHook.focus = true;
-                hook2.tfHook.cursorPosition = 0;
-                hook2.tfHook.color = clickedColor;
                 currentHook = hook2;
+                highlightCurrentHook()
                 break;
             case hook2:
                 hook2.tfHook.text = species;
                 hook2.tfHook.cursorPosition = 0;
-                hook1.tfHook.focus = true;
-//                hook1.tfHook.selectAll();
-                hook1.tfHook.cursorPosition = 0;
-                hook1.tfHook.color = clickedColor;
                 currentHook = hook1;
+                highlightCurrentHook()
                 break;
             case hook1:
                 hook1.tfHook.text = species;
                 hook1.tfHook.cursorPosition = 0;
                 hook1.tfHook.color = clickedColor;
                 break;
+        }
+    }
+    OkayCancelDialog {
+        // #144: Ask to change to something other than undeployed if GP = undeployed
+        id: dlgGpUndeployed
+        message: '"Undeployed" gear perf. selected.'
+        action: 'Change hook ' + hookToReview.hookNumber + ' from "Undeployed" to "' + suggestedSpecies + '"?'
+        btnOkay.text: "Yes"
+        btnCancel.text: "No"
+        property variant hookToReview;
+        property string suggestedSpecies
+        onAccepted: { // UI seems to unfocus next tf, so re-highlighting next current hook
+            highlightCurrentHook()
+        }
+        onRejected: {  // go back to previous hook and reset to undeployed
+            currentHook = hookToReview  // do this so populateHook write to the correct hook
+            populateHook('Undeployed')
         }
     }
     function getModelSubset(index) {
@@ -185,6 +186,41 @@ Item {
             return cpLabel;
         } else {
             return cpButton;
+        }
+    }
+    function printTags(printer) {
+        /*
+        #266: moving this function from footer.qml to here
+        so we can move print buttons off footer
+        TODO: Move this function all to python so its not isolated on HooksScreen.qml
+        */
+        var equipment = "";
+        switch (printer) {
+            case "bow":
+                equipment = "Zebra Printer Bow";
+                break;
+            case "aft":
+                equipment = "Zebra Printer Aft";
+                break;
+            case "mid":
+                equipment = "Zebra Printer Aft";
+                break;
+        }
+        var angler = stateMachine.angler;
+        var drop = stateMachine.drop;
+        var hooks = {1: hook1, 2: hook2, 3: hook3,
+                     4: hook4, 5: hook5}
+        var species = null;
+        for (var i in hooks) {
+            species = hooks[i].tfHook.text;
+            if ((species !== "Bait Back") &&
+                (species !== "No Bait") &&
+                (species !== "No Hook") &&
+                (species !== "Multiple Hook") &&
+                (species !== "")) {
+                console.info('printing ADH:  angler=' + angler + ', drop=' + drop + ', hook=' + i + ', species=' + species);
+                labelPrinter.printADHLabel(equipment, angler, drop, i, species);  // emits signal back to dlg on sites
+            }
         }
     }
     Component {
@@ -208,9 +244,12 @@ Item {
 
     Header {
         id: framHeader
-        title: "Drop " + stateMachine.drop + " - Angler " + stateMachine.angler + " - " +
-                        stateMachine.anglerName + " - Hooks"
+        title: "Hooks: Drop " + stateMachine.drop + " - Angler " + stateMachine.angler + " - " + stateMachine.anglerName
         height: 50
+        backwardTitle: "Drops"
+        forwardTitle: drops.getAnglerGearPerfsLabel(hooks.getAnglerOpId())
+        forwardEnabled: true
+        forwardVisible: true
     }
     ColumnLayout {
         id: clHooks
@@ -249,6 +288,7 @@ Item {
         anchors.left: clHooks.right
         anchors.leftMargin: 20
         anchors.top: clHooks.top
+        anchors.rightMargin: 20
 
         // column 1
         BackdeckButton {
@@ -511,6 +551,63 @@ Item {
         } // btnYellowtail
     } // glShortSpeciesList
 //    SwipeView {
+    ColumnLayout {
+    // columnlayout allows margins for vertical line separator
+        id: clSpacer
+        anchors {
+            top: glShortSpeciesList.top
+            bottom: glShortSpeciesList.bottom
+            left: glShortSpeciesList.right
+        }
+        Rectangle {
+            Layout.rightMargin: 50
+            Layout.leftMargin: 50
+            anchors {
+                top: parent.top
+                bottom: parent.bottom
+                topMargin: 20
+                bottomMargin: piIndicator.visible ? 110 : 20
+            }
+            width: 2
+            color: "gray"
+        }
+    }
+    ColumnLayout {
+        // #266: print buttons moved from footer to here
+        id: clPrint
+        anchors.left: clSpacer.right
+        anchors.top: clSpacer.top
+        spacing: 20
+        Label {
+            text: "Print Tags"
+            font.pixelSize: 24
+            font.underline: true
+            font.bold: true
+            horizontalAlignment: Text.AlignLeft
+            Layout.preferredWidth: 200
+            Layout.preferredHeight: 40
+            Layout.alignment: Qt.AlignRight
+        }
+        BackdeckButton {
+            id: btnPrintBow
+            text: qsTr("Bow")
+            Layout.preferredWidth: buttonWidth
+            Layout.preferredHeight: buttonHeight
+            onClicked: {
+                printTags("bow");
+            }
+        }
+        BackdeckButton {
+            id: btnPrintAft
+            text: qsTr("Aft")
+            Layout.preferredWidth: buttonWidth
+            Layout.preferredHeight: buttonHeight
+            onClicked: {
+                printTags("aft");
+            }
+        }
+    }
+
     Item {
         id: svFullSpeciesList
 //        currentIndex: 0

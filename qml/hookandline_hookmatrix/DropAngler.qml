@@ -24,7 +24,7 @@ Item {
     property alias btnAtSurface: btnAtSurface;
     property alias rtHooks: rtHooks;
 
-    property variant operationId: -1
+    property variant operationId;  // #251: angler op id set to null on init, populated as DB records are created
     property string luType: "Angler Time"
     property string luValue: ""
     property string valueType: "alpha"
@@ -95,22 +95,6 @@ Item {
         }
     }
 
-    Connections {
-        target: stateMachine //hmSM
-        onGearPerformanceLabelCreated: updateGearPerformanceLabel(drop, angler, label)
-    }
-    function updateGearPerformanceLabel(drop, angler, label) {
-        if (drop === itmDropTab.dropNumber && angler === anglerLetter) {
-            console.info('drop = ' + drop + ', angler = ' + angler + ' vs. drop = ' +
-                itmDropTab.dropNumber + ', anglerLetter: ' + anglerLetter);
-            if (label !== null && label !== "") {
-                txtGearPerformance.text = "Gear\n" + label;
-            } else {
-                txtGearPerformance.text = "Gear\nPerf."
-            }
-        }
-    }
-
     Timer { id: timer }
     function startTimer() {
 //        var soundElapsedTimeStr = "04:45";
@@ -158,6 +142,7 @@ Item {
         startTimer();
     }
     function getOperationId() {
+        // #251: No longer used in favor of assigning opId directly to DropAngler object
         switch (anglerLetter) {
             case "A":
                 operationId = stateMachine.anglerAOpId;
@@ -192,7 +177,6 @@ Item {
                         btnBeginFishing.text = "Begin Fishing\n" + elapsedTime;
 //                        btnStart.enabled = false;
                         updateButtonStatus("Begin Fishing");
-                        getOperationId();
                         drops.upsertOperationAttribute(operationId, luType, "Begin Fishing", valueType, elapsedTime,
                                                         "Angler " + anglerLetter);
                         break;
@@ -200,7 +184,6 @@ Item {
                         var newTime = (new Date()).getTime();
                         var elapsedTime = formatTime((newTime - startSeconds)/1000);
                         btnFirstBite.text = "First Bite\n" + elapsedTime;
-                        getOperationId();
                         if (btnBeginFishing.text == "Begin Fishing\n") {
                             btnBeginFishing.text = "Begin Fishing\n" + elapsedTime;
                             drops.upsertOperationAttribute(operationId, luType, "Begin Fishing", valueType, elapsedTime,
@@ -215,7 +198,6 @@ Item {
                         var elapsedTime = formatTime((newTime - startSeconds)/1000);
                         btnRetrieval.text = "Retrieval\n" + elapsedTime;
                         updateButtonStatus("Retrieval");
-                        getOperationId();
                         drops.upsertOperationAttribute(operationId, luType, "Retrieval", valueType, elapsedTime,
                                                         "Angler " + anglerLetter);
                         break;
@@ -227,7 +209,6 @@ Item {
                         rtHooks.enabled = true;
                         isRunning = false;
                         updateButtonStatus("At Surface");
-                        getOperationId();
                         drops.upsertOperationAttribute(operationId, luType, "At Surface", valueType, elapsedTime,
                                                         "Angler " + anglerLetter);
                         break;
@@ -434,15 +415,28 @@ Item {
                 height: 40
                 radius: 4
                 implicitWidth:  txtGearPerformance.implicitWidth + imgGearPerformance.implicitWidth
+                enabled: operationId ? true : false  // # 247: only allow nav to GP after angler id created
                 color: "transparent"
+
                 Text {
                     id: txtGearPerformance
-                    text: qsTr("Gear\nPerf.")
+                    text: operationId ? drops.getAnglerGearPerfsLabel(operationId) : "Gear\nPerf."  // #241: query perfs by angler ID
                     font.pixelSize: 24
+                    color: rtGearPerformance.enabled ? 'black' : 'gray'  // #246: gray if disabled
+                    font.italic: !rtGearPerformance.enabled  // #246: italic if disabled
                     anchors.verticalCenter: parent.verticalCenter
+                    Connections { // #241: receive signal from GearPerformance whenever record is added/deleted
+                        target: gearPerformance
+                        onGearPerformanceChanged: {
+                            if(angler_op_id == operationId) {  // only query if DB Ids match
+                                txtGearPerformance.text = drops.getAnglerGearPerfsLabel(operationId)
+                            }
+                        }
+                    }
                 }
                 Image {
                     id: imgGearPerformance
+                    opacity: rtGearPerformance.enabled ? 1.0 : 0.25  // #246: set image opaque if disabled
                     anchors.left: txtGearPerformance.right
                     anchors.verticalCenter: parent.verticalCenter
                     source: Qt.resolvedUrl("/resources/images/navigation_next_item_dark.png")
@@ -451,6 +445,7 @@ Item {
                     anchors.fill: parent
                     onClicked: {
                         stateMachine.angler = anglerLetter
+                        stateMachine.anglerName = anglerName;
                         smHookMatrix.to_gear_performance_state();
                     }
                 }
@@ -466,13 +461,30 @@ Item {
                 enabled: false
                 Text {
                     id: txtHooks
-                    text: qsTr("Hooks")
+                    text: drops.getAnglerHooksLabel(operationId, rtHooks.enabled)
                     font.pixelSize: 24
                     anchors.verticalCenter: parent.verticalCenter
+                    Connections {
+                        target: hooks
+                        onHooksChanged: {
+                            if (angler_op_id == operationId) {
+                                txtHooks.text = drops.getAnglerHooksLabel(operationId, rtHooks.enabled)
+                            }
+                        }
+                    }
+                    Connections {
+                        target: gearPerformance
+                        onHooksUndeployed: {
+                            if (angler_op_id == operationId) {
+                                txtHooks.text = drops.getAnglerHooksLabel(operationId, rtHooks.enabled)
+                            }
+                        }
+                    }
                 }
                 Image {
                     id: imgHooks
                     anchors.left: txtHooks.right
+                    opacity: rtHooks.enabled ? 1.0 : 0.25  // #246: set image opaque if disabled
                     anchors.verticalCenter: parent.verticalCenter
                     source: Qt.resolvedUrl("/resources/images/navigation_next_item_dark.png")
                 }
@@ -485,6 +497,36 @@ Item {
                     }
                 }
             } // rtHooks
+            Connections {
+            	target: gearPerformance
+            	onAnglerTimeUndeployed: {
+            	    // #144: receive signal from gp when undeployed is selected, set times to undeployed str
+            		if (angler_op_id == operationId) {
+            			switch(time_type) {
+            				case "Start":
+            					btnStart.text = "Start\n" + undeployed_str;
+            					break;
+            				case "Begin Fishing":
+            					btnBeginFishing.text = "Begin Fishing\n" + undeployed_str;
+            					break;
+            				case "First Bite":
+            					btnFirstBite.text = "First Bite\n" + undeployed_str;
+            					break;
+            				case "Retrieval":
+            					btnRetrieval.text = "Retrieval\n" + undeployed_str;
+            					break;
+            				case "At Surface":
+            				    // mimic ending of time recording for normal deployed fishing
+            					btnAtSurface.text = "At Surface\n" + undeployed_str;
+            					lblElapsedTime.text = btnAtSurface.text.replace("At Surface\n", "");
+            					rtHooks.enabled = true;
+            					isRunning = false;
+            					updateButtonStatus("At Surface");
+            					break;
+            			}
+            		}
+            	}
+            }
         } // Buttons
     }
     OkayCancelDialog {
@@ -504,7 +546,6 @@ Item {
                     var btnStr = btn.text.split("\n")[0];
                     var previousBtnStr = previousButtons[btnStr];
                     btn.text = btnStr + "\n";
-                    getOperationId()
                     drops.deleteOperationAttribute(operationId, "Angler Time", btnStr);
                     updateButtonStatus(previousBtnStr);
 
@@ -538,12 +579,11 @@ Item {
     EditTimeDialog {
         id: dlgEditTime
         onAccepted: {
-            console.info('new time: ' + numPad.tfMinutes.text + ":" + numPad.tfSeconds.text);
+            var newTime = zfill(numPad.tfMinutes.text, 2) + ":" + zfill(numPad.tfSeconds.text, 2); // #91: force zfill
+            console.info('new time: ' + newTime);
             console.info('btn: ' + editedButton.text);
-            var newTime = numPad.tfMinutes.text + ":" + numPad.tfSeconds.text;
             var buttonType = editedButton.text.split("\n")[0]
             editedButton.text = buttonType + "\n" + newTime;
-            getOperationId();
             drops.upsertOperationAttribute(operationId, luType, buttonType, valueType, newTime, "Angler " + anglerLetter);
             stateMachine.dropTimeState = "enter";
         }

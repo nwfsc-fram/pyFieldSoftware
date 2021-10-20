@@ -11,6 +11,7 @@ Item {
         onPrinterStatusReceived: receivedPrinterStatus(comport, success, message)
     }
     function receivedPrinterStatus(comport, success, message) {
+    // #267: Dialog used by both test print (SettingsScreen.qml) and tag print (HooksScreen.qml)
         var result = success ? "success" : "failed"
         dlgOkay.message = "Print job to " + comport + " status: " + result;
         if (result === "failed") {
@@ -19,19 +20,6 @@ Item {
             dlgOkay.action = "Well done, continue on matey";
         }
         dlgOkay.open();
-    }
-
-    function printTest(printer) {
-        var equipment = "";
-        switch (printer) {
-            case "bow":
-                equipment = "Zebra Printer Bow";
-                break;
-            case "aft":
-                equipment = "Zebra Printer Aft";
-                break;
-        }
-        labelPrinter.printADHLabel(equipment, "A", "1", "1", "Test Species");
     }
 
     Header {
@@ -141,7 +129,16 @@ Item {
                 sites.sitesModel.retrieveSites(filter);
             }
         } // btnRetrieveSites
-        Label { Layout.preferredHeight: 40 } // spacer
+        Rectangle {
+//            Layout.topMargin: 10
+//            Layout.bottomMargin: 10
+            anchors {
+                left: btnRetrieveSites.left
+                right: btnRetrieveSites.right
+            }
+            height: 2
+            color: "gray"
+        }
         Text {
             id: txFilter
             horizontalAlignment: Text.AlignHCenter
@@ -186,25 +183,25 @@ Item {
                 sites.sitesModel.retrieveSites("all");
             }
         } // btnAll
-        Label { Layout.preferredHeight: 40 } // spacer
+        Rectangle {
+            Layout.topMargin: 10
+            Layout.bottomMargin: 10
+            anchors {
+                left: btnRetrieveSites.left
+                right: btnRetrieveSites.right
+            }
+            height: 2
+            color: "gray"
+        }
         BackdeckButton {
-            id: printBowTest
-            text: qsTr("Print Bow\nTest")
+            id: btnSettings
+            text: qsTr("Settings\n>>")
             Layout.preferredWidth: 120
             Layout.preferredHeight: 60
             onClicked: {
-                printTest("bow");
+                smHookMatrix.to_settings_state();
             }
-        } // printBowTest
-        BackdeckButton {
-            id: printAftTest
-            text: qsTr("Print Aft\nTest")
-            Layout.preferredWidth: 120
-            Layout.preferredHeight: 60
-            onClicked: {
-                printTest("aft");
-            }
-        } // printAftTest
+        } // btnSettings, https://github.com/nwfsc-fram/pyFieldSoftware/issues/259
     }
     Footer {
         id: framFooter

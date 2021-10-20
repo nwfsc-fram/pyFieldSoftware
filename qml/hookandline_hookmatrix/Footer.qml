@@ -81,6 +81,10 @@ RowLayout {
     }
 
     function printTags(printer) {
+        /*
+        #266: function no longer used, but leaving in case
+        print buttons are one day used in footer again
+        */
         var equipment = "";
         switch (printer) {
             case "bow":
@@ -358,8 +362,8 @@ RowLayout {
             PropertyChanges { target: deleteTime; visible: false}
             PropertyChanges { target: lblMove; visible: false}
             PropertyChanges { target: lblSwap; visible: false}
-            PropertyChanges { target: printBow; visible: true}
-            PropertyChanges { target: printAft; visible: true}
+            PropertyChanges { target: printBow; visible: false}  // #266: removing printBow from hooks footer
+            PropertyChanges { target: printAft; visible: false}  // #266: removing printAft from hooks footer
 //            PropertyChanges { target: lblReprint; visible: true}
             PropertyChanges { target: lblSpeciesList; visible: true; }
             PropertyChanges {target: lblSpacer;  width: 100}

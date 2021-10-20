@@ -1,8 +1,9 @@
 import sys
-from PyQt5.QtCore import QUrl, qInstallMessageHandler
+from PyQt5.QtCore import QUrl, qInstallMessageHandler, Qt
 from PyQt5.QtQml import QQmlApplicationEngine
 from py.common.QSingleApplication import QtSingleApplication
 from PyQt5 import QtGui
+from PyQt5.QtWidgets import QSplashScreen
 import logging
 import arrow
 
@@ -19,6 +20,23 @@ from py.hookandline_hookmatrix.RpcClient import RpcClient
 from py.hookandline_hookmatrix.LabelPrinter import LabelPrinter
 from py.hookandline_hookmatrix.SerialPortManager import SerialPortManager
 from py.hookandline_hookmatrix.Notes import Notes
+from py.hookandline_hookmatrix.Settings import Settings
+
+
+class HookMatrixSplash(QSplashScreen):
+    """
+    Class to hold splash screen config
+    Helpful: https://stackoverflow.com/questions/58661539/create-splash-screen-in-pyqt5
+    # FIELD-1471: Splash screen should help indicate when Matrix is booting
+    TODO: Make gif animated???
+    TODO: Loading screen with message and pic... progress bar???
+    TODO: Consolidate in "Common" folder
+    """
+    def __init__(self):
+        super(QSplashScreen, self).__init__()
+        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint | Qt.SplashScreen)
+        self.setPixmap(QtGui.QPixmap("./resources/images/hookmatrix_icon.png"))
+        self.setWindowOpacity(0.80)
 
 
 class HookandlineHookMatrix:
@@ -30,6 +48,8 @@ class HookandlineHookMatrix:
         appGuid = 'F3FF80BA-BA05-4277-8063-82A6DB9245A3'
         self.app = QtSingleApplication(appGuid, sys.argv)
         self.app.setWindowIcon(QtGui.QIcon("resources/ico/hooklogger.ico"))
+        splash = HookMatrixSplash()
+        splash.show()
         if self.app.isRunning():
             sys.exit(0)
 
@@ -65,7 +85,11 @@ class HookandlineHookMatrix:
         self.notes = Notes(app=self, db=self.db)
         self.context.setContextProperty("notes", self.notes)
 
+        self.settings = Settings(app=self, db=self.db)
+        self.context.setContextProperty("settings", self.settings)
+
         self.engine.load(QUrl('qrc:/qml/hookandline_hookmatrix/main_hookmatrix.qml'))
+        splash.close()
         self.engine.quit.connect(self.app.quit)
 
         sys.exit(self.app.exec_())

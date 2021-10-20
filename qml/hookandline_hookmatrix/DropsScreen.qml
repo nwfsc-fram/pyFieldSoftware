@@ -84,6 +84,7 @@ Item {
 
                         // Get the JSON angler elements, used to populate the various QML widgets
                         anglerResult = results[drop]["Anglers"][angler];
+                        anglerItem.operationId = anglerResult['id']  // #251: set op id for each angler
                         for (var value in anglerResult) {
                             switch (value) {
                                 case "Angler Time Start":
@@ -288,10 +289,25 @@ Item {
                         'angler C Op ID=' + stateMachine.anglerCOpId)
 
     }
+    function zfill(value, n) {
+        /*
+        Zero-pad string to nth character
+        value: string
+        n: number to zero-pad to left
+        */
+        var diff = n - value.length
+        var newVal = value
+        if (diff > 0) {
+            for (var i = 0; i < diff; i++) {
+                newVal = "0" + newVal
+            }
+        }
+        return newVal
+    }
     function padZeros(value) { return (value < 10) ? "0" + value : value; }
     function formatTime(value) {
         var minutes = padZeros(Math.floor(value/60))
-        var seconds = padZeros(Math.round(value%60))
+        var seconds = padZeros(Math.floor(value%60))  // #42: Round seconds down to avoid 60 as a value
         return minutes + ":" + seconds;
     }
     function getHeaderTitle() {
@@ -305,6 +321,7 @@ Item {
     Header {
         id: framHeader
         title: getHeaderTitle();
+        backwardTitle: "Sites"
         height: 50
     }
     TabView {

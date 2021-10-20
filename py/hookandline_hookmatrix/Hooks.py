@@ -54,6 +54,7 @@ class Hooks(QObject):
 
     fullSpeciesListModelChanged = pyqtSignal()
     hooksSelected = pyqtSignal(QVariant, arguments=["results", ])
+    hooksChanged = pyqtSignal(QVariant, arguments=["angler_op_id"])  # signal to update hooks label in DropAngler.qml
 
     def __init__(self, app=None, db=None):
         super().__init__()
@@ -62,6 +63,57 @@ class Hooks(QObject):
         self._rpc = self._app.rpc
 
         self._full_species_list_model = FullSpeciesListModel(self._app)
+        self._non_fish_items = self._get_non_fish_items()  # added for issue #82
+
+    @pyqtProperty(bool)
+    def isGearUndeployed(self):
+        """
+        #144: Check if Undeployed has been populated for current angler
+        Used to see if we're changing hook to something other than undeployed when undeployed gear perf is entered
+        TODO: move this to a statemachine property?  Tried but it was annoying, left as is for now - jf
+        :return: boolean
+        """
+        op_id = self.get_angler_op_id()
+        try:
+            undeployed = self._rpc.execute_query(
+                sql='''
+                    select  oa.operation_attribute_id
+                    from    operation_attributes oa
+                    join    lookups l
+                            on oa.attribute_type_lu_id = l.lookup_id
+                    where   oa.operation_id = ?
+                            and l.type = 'Angler Gear Performance'
+                            and l.value = 'Undeployed'
+                ''',
+                params=[op_id, ]
+            )
+        except Exception as e:
+            logging.error(f"Unable to query undeployed gear perfs for angler op id {op_id}")
+            return False
+
+        return len(undeployed) > 0
+
+    def _get_non_fish_items(self):
+        """
+        Get list of hook items that are not fish/taxonomic
+        e.g. Bait Back, No Bait, No Hook, Multiple Hook, Undeployed (subject to change going forward)
+        :return: str[]
+        """
+        sql = '''
+            select  display_name
+            from    catch_content_lu
+            where   taxonomy_id is null
+        '''
+        return [i[0] for i in self._rpc.execute_query(sql=sql)]
+
+    @pyqtSlot(QVariant, name='isFish', result=bool)
+    def is_fish(self, hooked_item):
+        """
+        Used for hook text styling (see #82)
+        :param hooked_item: string from UI
+        :return: bool
+        """
+        return hooked_item not in self._non_fish_items if hooked_item else False
 
     @pyqtProperty(FramListModel, notify=fullSpeciesListModelChanged)
     def fullSpeciesListModel(self):
@@ -71,6 +123,7 @@ class Hooks(QObject):
         """
         return self._full_species_list_model
 
+    @pyqtSlot(name="getAnglerOpId", result=QVariant)  # 143: expose as pyqtSlot
     def get_angler_op_id(self):
         """
         Method to return the angler operation id from the given state machine angler letter.  The Angler Operation ID
@@ -181,6 +234,8 @@ class Hooks(QObject):
             adh = f"{self._app.state_machine.angler}{self._app.state_machine.drop}{self._app.state_machine.hook}"
             notify = {"speciesUpdate": {"station": "HookMatrix", "set_id": self._app.state_machine.setId, "adh": adh}}
             self._rpc.execute_query(sql=sql, params=params, notify=notify)
+            logging.info(f"Hooks changed for angler op id {angler_op_id}")
+            self.hooksChanged.emit(angler_op_id)  # received by DropAngler.qml
 
         except Exception as ex:
 
@@ -275,6 +330,8 @@ class Hooks(QObject):
                 notify = {"speciesUpdate": {"station": "HookMatrix", "set_id": self._app.state_machine.setId, "adh": adh}}
                 self._rpc.execute_query(sql=sql, params=params, notify=notify)
                 logging.info(f"hook deletion completed, params = {params}")
+                self.hooksChanged.emit(angler_op_id)  # received by DropAngler.qml
+                logging.info(f"Hooks changed for angler op id {angler_op_id}")
 
         except Exception as ex:
 

@@ -6,6 +6,8 @@ Item {
 
     property int buttonHeight: 80;
     property int buttonWidth: 2 * buttonHeight;
+    property variant anglerOpId: gearPerformance.getAnglerOpId()
+    property variant isAnglerDoneFishing: drops.isAnglerDoneFishing(anglerOpId)
 
     Connections {
         target: gearPerformance
@@ -44,11 +46,14 @@ Item {
             if (stop_processing) break;
         }
     }
-
     Header {
         id: framHeader
-        title: "Gear Performance: Drop " + stateMachine.drop + " - Angler " + stateMachine.angler
+        title: "Gear Performance: Drop " + stateMachine.drop + " - Angler " + stateMachine.angler + " - " + stateMachine.anglerName
         height: 50
+        backwardTitle: "Drops"
+        forwardTitle: drops.getAnglerHooksLabel(anglerOpId, true)
+        forwardEnabled: drops.isAnglerDoneFishing(anglerOpId)
+        forwardVisible: drops.isAnglerDoneFishing(anglerOpId)
     }
     ColumnLayout {
         id: clNoProblems
@@ -56,6 +61,7 @@ Item {
         anchors.right: clPerformances.left
         anchors.rightMargin: 100
         anchors.verticalCenter: parent.verticalCenter
+        // #239: Bind onCheckedChange to addGearPerformance/deleteGearPerformance to just interact with btn.checked
         BackdeckButton {
             id: btnNoProblems
             text: qsTr("No Problems")
@@ -64,18 +70,19 @@ Item {
             checkable: true
             checked: false
             onClicked: {
-                btnLostHooks.checked = false;
-                btnLostGangion.checked = false;
-                btnLostSinker.checked = false;
-                btnMinorTangle.checked = false;
-                btnMajorTangle.checked = false;
-                btnUndeployed.checked = false;
-                btnExclude.checked = false;
-
-                if (checked)
-                    gearPerformance.addGearPerformance("No Problems");
-                else
-                    gearPerformance.deleteGearPerformance("No Problems");
+                if (checked) {
+                    btnLostHooks.checked = false;
+                    btnLostGangion.checked = false;
+                    btnLostSinker.checked = false;
+                    btnMinorTangle.checked = false;
+                    btnMajorTangle.checked = false;
+                    btnUndeployed.checked = false;
+                    btnExclude.checked = false;
+                }
+            }
+            onCheckedChanged: {  // add to DB anytime checked, remove anytime unchecked
+                if (checked) gearPerformance.addGearPerformance(text)
+                else gearPerformance.deleteGearPerformance(text)
             }
         } // btnNoProblems
 //        	-- No Problems (default value - use this if no performance issues identified)
@@ -95,13 +102,14 @@ Item {
             checkable: true
             checked: false
             onClicked: {
-                btnNoProblems.checked = false;
-
-                if (checked)
-                    gearPerformance.addGearPerformance("Lost Hooks");
-                else
-                    gearPerformance.deleteGearPerformance("Lost Hooks");
-
+                if (checked) {
+                    btnNoProblems.checked = false;
+                    btnUndeployed.checked = false;
+                }
+            }
+            onCheckedChanged: {  // add to DB anytime checked, remove anytime unchecked
+                if (checked) gearPerformance.addGearPerformance(text)
+                else gearPerformance.deleteGearPerformance(text)
             }
         } // btnLostHooks
         BackdeckButton {
@@ -112,13 +120,15 @@ Item {
             checkable: true
             checked: false
             onClicked: {
-                btnNoProblems.checked = false;
-
-                if (checked)
-                    gearPerformance.addGearPerformance("Lost Gangion");
-                else
-                    gearPerformance.deleteGearPerformance("Lost Gangion");
-
+                if (checked) {
+                    btnNoProblems.checked = false;
+                    btnUndeployed.checked = false;
+                    btnLostSinker.checked = true // #145: auto-select lost sinker whenever lost gangion is selected
+                }
+            }
+            onCheckedChanged: {  // add to DB anytime checked, remove anytime unchecked
+                if (checked) gearPerformance.addGearPerformance(text)
+                else gearPerformance.deleteGearPerformance(text)
             }
         } // btnLostGangion
         BackdeckButton {
@@ -129,12 +139,18 @@ Item {
             checkable: true
             checked: false
             onClicked: {
-                btnNoProblems.checked = false;
-
-                if (checked)
-                    gearPerformance.addGearPerformance("Lost Sinker");
-                else
-                    gearPerformance.deleteGearPerformance("Lost Sinker");
+                if (checked) {
+                    btnNoProblems.checked = false;
+                    btnUndeployed.checked = false;
+                }
+                else {
+                    // #145: auto-unselect lost gangion whenever lost sinker is unselected
+                    btnLostGangion.checked = false
+                }
+            }
+            onCheckedChanged: {  // add to DB anytime checked, remove anytime unchecked
+                if (checked) gearPerformance.addGearPerformance(text)
+                else gearPerformance.deleteGearPerformance(text)
             }
         } // btnLostSinker
         BackdeckButton {
@@ -145,11 +161,14 @@ Item {
             checkable: true
             checked: false
             onClicked: {
-                btnNoProblems.checked = false;
-                if (checked)
-                    gearPerformance.addGearPerformance("Minor Tangle");
-                else
-                    gearPerformance.deleteGearPerformance("Minor Tangle");
+                if (checked) {
+                    btnNoProblems.checked = false;
+                    btnUndeployed.checked = false;
+                }
+            }
+            onCheckedChanged: {  // add to DB anytime checked, remove anytime unchecked
+                if (checked) gearPerformance.addGearPerformance("Minor Tangle")
+                else gearPerformance.deleteGearPerformance("Minor Tangle")
             }
         } // btnMinorTangle
         BackdeckButton {
@@ -160,11 +179,14 @@ Item {
             checkable: true
             checked: false
             onClicked: {
-                btnNoProblems.checked = false;
-                if (checked)
-                    gearPerformance.addGearPerformance("Major Tangle");
-                else
-                    gearPerformance.deleteGearPerformance("Major Tangle");
+                if (checked) {
+                    btnNoProblems.checked = false;
+                    btnUndeployed.checked = false;
+                }
+            }
+            onCheckedChanged: {  // add to DB anytime checked, remove anytime unchecked
+                if (checked) gearPerformance.addGearPerformance("Major Tangle")
+                else gearPerformance.deleteGearPerformance("Major Tangle")
             }
         } // btnMajorTangle
         BackdeckButton {
@@ -175,11 +197,21 @@ Item {
             checkable: true
             checked: false
             onClicked: {
-                btnNoProblems.checked = false;
-                if (checked)
-                    gearPerformance.addGearPerformance("Undeployed");
-                else
-                    gearPerformance.deleteGearPerformance("Undeployed");
+                if (checked) {
+                    // deselect all gp buttons
+                    btnNoProblems.checked = false;
+                    btnLostHooks.checked = false;
+                    btnLostGangion.checked = false;
+                    btnLostSinker.checked = false;
+                    btnMinorTangle.checked = false;
+                    btnMajorTangle.checked = false;
+                    btnExclude.checked = true;  // #239: Auto-select exclude when undeployed selected
+                    dlgUndeployed.open()  // #144: ask to autopop hooks and times to Undeployed
+                }
+            }
+            onCheckedChanged: {  // add to DB anytime checked, remove anytime unchecked
+                if (checked) gearPerformance.addGearPerformance(text)
+                else gearPerformance.deleteGearPerformance(text)
             }
         } // btnUndeployed
 
@@ -190,6 +222,7 @@ Item {
         anchors.left: clPerformances.right
         anchors.leftMargin: 100
         anchors.verticalCenter: parent.verticalCenter
+
         BackdeckButton {
             id: btnExclude
             text: qsTr("Exclude")
@@ -198,19 +231,35 @@ Item {
             checkable: true
             checked: false
             onClicked: {
-                btnNoProblems.checked = false;
-                if (checked)
-                    gearPerformance.addGearPerformance("Exclude");
-                else
-                    gearPerformance.deleteGearPerformance("Exclude");
-
+                if (!checked) {
+                    btnUndeployed.checked = false
+                }
             }
-        } // btnNoProblems
+            onCheckedChanged: {  // add to DB anytime checked, remove anytime unchecked
+                if (checked) gearPerformance.addGearPerformance(text)
+                else gearPerformance.deleteGearPerformance(text)
+            }
+        }
 //        	-- No Problems (default value - use this if no performance issues identified)
 //	-- Lost Hook(s) -- Lost Gangion  -- Lost Sinker  -- Minor Tangle  -- Major Tangle  -- Undeployed
 
     } // clPerformances
-
+    OkayCancelDialog {
+        // #144: auto-populate hooks 1-5 as Undeployed when undeployed option clicked
+        id: dlgUndeployed
+        message: '"Undeployed" gear perf. selected.'
+        action: 'Set all Angler ' + stateMachine.angler + ' hooks and times to "Undeployed"?'
+        btnOkay.text: "Yes"
+        btnCancel.text: "No"
+        onAccepted: {
+            gearPerformance.undeployAnglerTimes()  // empty time vals to 'UN'; do this first for enabling hooks nav race
+            gearPerformance.upsertHooksToUndeployed()  // set all hooks to undeployed
+            framHeader.forwardTitle = drops.getAnglerHooksLabel(anglerOpId, true)  // update Hooks header text
+            framHeader.forwardVisible = true  // make nav to hooks visible
+            framHeader.forwardEnabled = true  // enable nav to hooks
+        }
+        onRejected: {}
+    }
     Footer {
         id: framFooter
         height: 50

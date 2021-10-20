@@ -10,6 +10,8 @@ Button {
     property string grdTopColor: "white"
     property string grdBottomColor: "#eee"
     property string txtColor: "black"
+    property bool boldFont: false
+
 
     style: ButtonStyle {
         label: Text {
@@ -18,6 +20,7 @@ Button {
             horizontalAlignment: Text.AlignHCenter
             font.family: "Helvetica"
             font.pixelSize: 20
+            font.bold: boldFont
             color: txtColor
             text: control.text
         }

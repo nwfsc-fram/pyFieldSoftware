@@ -7,6 +7,7 @@ from PyQt5.QtCore import QVariant, pyqtProperty, pyqtSlot, pyqtSignal, QObject
 import arrow
 from apsw import ConstraintError
 import apsw
+import xmlrpc.client as xrc
 
 # Project Libraries
 from py.common.FramListModel import FramListModel
@@ -104,7 +105,7 @@ class Drops(QObject):
 
         except Exception as ex:
 
-            if "apsw.ConstraintError" in str(ex):
+            if "apsw.ConstraintError" in str(ex) or isinstance(ex, xrc.Fault):  # #157: also catch XRC exception
 
                 logging.info(f"Drop operation exists, getting the existing primary key: {ex}")
                 sql = """
@@ -145,7 +146,7 @@ class Drops(QObject):
 
             except Exception as ex:
 
-                if "apsw.ConstraintError" in str(ex):
+                if "apsw.ConstraintError" in str(ex) or isinstance(ex, xrc.Fault):  # #157: also catch XRC exception
 
                     logging.info(f"Angler operation {x} exists, getting the existing primary key: {ex}")
                     sql = """
@@ -419,3 +420,212 @@ class Drops(QObject):
             logging.error(f"Error getting the play sound time: {ex}")
 
         return "04:45"
+
+    @pyqtSlot(QVariant, name="getDropIdFromNumber", result=QVariant)
+    def get_drop_id_from_number(self, drop_num):
+        """
+        Return operation database ID for drop based on site operation id and the drop number
+        :param drop_num: int 1-5
+        :return: int, operation database id
+        """
+        try:
+            return self._rpc.execute_query(
+                sql='''
+                    select  operation_id
+                    from    operations
+                    where   parent_operation_id = ?
+                            and operation_number = ?
+                ''',
+                params=[self._app.state_machine.siteOpId, drop_num]
+            )[0][0]
+        except (IndexError, Exception) as ex:  # above query will return nothing if data has yet to be entered
+            logging.debug(f"Unable to get drop op id with drop num {drop_num}; {ex}")
+            return None
+
+    @pyqtSlot(QVariant, str, name="getAnglerOpId", result=QVariant)
+    def get_angler_op_id(self, drop_op_id, angler_letter):
+        """
+        Get angler operation DB ID using the parent drop and angler letter
+        :param drop_op_id: database ID from OPERATIONS for parent drop record
+        :param angler_letter: str, A B or C
+        :return: int, DB ID
+        """
+        try:
+            return self._rpc.execute_query(
+                sql='''
+                                select  operation_id
+                                from    operations
+                                where   parent_operation_id = ?
+                                        and operation_number = ?
+                            ''',
+                params=[drop_op_id, angler_letter]
+            )[0][0]
+        except (IndexError, Exception) as ex:  # above query will return nothing if data has yet to be entered
+            logging.debug(f"Unable to get angler id with drop op id {drop_op_id} angler {angler_letter}; {ex}")
+            return None
+
+    @pyqtSlot(int, name="getAnglerGearPerfsLabel", result=QVariant)
+    def get_angler_gear_perfs_label(self, angler_op_id):
+        """
+        Gets gear perfs per angler operation_id, then abbreviates for UI label
+        :param angler_op_id: int; operations table id for angler record
+        :return: emits drop#, angler letter, and Gear Perf label to DropAngler.qml updateGearPerformanceLabel
+        """
+        default = "Gear\nPerf."  # use if all else fails
+        try:
+            # query gets drop and angler info, and group_concats gear perfs
+            perfs = self._rpc.execute_query(
+                sql='''
+                    select  group_concat(l.value) as perfs
+                    from    operation_attributes oa
+                    join    lookups l
+                            on oa.attribute_type_lu_id = l.lookup_id
+                    where   oa.operation_id = ?
+                            and l.type = 'Angler Gear Performance'
+                ''',
+                params=[angler_op_id, ]
+            )
+        except Exception as ex:
+            logging.error(f"Unable to get gear perfs with angler op id {angler_op_id}; {ex}")
+            return default
+        try:
+            if perfs and perfs[0][0]:  # did query return results, and were there gear perfs?
+                return self._app.gear_performance.abbreviate_gear_perfs(perfs[0][0].split(","))  # split comma sep string and abbreviate
+            else:
+                return default
+        except IndexError as ex:
+            logging.error(f"Unable to parse gear perfs {perfs}; {ex}")
+            return default
+
+    @pyqtSlot(int, bool, name="getAnglerHooksLabel", result=QVariant)
+    def get_angler_hooks_label(self, angler_op_id, hooks_enabled):
+        """
+        Select hooks per op_id aka angler from DB.
+        Left join to CTE ensures result will always have 5 rows,
+        unpopulated hooks shown as null
+        TODO: make this function return a list, not a string then make wrapper for pyQtSlot
+        :param angler_op_id: int, operations DB id
+        :param hooks_enabled: bool, passes thru to format hooks label
+        :return: dict[], one per db row. E.g. [{hookNum: "1", hookContent: "Boccacio", isFish: True}...]
+        """
+        try:
+            hooks = self._rpc.execute_query(
+                sql="""
+                    with hooks as (--cartesian join CTE creates 5 records per angler
+                        select
+                                    o.operation_id as angler_op_id
+                                    ,h.hook_num
+                        FROM		operations o
+                        JOIN		(
+                                        select '1' as hook_num
+                                        union all
+                                        select '2'
+                                        union all
+                                        select '3'
+                                        union all
+                                        select '4'
+                                        union all
+                                        select '5'
+                                    ) h
+                                    on 1 = 1
+                        WHERE		o.operation_id = ?
+                        )
+                    select
+                                h.hook_num  --using hook_num_lbl instead
+                                ,case when l.lookup_id is null then '_' else h.hook_num end as hook_num_lbl
+                                ,cc.display_name
+                    from        hooks h
+                    left join	catch c  --left join ensures 5 rows always returned per angler
+                                on h.angler_op_id = c.operation_id
+                                and h.hook_num = c.receptacle_seq
+                    left join   catch_content_lu cc
+                                on c.hm_catch_content_id = cc.catch_content_id
+                    left JOIN	lookups l
+                                on c.receptacle_type_id = l.lookup_id
+                                and l.value = 'Hook'
+                    order by    h.hook_num desc
+                    """,
+                params=[angler_op_id, ]
+            )
+        except Exception as ex:
+            logging.error(f"Unable to query hooks with angler op id {angler_op_id}; {ex}")
+            return ''
+
+        if len(hooks) > 0:
+            hooks_list = [
+                {
+                    'hookNum': h[0],
+                    'hookNumLbl': h[1],
+                    'hookContent': h[2],
+                    'isFish': self._app.hooks.is_fish(h[2])  # tie in function from hooks
+                }
+                for h in hooks
+            ]
+            return self.format_hooks_label(hooks_list, hooks_enabled)
+        else:
+            return self.format_hooks_label([], hooks_enabled)
+
+    @staticmethod
+    def format_hooks_label(hooks_list, hooks_enabled):
+        """
+        format hooks text for RichText QML text object
+        :param hooks_list: list of dicts (e.g. [{'hookNum': 1, 'hookContent': 'Yelloweye', 'isFish': True}]
+        :param hooks_enabled: allow italic string if disabled
+        :return: string, rich text
+        """
+        gray = '#808080'
+        black = '#000000'
+        green = '#008000'
+        undeployed = all(h['hookContent'] == 'Undeployed' for h in hooks_list)
+
+        if not hooks_list and hooks_enabled:
+            return f'<font color=\"{black}\">Hooks<br>_,_,_,_,_</font>'
+        elif not hooks_list and not hooks_enabled:
+            return f'<i><font color=\"{gray}\">Hooks<br>_,_,_,_,_</font></i>'
+        elif undeployed and hooks_enabled:  # if all undeployed, set label to UN
+            return 'Hooks<br>UN'
+        elif undeployed and not hooks_enabled:
+            return f'<i><font color=\"{gray}\">Hooks<br>UN</font></i>'
+        elif not hooks_enabled:
+            joined_hooks = ','.join(h['hookNumLbl'] for h in hooks_list)
+            return f'<i><font color=\"{gray}\">Hooks<br>{joined_hooks}</font></i>'
+        else:
+            hooks_lbl = 'Hooks<br>'
+            for hook in hooks_list:
+                hook_num_lbl = hook['hookNumLbl']
+                is_fish = hook['isFish']
+                if is_fish:
+                    hooks_lbl += f"<font color=\"{green}\">{hook_num_lbl},</font>"
+                elif not hook['hookContent']:
+                    hooks_lbl += f"<font color=\"{black}\">_,</font>"
+                else:
+                    hooks_lbl += f"<font color=\"{black}\">{hook_num_lbl},</font>"
+
+            return ''.join(hooks_lbl.rsplit(",", 1))  # split last comma, joins with empty str (remove last comma)
+
+    @pyqtSlot(QVariant, name='isAnglerDoneFishing', result=bool)
+    def is_angler_done_fishing(self, angler_op_id):
+        """
+        check if "At Surface" record exists for angler, used for forward nav purposes
+        Coding function in Drops.py so it can be used independent of hooks/gear perf being filled out
+        TODO: Add as property, for Angler class???
+        :param angler_op_id: int, angler Operation DB id
+        :return: boolean
+        """
+        try:
+            results = self._rpc.execute_query(
+                sql='''
+                    select  operation_attribute_id
+                    from    operation_attributes oa
+                    join    lookups l
+                            on oa.attribute_type_lu_id = l.lookup_id
+                    where   oa.operation_id = ?
+                            and l.type = 'Angler Time'
+                            and l.value = 'At Surface'
+                ''',
+                params=[angler_op_id, ]
+            )
+            return len(results) > 0
+        except Exception as ex:
+            logging.error(f"Unable to query if angler {angler_op_id} is done fishing; {ex}")
+            return None
