@@ -14,7 +14,7 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
-
+from build_config import increment_build_number
 # Useful library. http://click.pocoo.org/5/api/#click.confirm
 import click
 
@@ -27,6 +27,9 @@ path_sqlite_dll = os.path.join(PYTHON_DIR, 'DLLs\sqlite3.dll')
 
 PYQT5_DIR = os.path.join(PYTHON_DIR, 'lib\site-packages\PyQt5')
 includes = ['PyQt5.Qt', 'PyQt5.QtNetwork', 'PyQt5.QtCore', 'PyQt5.QtGui', 'PyQt5.QtWidgets', 'PyQt5.QtMultimedia', 'arrow']
+
+# increment build number
+version = increment_build_number('../py/hookandline/HookandlineFPCConfig.py', 'HOOKLOGGER_VERSION')
 
 # Compile the QML into the qrc.py file
 PYRCC_DIR = os.path.join(PYTHON_DIR, 'Scripts\pyrcc5.exe')
@@ -70,7 +73,7 @@ if sys.platform == 'win32':
       # base='Console',  # useful for debugging
       base='Win32GUI',  # use this to hide console output (releases)
       targetName='HookLogger.exe',
-      icon='../resources/ico/hooklogger.ico'
+      icon='../resources/ico/hooklogger_v2.ico'
     )
 
 # Prompt to nuke existing directory
@@ -90,4 +93,4 @@ setup(
 )
 
 # Zip up our creation
-buildzipper.create_zip_archive(base_folder=deployed_path, filedesc='HookLogger')
+buildzipper.create_zip_archive(base_folder=deployed_path, filedesc=f'HookLogger_{version}')

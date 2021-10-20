@@ -197,10 +197,18 @@ Item {
             }
         }
     } // cvsMeatballYellow
+    OkayDialog {
+        // #199: Remind to check system time
+        id: dlgGpsTime
+        title: "GPS Time Reminder"
+        message: "Please ensure that the galley station, cutter station, and hook matrix\n" +
+                "computer times have been manually synced with the GPS time.\n\n\n" +
+                "GPS date and time can be reviewed on the 'Sensor Data Feeds' page\nor directly on the GPS."
+        action: ""
+    }
     Component.onCompleted: {
-
         console.info('Component.onCompleted ...');
-
+        dlgGpsTime.open()
         meatballs = [rctMeatball1, rctMeatball2, rctMeatball3, rctMeatball4, rctMeatball5,
                     rctMeatball6, rctMeatball7, rctMeatball8, rctMeatball9, rctMeatball10];
         tooltips = [ttMeatball1, ttMeatball2, ttMeatball3, ttMeatball4,  ttMeatball5,
@@ -1615,14 +1623,15 @@ Item {
             width: 50
             delegate: Item {
                 TextField {
+                    id: tfTide
 //                    property bool status: tvEvents.model.get(styleData.row).start
-                    width: parent.width
+                    width: parent.width - btnEditTide.width
                     anchors.verticalCenter: parent.verticalCenter
 //                    enabled: (enabled_row == styleData.row) ? true : false
 //                    enabled: true
 //                    enabled: (fpcMain.eventsModel.get(styleData.row).start_date_time != "") ? true : false
                     enabled: getTideTextFieldStatus(enabled_row, styleData.row)
-                    text: styleData.value ? styleData.value : ""
+                    text: (styleData.value || styleData.value == 0) ? styleData.value : ""  // #26: display 0 as 0
 //                    inputMask: "##.#"
 //                    validator: DoubleValidator {
 //                        bottom: -2.0;
@@ -1663,6 +1672,34 @@ Item {
 //                            parent.cursorPosition = 0;
 //                        }
 //                    }
+                }
+                Button {
+                    // #25: allow user to edit tide height after entering
+                    id: btnEditTide
+                    width: 20
+                    height: 20
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: tfTide.right
+                    enabled: enabled_row >= styleData.row  // TODO: use something other than enabled row, its buggy
+                    onClicked: {
+                        tfTide.enabled = !tfTide.enabled  // toggle text field on and off
+                    }
+                    style: ButtonStyle {
+                        label: Item {
+                            Canvas {
+                                anchors.fill: parent
+                                onPaint: {
+                                    var ctx = getContext("2d");
+                                    ctx.lineWidth = 3;
+                                    ctx.strokeStyle = Qt.rgba(0, 0, 0, 1);
+                                    ctx.beginPath();
+                                    ctx.moveTo(width/4, height/4);
+                                    ctx.lineTo(3*width/4, 3*height/4);
+                                    ctx.stroke();
+                                }
+                            }
+                        }
+                    }
                 }
             }
         } // tide_height_m

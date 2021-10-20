@@ -11,8 +11,8 @@ import re
 
 import arrow
 
-from PyQt5.QtCore import QUrl, qInstallMessageHandler, QObject, QThread
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel
+from PyQt5.QtCore import QUrl, qInstallMessageHandler, QObject, QThread, Qt
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QSplashScreen
 from PyQt5.QtQml import QQmlApplicationEngine, qmlRegisterType, QQmlComponent, QQmlEngine
 from PyQt5.QtQuick import QQuickView
 from py.common.QSingleApplication import QtSingleApplication
@@ -69,6 +69,22 @@ def exception_hook(except_type, except_value, traceback_obj):
 sys.excepthook = exception_hook
 
 
+class FpcSplash(QSplashScreen):
+    """
+    Class to hold splash screen config
+    Helpful: https://stackoverflow.com/questions/58661539/create-splash-screen-in-pyqt5
+    # 265: Splash screen should help indicate when HookLogger is booting
+    TODO: Make gif animated???
+    TODO: Loading screen with message and pic... progress bar???
+    TODO: Consolidate in "Common" folder
+    """
+    def __init__(self):
+        super(QSplashScreen, self).__init__()
+        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint | Qt.SplashScreen)
+        self.setPixmap(QtGui.QPixmap("./resources/images/hooklogger_icon.png"))
+        self.setWindowOpacity(0.80)
+
+
 class HookandlineFpc(QObject):
 
     def __init__(self):
@@ -81,7 +97,9 @@ class HookandlineFpc(QObject):
 
         appGuid = 'F3FF80BA-BA05-4277-8063-82A6DB9245A2'
         self.app = QtSingleApplication(appGuid, sys.argv)
-        self.app.setWindowIcon(QtGui.QIcon("resources/ico/hooklogger.ico"))
+        self.app.setWindowIcon(QtGui.QIcon("resources/ico/hooklogger_v2.ico"))
+        splash = FpcSplash()
+        splash.show()
         if self.app.isRunning():
             sys.exit(0)
 
@@ -149,7 +167,7 @@ class HookandlineFpc(QObject):
 
         try:
             self.engine.load(QUrl('qrc:/qml/hookandline/main_fpc.qml'))
-
+            splash.close()
             self.win = self.engine.rootObjects()[0]
             self.msg_box = self.win.findChild(QObject, "dlgUnhandledException")
 
