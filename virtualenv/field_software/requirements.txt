@@ -28,5 +28,5 @@ seaborn==0.9.0
 sip==4.19.8
 six==1.13.0
 cython==0.25.2
-Pygments==2.7.4
+Pygments==2.15.0
 PyInstaller==3.6
